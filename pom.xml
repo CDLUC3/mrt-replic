@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.cdlib.mrt</groupId>
+  <artifactId>mrt-replicgit</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>UC3-mrtReplicGit</name>
+  <url>http://uc3.cdlib.org</url>
+
+
+    <!-- let profiles determine which conf module to run -->
+    <profiles>
+        <profile>
+            <id>uc3</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>   
+            <modules>
+                <module>replication-conf</module>
+                <module>replication-src</module>
+                <module>replication-war</module>
+            </modules>
+        </profile>
+     </profiles>
+
+</project>
+
