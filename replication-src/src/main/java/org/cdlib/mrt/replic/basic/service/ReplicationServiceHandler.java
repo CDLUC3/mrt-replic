@@ -125,7 +125,6 @@ public class ReplicationServiceHandler
                 adminDir.mkdir();
             }
             
-            logger = new TFileLogger("replication", logDir.getCanonicalPath() + '/', setupProp);
             if (DEBUG) System.out.println("***logger set up at " + logDir.getCanonicalPath()
                     + " - " + PropertiesUtil.dumpProperties("setupProp", setupProp)
                     );
@@ -139,7 +138,8 @@ public class ReplicationServiceHandler
             serviceProperties.load(fis);
             
             this.setupProperties.putAll(serviceProperties);
-            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("***Mergeprop", this.setupProperties));
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties(MESSAGE + "setupProperties", this.setupProperties));
+            logger = new TFileLogger("replication", logDir.getCanonicalPath() + '/', setupProp);
             
             serviceStateManager 
                     = ReplicationServiceStateManager.getReplicationServiceStateManager(
