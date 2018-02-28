@@ -487,12 +487,10 @@ public class ReplicationServiceHandler
             Identifier objectID)
         throws TException
     {
-        Connection connect = null;
         try {
             if (!isSQL()) {
                 throw new TException.SQL_EXCEPTION("delete attempted - MySQL not running");
             }
-            connect = getConnection(true);
             DeleteSecondary delete = DeleteSecondary.getDeleteSecondary(objectID, db, nodes, logger);
             ReplicationDeleteState state = delete.process();
             return state;
