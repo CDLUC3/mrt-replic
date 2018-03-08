@@ -56,7 +56,7 @@ public class NodeCountStates
     private static final String NAME = "NodeCountStates";
     private static final String MESSAGE = NAME + ": ";
     
-    protected HashMap<Long, NodeCountState> nodeCountMap = new HashMap();
+    protected HashMap<Long, NodeCountState> nodeCountMap = new HashMap<>();
     
     protected Connection connection = null;
     protected LoggerInf logger = null;
@@ -122,7 +122,7 @@ public class NodeCountStates
     
     protected ArrayList<NodeCountState> getNodeStates()
     {
-        ArrayList<NodeCountState> nodeCounts = new ArrayList();
+        ArrayList<NodeCountState> nodeCounts = new ArrayList<>();
         nodeCounts.addAll(nodeCountMap.values());
         return nodeCounts;
     }

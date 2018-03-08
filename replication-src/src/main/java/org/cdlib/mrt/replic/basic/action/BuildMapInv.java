@@ -63,7 +63,7 @@ public class BuildMapInv
     protected Identifier objectID = null;
     protected InvObject invObject = null;
     protected List<InvFile> fileList = null;
-    protected HashMap<String,String> deltaMap = new HashMap();
+    protected HashMap<String,String> deltaMap = new HashMap<>();
     protected ArrayList<InvFile>  files = null;
     protected VersionMap versionMap = null;
     protected Connection connection = null;
@@ -162,7 +162,7 @@ public class BuildMapInv
     protected ArrayList<FileComponent> getComponents(long versionID, List<InvFile> invFiles)
         throws TException
     {
-        ArrayList<FileComponent> components = new ArrayList(invFiles.size());
+        ArrayList<FileComponent> components = new ArrayList<>(invFiles.size());
         try {
             for (InvFile invFile: invFiles) {
                 FileComponent component = invFile.getFileComponent();

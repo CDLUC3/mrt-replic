@@ -49,7 +49,7 @@ public class NodesObjectsState
     
     protected Identifier ark = null;
     protected ReplicNodesObjects primaryNode = null;
-    protected ArrayList<ReplicNodesObjects> secondaryNodes = new ArrayList();
+    protected ArrayList<ReplicNodesObjects> secondaryNodes = new ArrayList<>();
     protected Integer numberDeletedSecondary = null;
     protected Integer numberDeletedInv = null;
     

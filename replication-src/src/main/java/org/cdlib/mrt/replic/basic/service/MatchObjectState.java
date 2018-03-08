@@ -213,15 +213,15 @@ public class MatchObjectState
         return storageError;
     }
 
-    public void setStorageError(List storageError) {
+    public void setStorageError(List<String> storageError) {
         this.storageError = storageError;
     }
 
-    public List getInvError() {
+    public List<String> getInvError() {
         return invError;
     }
 
-    public void setInvError(List invError) {
+    public void setInvError(List<String> invError) {
         this.invError = invError;
     }
 

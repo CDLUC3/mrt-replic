@@ -64,7 +64,7 @@ public class ReplicationInfo
     
     protected Identifier objectID = null;
     protected NodeObjectInfo primaryNodeObject = null;
-    protected HashMap<Long, NodeObjectInfo> objectNodes = new HashMap(20);
+    protected HashMap<Long, NodeObjectInfo> objectNodes = new HashMap<>(20);
     protected ArrayList<InvNodeObject> invNodeObjects = null;
     protected InvNodeObject primaryInvNodeObject = null;
     protected InvNode primaryInvNode = null;
@@ -143,7 +143,7 @@ public class ReplicationInfo
     
     public ArrayList<NodeState> getReplicationNodeNumbers()
     {
-        ArrayList<NodeState> nodes = new ArrayList();
+        ArrayList<NodeState> nodes = new ArrayList<>();
         Set<Long> keys = objectNodes.keySet();
         System.out.println(MESSAGE + "***key cnt=" + keys.size());
         for (Long key : keys) {
@@ -407,7 +407,7 @@ public class ReplicationInfo
             return null;
         }
         Set<Long> keys = objectNodes.keySet();
-        ArrayList<NodeObjectInfo> returnList = new ArrayList(keys.size());
+        ArrayList<NodeObjectInfo> returnList = new ArrayList<>(keys.size());
         for (Long key : keys) {
             NodeObjectInfo info = objectNodes.get(key);
             returnList.add(info);

@@ -66,7 +66,7 @@ public class MatchResults
     protected Boolean fieldContentMatch = null;
     protected Boolean validateManifestVersions = null;
     protected Boolean validateManifestFields = null;
-    protected List<String> errors = new ArrayList();
+    protected List<String> errors = new ArrayList<>();
     
     
     

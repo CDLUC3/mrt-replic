@@ -72,7 +72,7 @@ public class FileInput
  
     protected InvObject invObject = null;
     protected List<InvFile> fileList = null;
-    protected HashMap<String,String> deltaMap = new HashMap();
+    protected HashMap<String,String> deltaMap = new HashMap<>();
     protected ArrayList<InvFile>  files = null;
     protected VersionMap versionMap = null;
     protected Connection connection = null;

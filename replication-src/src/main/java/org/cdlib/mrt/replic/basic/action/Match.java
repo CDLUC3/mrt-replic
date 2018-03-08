@@ -137,7 +137,7 @@ public class Match
                 if (results.getObjectMatch()) {
                     state.setMatchManifestStore(true);
                 }
-                List errors = results.getErrors();
+                List<String> errors = results.getErrors();
                 if (errors.size() > 0) {
                     state.setStorageError(errors);
                 }
@@ -154,7 +154,7 @@ public class Match
                 if (results.getObjectMatch()) {
                     state.setMatchManifestInv(true);
                 }
-                List errors = results.getErrors();
+                List<String> errors = results.getErrors();
                 if (errors.size() > 0) {
                     state.setInvError(errors);
                 }

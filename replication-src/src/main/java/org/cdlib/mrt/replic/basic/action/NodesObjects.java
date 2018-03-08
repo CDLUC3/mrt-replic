@@ -60,7 +60,7 @@ public class NodesObjects
     protected Properties storeResponse = null;
     protected ReplicNodesObjects primaryNode = null;
     protected Identifier ark = null;
-    protected ArrayList<ReplicNodesObjects> noList = new ArrayList();
+    protected ArrayList<ReplicNodesObjects> noList = new ArrayList<>();
     
     public static NodesObjects getNodeObjects(
             Identifier ark,

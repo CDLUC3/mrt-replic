@@ -53,7 +53,7 @@ public class ReplicationDeleteState
     protected boolean storeDelete = false;
     protected int deleteCount = 0;
     protected DateState deleteDate = null;
-    protected ArrayList<ReplicNodesObjects> secondaryNodes = new ArrayList();
+    protected ArrayList<ReplicNodesObjects> secondaryNodes = new ArrayList<>();
     
     public ReplicationDeleteState() { }
     

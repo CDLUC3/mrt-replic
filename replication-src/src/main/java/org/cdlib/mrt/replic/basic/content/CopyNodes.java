@@ -47,7 +47,7 @@ public class CopyNodes {
     protected static final String NAME = "CopyNodes";
     protected static final String MESSAGE = NAME + ": ";
     
-    protected HashMap<Long,CopyNode> map = new HashMap();
+    protected HashMap<Long,CopyNode> map = new HashMap<>();
     protected LoggerInf logger = null;
     
     public CopyNodes(LoggerInf logger) 
