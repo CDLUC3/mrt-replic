@@ -163,6 +163,9 @@ public class ReplicationInfo
     {
         try {
             invNodeObjects = InvDBUtil.getObjectNodesReplication(objectseq, connection, logger);
+            if (invNodeObjects == null) {
+                throw new TException.REQUESTED_ITEM_NOT_FOUND("No replicating node found for inv_objct_id=" + objectseq);
+            }
             System.out.println("addPrimaryInfo" 
                     + " - objectseq=" + objectseq
                     + " - length=" + invNodeObjects.size()
