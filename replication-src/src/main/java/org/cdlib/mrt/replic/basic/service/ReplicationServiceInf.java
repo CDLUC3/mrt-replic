@@ -115,6 +115,10 @@ public interface ReplicationServiceInf
             Identifier objectID)
         throws TException;
             
+    
+    public ReplicationPropertiesState doCleanup()
+        throws TException;
+    
     /**
      * Match duplicated objects on different nodes
      * @param sourceNode input node

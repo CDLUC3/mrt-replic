@@ -48,6 +48,7 @@ import java.util.List;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.ThreadHandler;
+import org.cdlib.mrt.db.DBUtil;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.inv.content.InvNodeObject;
 import org.cdlib.mrt.replic.basic.content.ReplicNodesObjects;
@@ -57,6 +58,7 @@ import org.cdlib.mrt.inv.content.InvCollectionNode;
 import org.cdlib.mrt.inv.service.Role;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
+import org.cdlib.mrt.replic.basic.action.ReplicEmailWrapper;
 import org.cdlib.mrt.replic.basic.action.ReplaceWrapper;
 import org.cdlib.mrt.replic.basic.action.CollectionNodeHandler;
 import org.cdlib.mrt.replic.basic.action.DeleteInv;
@@ -66,8 +68,10 @@ import org.cdlib.mrt.replic.basic.action.Match;
 import org.cdlib.mrt.replic.basic.action.NodesObjects;
 import org.cdlib.mrt.replic.basic.action.Replicator;
 import org.cdlib.mrt.replic.basic.action.ReplicAddInv;
+import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.utility.ReplicDB;
+import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.TFileLogger;
 
 /**
@@ -573,6 +577,50 @@ public class ReplicationServiceHandler
         }
     }
     
+    public ReplicationPropertiesState doCleanup()
+        throws TException
+    {
+        
+        if (!isSQL()) {
+            throw new TException.SQL_EXCEPTION("matchObjects attempted - MySQL not running");
+        }
+        try {
+            System.out.println(PropertiesUtil.dumpProperties(NAME+":doCleanup", setupProperties));
+            ReplicCleanup rc = ReplicCleanup.getReplicCleanup(setupProperties, nodes, db, logger);
+            System.out.println("from:" + rc.getEmailFrom());
+            System.out.println("to:" + rc.getEmailTo());
+            System.out.println("subject:" + rc.getEmailSubject());
+            System.out.println("msg:" + rc.getEmailMsg());
+            ReplicEmailWrapper cleanupWrapper = new ReplicEmailWrapper(
+                rc,
+                true,
+                rc.getEmailTo(),
+                rc.getEmailFrom(),
+                rc.getEmailSubject(),
+                rc.getEmailMsg(),
+                "xml",
+                db,
+                setupProperties,
+                logger);
+            
+            ExecutorService threadExecutor = Executors.newFixedThreadPool( 1 );
+            threadExecutor.execute(cleanupWrapper ); // start task1
+            threadExecutor.shutdown();
+            Thread.sleep(3000);
+            Properties retProp = new Properties();
+            retProp.setProperty("operation", "Replication Cleanup");
+            retProp.setProperty("submmitted", DateUtil.getCurrentIsoDate());
+            retProp.setProperty("mailto", rc.getEmailTo());
+            Properties [] retProps = new Properties[1];
+            retProps[0] = retProp;
+            ReplicationPropertiesState retState = new ReplicationPropertiesState(retProps);
+            return retState;
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
     
     public ReplicationAddMapState addMap(
             Identifier collectionID,

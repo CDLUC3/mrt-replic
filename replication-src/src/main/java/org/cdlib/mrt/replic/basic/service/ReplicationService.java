@@ -35,6 +35,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.action.Versions;
@@ -159,7 +161,14 @@ public class ReplicationService
         if (DEBUG) System.out.print("delete entered");
         return replicationServiceHandler.deleteSecondary(objectID);
     }
-    
+       
+    @Override
+    public ReplicationPropertiesState doCleanup()
+        throws TException
+    {
+        if (DEBUG) System.out.print("doCleanup entered");
+        return replicationServiceHandler.doCleanup();
+    }
     /**
      * Match duplicated objects on different nodes
      * @param sourceNode input node

@@ -260,6 +260,17 @@ public class JerseyReplication
     }
     
     @POST
+    @Path("cleanup")
+    public Response callCleanup(
+            @DefaultValue("xhtml") @QueryParam(KeyNameHttpInf.RESPONSEFORM) String formatType,
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        return cleanupReplic(formatType, cs, sc);
+    }  
+    
+    @POST
     @Path("addmap/{collectionIDS}/{nodeS}")
     public Response callAddMap(
             @PathParam("collectionIDS") String collectionIDS,
@@ -732,6 +743,41 @@ public class JerseyReplication
             Identifier objectID = new Identifier(objectIDS);
             StateInf responseState = replicationService.addReplicInv(objectID);
             return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+
+    /**
+     * Update multiple entries
+     * @param formatType
+     * @param cs
+     * @param sc
+     * @return
+     * @throws TException 
+     */
+    public Response cleanupReplic(
+            String formatType,
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log("getServiceState entered:"
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+            StateInf responseState = replicationService.doCleanup();
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
 
         } catch (TException tex) {
             return getExceptionResponse(tex, formatType, logger);
