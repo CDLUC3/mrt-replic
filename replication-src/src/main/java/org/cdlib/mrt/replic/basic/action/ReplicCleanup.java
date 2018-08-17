@@ -418,7 +418,8 @@ public class ReplicCleanup
         DateState dstate = new DateState();
         String ctime= dstate.getIsoDate();
         emailSubject = getMail(NAME + ".emailSubject", 
-                "Replication Cleanup report: " + ctime);
+                "Replication Cleanup report");
+        emailSubject += ": " + ctime;
         emailFrom = getMail(NAME + ".emailFrom","merritt@ucop.edu");
         emailTo =  getMail(NAME + ".emailTo", null);
         if (emailTo == null) {
