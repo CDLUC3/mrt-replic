@@ -46,6 +46,8 @@ import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.ThreadHandler;
 import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
+import org.cdlib.mrt.inv.utility.InvUtil;
+import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
 import org.cdlib.mrt.replic.basic.content.CopyNodes;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.utility.PropertiesUtil;
@@ -146,7 +148,10 @@ public class RunReplication implements Runnable
         throws TException
     {
         try {
-            resetReplicatedStart(nodeObj, connection);
+            if (!resetReplicated(nodeObj, connection, logger)) {
+                if (DEBUG) System.out.println(nodeObj.dump("***Entry fails add***"));
+                return;
+            }
             queue.add(nodeObj);
 
         } catch (Exception ex) {
@@ -166,7 +171,7 @@ public class RunReplication implements Runnable
     {
         Connection connection = null;
         try {
-            connection = db.getConnection(false);
+            connection = db.getConnection(true);
             
             /* Original
             String sql = "select * "
@@ -183,13 +188,11 @@ public class RunReplication implements Runnable
                 InvNodeObject nodeObj = new InvNodeObject(propEntry, logger);
                 System.out.println(PropertiesUtil.dumpProperties("***addSQLEntries***", propEntry));
                 addEntry(nodeObj, connection);
-                log(nodeObj.dump("ADD"));
             }
-            connection.commit();
             System.out.println("***addSQLEntries completed successfully");
             
             log("END ADD");
-            return props.length;
+            return queue.size();
 
         } catch (TException fe) {
             queue.clear();
@@ -210,7 +213,6 @@ public class RunReplication implements Runnable
 
         } finally {
             try {
-                connection.commit();
                 connection.close();
             } catch (Exception ex) {}
         }
@@ -412,6 +414,35 @@ public class RunReplication implements Runnable
             throw new TException(ex);
         }
     }
+
+    public boolean resetReplicated(InvNodeObject nodeObj, Connection connection, LoggerInf logger)
+    {
+        DateState zeroDate = new DateState(28800000);
+        long id = nodeObj.getId();
+        String initialDate = InvUtil.getDBDate(zeroDate);
+        nodeObj.setReplicated(zeroDate);
+        
+        String sql = "update inv_nodes_inv_objects "
+            + "set replicated = '" + initialDate + "' "
+            + "where id=" + id + " "
+            + "and replicated is null ";
+        
+        try {
+            int updates = DBUtil.update(connection, sql, logger);
+            System.out.println("***updates(" + id + "):" + updates);
+        
+            if (updates == 1) {
+                log(nodeObj.dump("ADD"));
+                return true;
+
+            } 
+            if (DEBUG) System.out.println("***Update fails:" + sql);
+            return false;
+
+        } catch (Exception ex) {
+            return false;
+        }
+    }
     
     protected boolean resetReplicatedStart(InvNodeObject primaryNodeObject, Connection connection)
     {
@@ -430,7 +461,12 @@ public class RunReplication implements Runnable
     
     protected void log(String msg)
     {
-        logger.logMessage(msg, 15, true);
+        log(msg,15);
+    }
+    
+    protected void log(String msg, int lvl)
+    {
+        logger.logMessage(msg, lvl, true);
         if (!DEBUG) return;
         System.out.println(MESSAGE + msg);
     }
