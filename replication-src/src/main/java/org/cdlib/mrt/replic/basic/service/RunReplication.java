@@ -259,15 +259,18 @@ public class RunReplication implements Runnable
     {
         try {
             replicationInfo.setReplicationProcessing(true);
+            ThreadHandler localThreads = ThreadHandler.getThreadHandler(250, poolSize, logger);
             Thread.sleep(5);
             for (long outcnt=0; outcnt < maxout; outcnt += capacity) {
-                log("PROCESS BLOCK:" + outcnt);
-                processBlock();
+                log("PROCESS BLOCK:" + outcnt + " - activeThreads:" + localThreads.getActiveCnt());
+                processBlock(localThreads);
                 if (!replicationInfo.isRunReplication()) {
                     log("SHUTDOWN detected");
                     break;
                 }
             }
+            log("Final - activeThreads:" + localThreads.getActiveCnt());        
+            localThreads.shutdown();
             log("************leaving RunReplica");
 
         } catch (TException fe) {
@@ -298,7 +301,7 @@ public class RunReplication implements Runnable
      *
      * @throws TException 
      */
-    protected void processBlock()
+    protected void processBlock(ThreadHandler localThreads)
         throws TException
     {
         try {
@@ -308,7 +311,6 @@ public class RunReplication implements Runnable
                 return;
             }
             
-            ThreadHandler localThreads = ThreadHandler.getThreadHandler(250, poolSize, logger);
             log("Thread pool count:" + localThreads.getThreadCnt());
             if (!replicationInfo.isRunReplication()) return;
             for(int i = 0; i < capacity; i++){
@@ -321,9 +323,8 @@ public class RunReplication implements Runnable
                         = new ReplicationWrapper(nodeObject, replicationInfo, nodes, db, logger);
                 localThreads.runThread(wrapper);
             }
-            localThreads.shutdown();
             endSQLEntries();
-            log("************Termination of threads");
+            log("************Termination processBlock");
 
         } catch (TException fe) {
             fe.printStackTrace();
