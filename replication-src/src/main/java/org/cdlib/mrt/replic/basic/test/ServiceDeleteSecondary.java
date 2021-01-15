@@ -20,6 +20,7 @@ import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFrame;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.replic.basic.service.NodesObjectsState;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.ReplicationDeleteState;
 import org.cdlib.mrt.replic.basic.service.ReplicationService;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceHandler;
@@ -47,48 +48,34 @@ public class ServiceDeleteSecondary
     public static void main(String args[])
     {
 
-        TFrame tFrame = null;
-        DPRFileDB db = null;
+        ReplicationServiceHandler serviceHandler = null;
         try {
-            String propertyList[] = {
-                "resources/ReplicLogger.properties",
-                "resources/ReplicTest.properties",
-                "resources/Replic.properties"};
-            tFrame = new TFrame(propertyList, "ReplicLoad");
-
-            // Create an instance of this object
-            LoggerInf outlogger = new TFileLogger(NAME, 50, 50);
-            Properties props = tFrame.getAllProperties();
-            System.out.println(PropertiesUtil.dumpProperties("RUN", props));
-            ReplicationServiceHandler serviceHandler = ReplicationServiceHandler.getReplicationServiceHandler(props);
+            ReplicationConfig replicConfig = ReplicationConfig.useYaml();
+            LoggerInf logger = replicConfig.getLogger();
+            serviceHandler = ReplicationServiceHandler.getReplicationServiceHandler(replicConfig);
             ReplicationService service = ReplicationService.getReplicationService(serviceHandler);
             
             ReplicationServiceState serviceState = service.pause();
-            print("START", serviceState, outlogger);
+            print("START", serviceState, logger);
             Thread.sleep(30000);
             
             //Identifier objectID = new Identifier("ark:/99999/fk48342g2z");
             //Identifier objectID = new Identifier("ark:/99999/fk4g44z76r");
-            Identifier objectID = new Identifier("ark:/99999/fk46q27106");
+            //Identifier objectID = new Identifier("ark:/99999/fk46q27106");
+            Identifier objectID = new Identifier("ark:/b5072/fk2668bm6c");
             
             ReplicationDeleteState deleteState = service.deleteSecondary(objectID);
-            print("Delete", deleteState, outlogger);
+            print("Delete", deleteState, logger);
             
             serviceState = service.shutdown();
-            print("SHUTDOWN", serviceState, outlogger);
+            print("SHUTDOWN", serviceState, logger);
 
         } catch(Exception e) {
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
                         StringUtil.stackTrace(e));
-        } finally {
-            if (db != null) {
-                try {
-                    db.shutDown();
-                } catch (Exception ex) { }
-            }
-        }
+        } 
     }
     
     public static void print(String header, StateInf response, LoggerInf logger)

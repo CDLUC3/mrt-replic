@@ -72,7 +72,9 @@ import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.utility.DateUtil;
+import org.cdlib.mrt.utility.LoggerAbs;
 import org.cdlib.mrt.utility.TFileLogger;
+import org.json.JSONObject;
 
 /**
  * Base properties for Replication
@@ -86,8 +88,8 @@ public class ReplicationServiceHandler
     private static final boolean DEBUG = true;
 
     protected int terminationSeconds = 600;
-    protected Properties serviceProperties = null;
-    protected Properties setupProperties = null;
+    //protected Properties serviceProperties = null;
+    protected ReplicationConfig replicConfig = null;
     protected File replicationServiceF = null;
     protected File replicationInfoF = null;
     protected DPRFileDB db = null;
@@ -99,67 +101,30 @@ public class ReplicationServiceHandler
     protected boolean shutdown = true;
     protected ThreadHandler addQueue = null; 
 
-    public static ReplicationServiceHandler getReplicationServiceHandler(Properties prop)
+    public static ReplicationServiceHandler getReplicationServiceHandler(ReplicationConfig replicConfig)
         throws TException
     {
-        return new ReplicationServiceHandler(prop);
+        return new ReplicationServiceHandler(replicConfig);
     }
 
-    protected ReplicationServiceHandler(Properties setupProp)
+    protected ReplicationServiceHandler(ReplicationConfig replicConfig)
         throws TException
     {
         try {
-            this.setupProperties = setupProp;
-            String replicationServiceS = setupProp.getProperty("ReplicationService");
-            if (StringUtil.isEmpty(replicationServiceS)) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "missing property: ReplicationService");
-            }
-            replicationServiceF = new File(replicationServiceS);
-            if (!replicationServiceF.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "replication service directory does not exist:"
-                        + replicationServiceF.getCanonicalPath());
-            }
-            File logDir = new File(replicationServiceF, "log");
-            if (!logDir.exists()) {
-                logDir.mkdir();
-            }
-
-            File adminDir = new File(replicationServiceF, "admin");
-            if (!adminDir.exists()) {
-                adminDir.mkdir();
-            }
-            
-            if (DEBUG) System.out.println("***logger set up at " + logDir.getCanonicalPath()
-                    + " - " + PropertiesUtil.dumpProperties("setupProp", setupProp)
-                    );
-            replicationInfoF = new File(replicationServiceF, "replic-info.txt");
-            if (!replicationInfoF.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "replic-info.txt does not exist:"
-                        + replicationServiceF.getCanonicalPath());
-            }
-            FileInputStream fis = new FileInputStream(replicationInfoF);
-            serviceProperties = new Properties();
-            serviceProperties.load(fis);
-            
-            this.setupProperties.putAll(serviceProperties);
-            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties(MESSAGE + "setupProperties", this.setupProperties));
-            logger = new TFileLogger("replication", logDir.getCanonicalPath() + '/', setupProp);
+            this.replicConfig = replicConfig;
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties(MESSAGE + "setupProperties", this.replicConfig.cleanupEmailProp));
+            logger = replicConfig.getLogger();
             
             serviceStateManager 
-                    = ReplicationServiceStateManager.getReplicationServiceStateManager(
-                        logger, serviceProperties);
-            ReplicationServiceState serviceState = serviceStateManager.retrieveBasicServiceState();
-            replicationInfo = new ReplicationRunInfo(serviceState, setupProp);
+                    = ReplicationServiceStateManager.getReplicationServiceStateManager(replicConfig);
+            //ReplicationServiceState serviceState = serviceStateManager.retrieveBasicServiceState();
+            replicationInfo = new ReplicationRunInfo(replicConfig);
 
             ReplicationScheme scheme = replicationInfo.getReplicationScheme();
             if (scheme != null) {
                 scheme.buildNamasteFile(replicationServiceF);
             }
-            String nodeName = serviceStateManager.getNodeName();
-            if (StringUtil.isAllBlank(nodeName)) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "nodeName required");
-            }
-            nodes = new NodeIO(nodeName, logger);
+            nodes = replicConfig.getNodeIO();
             nodes.printNodes(NAME);
             addQueue = ThreadHandler.getThreadHandler(30000, 3, logger);
             startup();
@@ -173,7 +138,7 @@ public class ReplicationServiceHandler
     public DPRFileDB getNewDb()
         throws TException
     {
-        return new DPRFileDB(logger, setupProperties);
+        return replicConfig.startDB(logger);
     }
 
     public void refresh()
@@ -275,16 +240,8 @@ public class ReplicationServiceHandler
         return logger;
     }
 
-    public Properties getServiceProperties() {
-        return serviceProperties;
-    }
-
     public ReplicationServiceStateManager getServiceStateManager() {
         return serviceStateManager;
-    }
-
-    public Properties getSetupProperties() {
-        return setupProperties;
     }
 
     public void dbShutdown()
@@ -556,7 +513,7 @@ public class ReplicationServiceHandler
             if (!isSQL()) {
                 throw new TException.SQL_EXCEPTION("matchObjects attempted - MySQL not running");
             }
-            String storageBase = setupProperties.getProperty("storageBase");
+            
             connect = getConnection(true);
             Match match = Match.getMatch(objectID, nodes,sourceNode,targetNode, connect, logger);
             
@@ -585,6 +542,7 @@ public class ReplicationServiceHandler
             throw new TException.SQL_EXCEPTION("matchObjects attempted - MySQL not running");
         }
         try {
+            Properties setupProperties = replicConfig.getCleanupEmailProp();
             System.out.println(PropertiesUtil.dumpProperties(NAME+":doCleanup", setupProperties));
             ReplicCleanup rc = ReplicCleanup.getReplicCleanup(setupProperties, nodes, db, logger);
             System.out.println("from:" + rc.getEmailFrom());

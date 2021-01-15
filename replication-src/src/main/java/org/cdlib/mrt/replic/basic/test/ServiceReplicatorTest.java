@@ -18,6 +18,7 @@ import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFrame;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.ReplicationService;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceHandler;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceState;
@@ -44,39 +45,28 @@ public class ServiceReplicatorTest
     public static void main(String args[])
     {
 
-        TFrame tFrame = null;
-        DPRFileDB db = null;
         try {
-            String propertyList[] = {
-                "resources/ReplicLogger.properties",
-                "resources/ReplicTest.properties",
-                "resources/Replic.properties"};
-            tFrame = new TFrame(propertyList, "ReplicLoad");
-
-            // Create an instance of this object
-            LoggerInf outlogger = new TFileLogger(NAME, 50, 50);
-            Properties props = tFrame.getAllProperties();
-            System.out.println(PropertiesUtil.dumpProperties("RUN", props));
-            ReplicationServiceHandler serviceHandler = ReplicationServiceHandler.getReplicationServiceHandler(props);
+            ReplicationConfig replicConfig = ReplicationConfig.useYaml();
+            LoggerInf outlogger = replicConfig.getLogger();
+            ReplicationServiceHandler serviceHandler = ReplicationServiceHandler.getReplicationServiceHandler(replicConfig);
             ReplicationService service = ReplicationService.getReplicationService(serviceHandler);
             ReplicationServiceState serviceState = service.startup();
             print("START", serviceState, outlogger);
-            Thread.sleep(300000);
+            Thread.sleep(60000);
+            serviceState = service.getReplicationServiceStatus();
+            print("30 after startup", serviceState, outlogger);
             serviceState = service.shutdown();
             print("SHUTDOWN", serviceState, outlogger);
+            Thread.sleep(60000);
+            serviceState = service.getReplicationServiceStatus();
+            print("30 after shutdown", serviceState, outlogger);
 
         } catch(Exception e) {
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
                         StringUtil.stackTrace(e));
-        } finally {
-            if (db != null) {
-                try {
-                    db.shutDown();
-                } catch (Exception ex) { }
-            }
-        }
+        } 
     }
     
     public static void print(String header, StateInf response, LoggerInf logger)

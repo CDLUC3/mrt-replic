@@ -25,7 +25,7 @@ import org.cdlib.mrt.utility.TFrame;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.replic.basic.action.Replicator;
-import org.cdlib.mrt.replic.basic.content.CopyNodes;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.RunReplication;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceState;
@@ -55,23 +55,22 @@ public class RunReplicTest
         TFrame tFrame = null;
         DPRFileDB db = null;
         try {
+            /*
             String propertyList[] = {
                 "resources/ReplicLogger.properties",
                 "resources/ReplicTest.properties",
                 "resources/Replic.properties"};
             tFrame = new TFrame(propertyList, "ReplicLoad");
-
+            */
             // Create an instance of this object
-            LoggerInf logger = new TFileLogger(NAME, 50, 50);
-            File replicationHomeF = new File("/replic/loy/repository/replicHome");
-            File replicationInfoF = new File(replicationHomeF,"replic-info.txt");
+            ReplicationConfig replicConfig = ReplicationConfig.useYaml();
+            LoggerInf logger = replicConfig.getLogger();
             ReplicationServiceStateManager stateManager 
-                    = ReplicationServiceStateManager.getReplicationServiceStateManager(
-                        logger, replicationInfoF);
+                    = ReplicationServiceStateManager.getReplicationServiceStateManager(replicConfig);
             ReplicationServiceState serviceState = stateManager.retrieveBasicServiceState();
-            ReplicationRunInfo replicationInfo = new ReplicationRunInfo(serviceState, null);
+            ReplicationRunInfo replicationInfo = new ReplicationRunInfo(replicConfig);
             replicationInfo.setRunReplication(true);
-            db = new DPRFileDB(logger, tFrame.getProperties());
+            db = replicConfig.startDB();
             
         } catch(Exception e) {
                 System.out.println(

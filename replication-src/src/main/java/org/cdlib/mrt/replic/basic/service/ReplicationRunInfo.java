@@ -73,41 +73,18 @@ public class ReplicationRunInfo
     protected volatile String replicQualify = null;
     protected AtomicLong cnt = new AtomicLong();
     protected ReplicationServiceState state = null;
-    protected Properties setupProp = null;
+    protected ReplicationConfig replicConfig = null;
 
     public ReplicationRunInfo() { }
 
-    public ReplicationRunInfo(ReplicationServiceState state, Properties setupProp)
+    public ReplicationRunInfo(ReplicationConfig replicConfig)
         throws TException
     {
-        this.state = state;
-        this.setupProp = setupProp;
-        if (this.setupProp == null) {
-            this.setupProp = new Properties();
-        }
+        this.state = replicConfig.getServiceState();
+        this.replicConfig = replicConfig;
         set();
     }
     
-    
-    public ReplicationRunInfo(File replicationInfo)
-        throws TException
-    {
-        try {
-            if (!replicationInfo.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "fixity-info.txt does not exist:");
-            }
-            InputStream fis = new FileInputStream(replicationInfo);
-            Properties serviceProperties = new Properties();
-            serviceProperties.load(fis);
-            this.state = new ReplicationServiceState(serviceProperties);
-            set();
-    
-    
-        } catch (Exception ex) {
-            throw new TException(ex);
-        }
-    }
-
     public synchronized void set()
         throws TException
     {

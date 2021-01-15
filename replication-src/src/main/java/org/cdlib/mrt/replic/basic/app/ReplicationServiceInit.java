@@ -34,6 +34,7 @@ package org.cdlib.mrt.replic.basic.app;
 import org.cdlib.mrt.utility.TFrameInit;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 
 import org.cdlib.mrt.replic.basic.service.ReplicationService;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceInf;
@@ -44,7 +45,6 @@ import org.cdlib.mrt.utility.TException;
  * @author dloy
  */
 public class ReplicationServiceInit
-        extends TFrameInit
 {
     private static final String serviceName = "replicService";
 
@@ -52,6 +52,7 @@ public class ReplicationServiceInit
         Regular, Default
     }
     protected volatile ReplicationServiceHandler replicationServiceHandler = null;
+    protected ReplicationConfig replicConfig = null;
 
     /**
      * Get resolved storage service
@@ -112,14 +113,14 @@ public class ReplicationServiceInit
     protected ReplicationServiceInit(Type type, ServletConfig servletConfig, String serviceName)
             throws TException
     {
-        super(servletConfig, serviceName);
+        replicConfig = ReplicationConfig.useYaml();
         if (type == Type.Regular) {
             replicationServiceHandler =
-                    ReplicationServiceHandler.getReplicationServiceHandler(tFrame.getProperties());
+                    ReplicationServiceHandler.getReplicationServiceHandler(replicConfig);
         }
         if (type == Type.Default) {
             replicationServiceHandler =
-                    ReplicationServiceHandler.getReplicationServiceHandler(tFrame.getProperties());
+                    ReplicationServiceHandler.getReplicationServiceHandler(replicConfig);
         }
     }
 }

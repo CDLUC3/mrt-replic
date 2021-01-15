@@ -56,7 +56,7 @@ import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.inv.utility.InvUtil;
 import org.cdlib.mrt.replic.basic.service.NodeCountStates;
 import org.cdlib.mrt.db.DBUtil;
-import org.cdlib.mrt.db.DPRFileDB;
+import org.cdlib.mrt.inv.utility.DPRFileDB;
 
 /**
  * Fixity build Service State
@@ -74,48 +74,23 @@ public class ReplicationServiceStateManager
     protected LoggerInf logger = null;
     protected ReplicationServiceState serviceState = null;
 
-    public static ReplicationServiceStateManager getReplicationServiceStateManager(
-            LoggerInf logger, File replicationInfoF)
-        throws TException
-    {
-        
-        try {
-            if (!replicationInfoF.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "replication-info.txt does not exist:");
-            }
-            FileInputStream fis = new FileInputStream(replicationInfoF);
-            Properties serviceProperties = new Properties();
-            serviceProperties.load(fis);
-            return new ReplicationServiceStateManager(logger, serviceProperties);
-        
-
-        } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-
 
     public static ReplicationServiceStateManager getReplicationServiceStateManager(
-            LoggerInf logger, Properties serviceProperties)
+            ReplicationConfig replicConfig)
         throws TException
     {
-        return new ReplicationServiceStateManager(logger, serviceProperties);
+        return new ReplicationServiceStateManager(replicConfig);
     }
     
-    protected ReplicationServiceStateManager(LoggerInf logger, Properties serviceProperties)
+    protected ReplicationServiceStateManager(ReplicationConfig replicConfig)
         throws TException
     {
         try {
-            this.logger = logger;
-            if (serviceProperties == null) {
+            if (replicConfig == null) {
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "service properties do not exist:");
             }
-            serviceState = new ReplicationServiceState(serviceProperties);
+            this.logger = replicConfig.getLogger();
+            serviceState = replicConfig.getServiceState();
 
 
         } catch (Exception ex) {
@@ -286,9 +261,9 @@ public class ReplicationServiceStateManager
         }
     }
     
-    public String getNodeName()
+    public String getNodePath()
     {
-        return serviceState.getNodeName();
+        return serviceState.getNodePath();
     }
     
     public ReplicationServiceState retrieveBasicServiceState()
@@ -303,24 +278,12 @@ public class ReplicationServiceStateManager
         TFrame tFrame = null;
         DPRFileDB db = null;
         try {
-            String propertyList[] = {
-                "resources/FixityTest.properties"};
-            tFrame = new TFrame(propertyList, "TestFixity");
-            Properties prop = tFrame.getProperties();
-            // Create an instance of this object
-            LoggerInf logger = new TFileLogger(NAME, 50, 50);
-            String pathkey = NAME+ ".infoPath";
-            String path  = prop.getProperty(NAME+ ".infoPath");
-            if (StringUtil.isEmpty(path)) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "missing parm:" + pathkey);
-            }
-            File replicationInfoF = new File(path);
-            if (!replicationInfoF.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "file does not exist:" + pathkey);
-            }
-            db = new DPRFileDB(logger, prop);
+            ReplicationConfig replicConfig = ReplicationConfig.useYaml();
+            //db = replicConfig.startDB();
             ReplicationServiceStateManager manager = getReplicationServiceStateManager
-                    (logger, replicationInfoF);
+                    (replicConfig);
+            LoggerInf logger = replicConfig.getLogger();
+            db = replicConfig.startDB();
             Connection connect = db.getConnection(true);
             ReplicationServiceState state = manager.getReplicationServiceState(connect, ServiceStatus.running);
             
