@@ -33,31 +33,24 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.core.ServiceStatus;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.util.LinkedHashMap;
-import org.cdlib.mrt.formatter.FormatterAbs;
-import org.cdlib.mrt.formatter.FormatterInf;
+import org.cdlib.mrt.core.DateState;
 
 
 import org.cdlib.mrt.inv.utility.DPRFileDB;
-import static org.cdlib.mrt.replic.basic.service.ReplicationServiceStateManager.formatIt;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.tools.SSMConfigResolver;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TFileLogger;
 import org.cdlib.mrt.tools.YamlParser;
-import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.LoggerAbs;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -70,16 +63,15 @@ public class ReplicationConfig
     private static final String NAME = "ReplicationConfig";
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
-
-    protected Properties zooProperties = null;
+    
     protected JSONObject stateJSON = null;
     protected JSONObject serviceJSON = null;
+    protected JSONObject cleanupJSON = null;
     protected JSONObject jdb = null;
 //    protected DPRFileDB db = null;
     //protected FileManager fileManager = null;
     protected LoggerInf logger = null;
     protected boolean shutdown = true;
-    protected String storageBase = null;
     protected NodeIO nodeIO = null;
     protected Properties cleanupEmailProp = null;
     private static class Test{ };
@@ -113,14 +105,12 @@ public class ReplicationConfig
             
             stateJSON = replicInfoJSON.getJSONObject("state");
             serviceJSON = replicInfoJSON.getJSONObject("service");
+            cleanupJSON = replicInfoJSON.getJSONObject("cleanup");
             jdb = replicInfoJSON.getJSONObject("db");
             
             JSONObject jInvLogger = replicInfoJSON.getJSONObject("fileLogger");
             logger = setLogger(jInvLogger);
             setNodeIO();
-            
-            JSONObject cleanup = replicInfoJSON.getJSONObject("cleanup");
-            setCleanup(cleanup);
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -310,39 +300,49 @@ public class ReplicationConfig
     }
     
     
-    protected void setCleanup(JSONObject cleanupJson)
+    public Properties getCleanupEmailProp()
        throws TException
     {
-        cleanupEmailProp = new Properties();
+        Properties cleanupEmailProp = new Properties();
         try {
-            setCleanupProp("subject", "subject", cleanupJson, cleanupEmailProp);
-            setCleanupProp("from", "from", cleanupJson, cleanupEmailProp);
-            setCleanupProp("to", "to", cleanupJson, cleanupEmailProp);
-            String msg = cleanupJson.getString("msg");
+            if (!setCleanupProp("subject", "emailSubject", cleanupEmailProp)) {
+                return null;
+            }
+            if (!setCleanupProp("from", "emailFrom", cleanupEmailProp)) {
+                return null;
+            }
+            if (!setCleanupProp("to", "emailTo", cleanupEmailProp)) {
+                return null;
+            }
+            String msg = cleanupJSON.getString("msg");
             String msgArr[] = msg.split("\\n");
             for (int i=0; i<msgArr.length; i++) {
                 int propVal = i+1;
-                cleanupEmailProp.setProperty("ReplicCleanup.msg." + propVal, msgArr[i]);
+                cleanupEmailProp.setProperty("ReplicCleanup.emailMsg." + propVal, msgArr[i]);
             }
-            
+            if (msgArr.length == 0) {
+                return null;
+            }
+            return cleanupEmailProp;
+  
         } catch (Exception ex) {
-            cleanupEmailProp = null;
-            return;
+            return null;
         }
     }
     
-    protected void setCleanupProp(String json, String key, JSONObject cleanup, Properties prop)
+    protected boolean setCleanupProp(String jsonKey, String propKey, Properties prop)
        throws TException
     {
         
-        String base = "ReplicCleanup.";
+        String base = "ReplicCleanup";
         try {
-            String jValue = cleanup.getString(key);
-            if (jValue.equals("NONE")) return;
-            prop.setProperty(base + "." + key, jValue);
+            String jValue = cleanupJSON.getString(jsonKey);
+            if (jValue.equals("NONE")) return false;
+            prop.setProperty(base + "." + propKey, jValue);
+            return true;
             
         } catch (Exception ex) {
-            return;
+            return false;
         }
     }
     
@@ -375,10 +375,6 @@ public class ReplicationConfig
         return nodeIO;
     }
 
-    public Properties getCleanupEmailProp() {
-        return cleanupEmailProp;
-    }
-
     public void setNodeIO(NodeIO nodeIO) {
         this.nodeIO = nodeIO;
     }
@@ -390,7 +386,7 @@ public class ReplicationConfig
             LoggerInf logger = new TFileLogger("test", 50, 50);
             ReplicationConfig replicConfig = ReplicationConfig.useYaml();
             Properties setupProperties = replicConfig.getCleanupEmailProp();
-            System.out.println(PropertiesUtil.dumpProperties(NAME, setupProperties));
+            System.out.println(PropertiesUtil.dumpProperties("***Cleanup", setupProperties));
             //FileManager.printNodes("MAIN NODEIO");
             ServiceStatus serviceStatus = null;
             DPRFileDB db = replicConfig.startDB();

@@ -2,16 +2,14 @@ which-replic-info: "{!ENV: MERRITT_REPLIC_INFO !DEFAULT: replic-info}"
   
 replic-info:
   service:
-    storageBase: "{!SSM: store/config/baseURI}"
     threadPool: "{!SSM: replic/config/threadPool !DEFAULT: 5}"
     nodePath: "{!SSM: replic/config/nodePath  !DEFAULT: yaml:}"
     replicQualify: "{!SSM: replic/config/replicQualify !DEFAULT: NONE}"
-    baseURI: "{!SSM: replic/config/baseURI}"
     
   state:
     id: replic
     name: UC3
-    description: "UC3 inventory micro-service"
+    description: "UC3 replic micro-service"
     version: "replic version"
     serviceScheme: "Replic/1.0"
 
@@ -27,8 +25,7 @@ replic-info:
     subject: "{!SSM: replic/config/cleanup/subject !DEFAULT: NONE}"
     from: "{!SSM: replic/config/cleanup/from !DEFAULT: NONE}"
     to: "{!SSM: replic/config/cleanup/to !DEFAULT: NONE}"
-    msg: |+
-      {!SSM: replic/config/cleanup/msg !DEFAULT: NONE}
+    msg: "{!SSM: replic/config/cleanup/msg !DEFAULT: NONE}"
     
   db:
     user: "{!SSM: inv/readwrite/db-user}"
@@ -38,20 +35,23 @@ replic-info:
     encoding: "{!SSM: inv/db-encoding !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"
 
 replic-info-docker: &docker
-  storageBase: http://store:8080/store
+  service:
+    threadPool: "5"
+    nodePath: "yaml:"
+    replicQualify: "NONE"
+    
   state:
-    id: inv
+    id: replic
     name: UC3
-    description: "UC3 inventory micro-service"
-    baseURI: http://localhost:8082/inventory
-  
-  zooserver:
-    queueService: zoo:2181
-    queueName: /mrt.inventory.full
-
-  zooclient:
-    zooPollMilli: 60000
-    zooThreadCount: 5
+    description: "UC3 replic micro-service"
+    version: "replic version"
+    serviceScheme: "Replic/1.0"
+    
+  cleanup:
+    subject: "Merritt Replication Cleanup Stage"
+    from: "uc3staff@ucop.edu"
+    to: "NONE"
+    msg: "Merritt Replication Cleanup Stage"
 
   fileLogger:
     messageMaximumLevel: 5

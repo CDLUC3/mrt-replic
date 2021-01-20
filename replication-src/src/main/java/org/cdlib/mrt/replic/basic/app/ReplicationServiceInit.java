@@ -65,9 +65,9 @@ public class ReplicationServiceInit
     }
 
     /**
-     * Factory: StorageServiceInit
+     * Factory: ReplicationServiceInit
      * @param servletConfig servlet configuration object
-     * @return StorageServiceInit
+     * @return ReplicationServiceInit
      * @throws TException
      */
     public static synchronized ReplicationServiceInit getReplicationServiceInit(
@@ -85,7 +85,7 @@ public class ReplicationServiceInit
     }
 
     /**
-     * Factory: StorageServiceInit
+     * Factory: ReplicationServiceInit
      * @param servletConfig servlet configuration object
      * @return StorageServiceInit
      * @throws TException
