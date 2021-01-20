@@ -99,7 +99,9 @@
             <groupId>org.cdlib.mrt</groupId>
           <artifactId>mrt-confs3</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
+        
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
