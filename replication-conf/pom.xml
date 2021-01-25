@@ -25,7 +25,7 @@
         </plugins>
     <resources>
       <resource>
-        <directory>src/main/properties/${propertyDir}</directory>
+        <directory>src/main/yaml</directory>
         <targetPath>resources</targetPath>
       </resource>
     </resources>

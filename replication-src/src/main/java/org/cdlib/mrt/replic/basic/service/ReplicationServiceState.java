@@ -37,10 +37,13 @@ import java.util.Properties;
 import org.cdlib.mrt.core.FixityStatusType;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.ServiceStatus;
+import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.StateInf;
 import org.cdlib.mrt.replic.basic.service.ReplicationScheme;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Format container class for Fixity Service
@@ -70,15 +73,10 @@ public class ReplicationServiceState
     protected Long cnt = null;
     protected Integer addQueueCnt = null;
     protected String replicQualify = null;
-    protected String nodeName = null;
+    protected String nodePath = null;
 
     public ReplicationServiceState() { }
-
-    public ReplicationServiceState(Properties prop)
-    {
-        setValues(prop);
-    }
-
+    
     public ReplicationServiceState(ReplicationServiceState instate)
     {
         this.setName(instate.getName());
@@ -87,7 +85,15 @@ public class ReplicationServiceState
         this.setVersion(instate.getVersion());
         this.setServiceScheme(instate.getServiceScheme());
         this.setThreadPool(instate.getThreadPool());
-        this.setNodeName(instate.getNodeName());
+        this.setNodePath(instate.getNodePath());
+    }
+
+    public ReplicationServiceState(ReplicationConfig replicationConfig)
+        throws TException
+    {
+        JSONObject serviceJSON = replicationConfig.getServiceJSON();
+        JSONObject stateJSON = replicationConfig.getStateJSON();
+        setValues(serviceJSON, stateJSON);
     }
 
     /**
@@ -199,16 +205,21 @@ public class ReplicationServiceState
      * Set all entry values based on Properties
      * @param prop 
      */
-    public void setValues(Properties prop)
+    public void setValues(JSONObject serviceJSON, JSONObject stateJSON)
+         throws TException
     {
-        System.out.println(PropertiesUtil.dumpProperties("setValues", prop));
-        setIdentifier(prop.getProperty("identifier"));
-        setName(prop.getProperty("name"));
-        setDescription(prop.getProperty("description"));
-        setThreadPool(prop.getProperty("threadPool"));
-        setServiceScheme(prop.getProperty("serviceScheme"));
-        setReplicQualify(prop.getProperty("replicQualify"));
-        setNodeName(prop.getProperty("nodeName"));
+        try {
+            this.setName(stateJSON.getString("name"));
+            this.setIdentifier(stateJSON.getString("id"));
+            this.setDescription(stateJSON.getString("description"));
+            this.setVersion(stateJSON.getString("version"));
+            this.setServiceScheme(stateJSON.getString("serviceScheme"));
+            this.setThreadPool(serviceJSON.getString("threadPool"));
+            this.setNodePath(serviceJSON.getString("nodePath"));
+            
+        } catch (Exception ex) {
+            throw new TException(ex);
+        }
     }
 
 
@@ -288,13 +299,13 @@ public class ReplicationServiceState
     public void setReplicQualify(String replicQualify) {
         this.replicQualify = replicQualify;
     }
-    
-    public String getNodeName() {
-        return nodeName;
+
+    public String getNodePath() {
+        return nodePath;
     }
 
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
+    public void setNodePath(String nodePath) {
+        this.nodePath = nodePath;
     }
     
 }

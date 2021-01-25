@@ -415,6 +415,7 @@ public class ReplicCleanup
     {
         if ((setupProperties == null) || (setupProperties.size() == 0)) return;
         log(PropertiesUtil.dumpProperties("buildEmail", setupProperties));
+        System.err.println(PropertiesUtil.dumpProperties("***buildEmail***", setupProperties));
         DateState dstate = new DateState();
         String ctime= dstate.getIsoDate();
         emailSubject = getMail(NAME + ".emailSubject", 

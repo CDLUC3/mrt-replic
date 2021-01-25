@@ -1,0 +1,80 @@
+which-replic-info: "{!ENV: MERRITT_REPLIC_INFO !DEFAULT: replic-info}"
+  
+replic-info:
+  service:
+    threadPool: "{!SSM: replic/config/threadPool !DEFAULT: 5}"
+    nodePath: "{!SSM: replic/config/nodePath  !DEFAULT: yaml:}"
+    replicQualify: "{!SSM: replic/config/replicQualify !DEFAULT: NONE}"
+    
+  state:
+    id: replic
+    name: UC3
+    description: "UC3 replic micro-service"
+    version: "replic version"
+    serviceScheme: "Replic/1.0"
+
+  fileLogger:
+    messageMaximumLevel: "{!SSM: replic/config/log/messageMaximumLevel !DEFAULT: 5}"
+    messageMaximumError: "{!SSM: replic/config/log/messageMaximumError !DEFAULT: 10}"
+    path: "{!SSM: replic/config/log/path}"
+    name: replic
+    qualifier: yyMMdd
+    trace: 5
+    
+  cleanup:
+    subject: "{!SSM: replic/config/cleanup/subject !DEFAULT: NONE}"
+    from: "{!SSM: replic/config/cleanup/from !DEFAULT: NONE}"
+    to: "{!SSM: replic/config/cleanup/to !DEFAULT: NONE}"
+    msg: "{!SSM: replic/config/cleanup/msg !DEFAULT: NONE}"
+    
+  db:
+    user: "{!SSM: inv/readwrite/db-user}"
+    password: "{!SSM: inv/readwrite/db-password}"
+    host: "{!SSM: inv/db-host}"
+    name: "{!SSM: inv/db-name}"
+    encoding: "{!SSM: inv/db-encoding !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"
+
+replic-info-docker: &docker
+  service:
+    threadPool: "5"
+    nodePath: "yaml:"
+    replicQualify: "NONE"
+    
+  state:
+    id: replic
+    name: UC3
+    description: "UC3 replic micro-service"
+    version: "replic version"
+    serviceScheme: "Replic/1.0"
+    
+  cleanup:
+    subject: "Merritt Replication Cleanup Stage"
+    from: "uc3staff@ucop.edu"
+    to: "NONE"
+    msg: "Merritt Replication Cleanup Stage"
+
+  fileLogger:
+    messageMaximumLevel: 5
+    messageMaximumError: 10
+    path: /tdr/tmpdir
+    name: inv
+    qualifier: yyMMdd
+    trace: 5
+
+  db:
+    adapter: mysql2
+    host: db-container
+    name: db-name
+    user: user
+    password: password
+    encoding: utf8   # schema won't load if it's utf8mb4
+
+inv-info-docker-dev: 
+  <<: *docker
+
+  db:
+    user: "{!SSM: inv/readwrite/db-user}"
+    password: "{!SSM: inv/readwrite/db-password}"
+    host: "{!SSM: inv/db-host}"
+    name: "{!SSM: inv/db-name}"
+    encoding: "{!SSM: inv/db-encoding !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"

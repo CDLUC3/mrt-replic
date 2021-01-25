@@ -75,10 +75,10 @@ public class ReplicationService
         return new ReplicationService(replicationServiceHandler);
     }
 
-    public static ReplicationService getReplicationService(Properties prop)
+    public static ReplicationService getReplicationService(ReplicationConfig replicConfig)
             throws TException
     {
-        return new ReplicationService(prop);
+        return new ReplicationService(replicConfig);
     }
 
     protected ReplicationService(ReplicationServiceHandler replicationServiceHandler)
@@ -88,10 +88,10 @@ public class ReplicationService
         this.logger = replicationServiceHandler.getLogger();
     }
 
-    protected ReplicationService(Properties prop)
+    protected ReplicationService(ReplicationConfig replicConfig)
         throws TException
     {
-        this.replicationServiceHandler = new ReplicationServiceHandler(prop);
+        this.replicationServiceHandler = new ReplicationServiceHandler(replicConfig);
         this.logger = replicationServiceHandler.getLogger();
     }
     

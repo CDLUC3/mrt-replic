@@ -27,6 +27,7 @@ import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.replic.basic.action.Deletor;
 import org.cdlib.mrt.replic.basic.service.NodeState;
 import org.cdlib.mrt.replic.basic.service.ReplicationAddState;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.ReplicationService;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceHandler;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceState;
@@ -54,26 +55,15 @@ public class ServiceAddTest
         throws TException
     {
 
-        TFrame tFrame = null;
-        DPRFileDB db = null;
-        Identifier objectID = new Identifier("ark:/99999/fk43b6hxs");
-        int nodeNum = 8001;
+
+        Identifier objectID = new Identifier("ark:/b5072/fk2668bm6c");
         ReplicationServiceHandler serviceHandler = null;
         try {
-            String propertyList[] = {
-                "resources/ReplicLogger.properties",
-                "resources/ReplicTest.properties",
-                "resources/Replic.properties"};
-            tFrame = new TFrame(propertyList, "ReplicLoad");
-
-            // Create an instance of this object
-            LoggerInf logger = new TFileLogger(NAME, 50, 50);
-            Properties props = tFrame.getAllProperties();
-            System.out.println(PropertiesUtil.dumpProperties("RUN", props));
-            serviceHandler = ReplicationServiceHandler.getReplicationServiceHandler(props);
+            ReplicationConfig replicConfig = ReplicationConfig.useYaml();
+            LoggerInf logger = replicConfig.getLogger();
+            serviceHandler = ReplicationServiceHandler.getReplicationServiceHandler(replicConfig);
             ReplicationService service = ReplicationService.getReplicationService(serviceHandler);
             ReplicationAddState addState = service.add(objectID);
-            List<NodeState> nodeNumbers = addState.getNodes();
             
             FormatterInf xml = FormatterAbs.getXMLFormatter(logger);
             String format = ReplicationServiceStateManager.formatIt(xml, addState);

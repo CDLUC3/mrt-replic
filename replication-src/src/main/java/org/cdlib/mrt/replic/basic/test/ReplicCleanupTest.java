@@ -18,6 +18,7 @@ import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TFrame;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.ReplicationPropertiesState;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.StateInf;
@@ -41,19 +42,16 @@ public class ReplicCleanupTest
     public static void main(String args[])
     {
 
-        TFrame tFrame = null;
+        
         DPRFileDB db = null;
-        try {
-            String propertyList[] = {
-                "resources/ReplicLogger.properties",
-                "resources/ReplicCleanupTest.properties"};
-            tFrame = new TFrame(propertyList, "InvLoad");
-            Properties invProp  = tFrame.getProperties();
-            //LoggerInf logger = new TFileLogger("testFormatter", 10, 10);
-            LoggerInf logger = new TFileLogger("testFormatter", 1, 1);
-            db = new DPRFileDB(logger, invProp);
-            System.out.println(PropertiesUtil.dumpProperties("Cleanup props", invProp));
-            NodeIO nodeIO = new NodeIO("nodes-dev-glacier", logger);
+        try {            // Create an instance of this object
+            ReplicationConfig replicConfig = ReplicationConfig.useYaml();
+            LoggerInf logger = replicConfig.getLogger();
+            db = replicConfig.startDB();
+            NodeIO nodeIO = replicConfig.getNodeIO();
+            Properties cleanupProp = replicConfig.getCleanupEmailProp();
+            System.out.println(PropertiesUtil.dumpProperties("Cleanup Prop", cleanupProp));
+            if (true) return;
             ReplicCleanup rc = ReplicCleanup.getReplicCleanup((Properties)null, nodeIO, db, logger);
             ReplicationPropertiesState rps = rc.call();
             if (rps != null) {
