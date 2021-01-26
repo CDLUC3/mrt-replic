@@ -9,7 +9,7 @@ replic-info:
   state:
     id: replic
     name: UC3
-    description: "UC3 replic micro-service"
+    description: "UC3 replication micro-service"
     version: "replic version"
     serviceScheme: "Replic/1.0"
 
