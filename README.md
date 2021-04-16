@@ -7,6 +7,8 @@ This microservice is part of the [Merritt Preservation System](https://github.co
 This microservice performs ensures that every new file added to a primary cloud storage node within 
 the Merritt Preservation System is replicated to secondary cloud storage nodes.
 
+The work that this service performs is determined by querying the Merritt Inventory Database.
+
 ## Component Diagram
 ![Flowchart](https://github.com/CDLUC3/mrt-doc/raw/master/diagrams/replic.mmd.svg)
 
