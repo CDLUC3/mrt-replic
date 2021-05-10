@@ -10,7 +10,7 @@ the Merritt Preservation System is replicated to secondary cloud storage nodes.
 The work that this service performs is determined by querying the Merritt Inventory Database.
 
 ## Component Diagram
-![Flowchart](https://github.com/CDLUC3/mrt-doc/raw/master/diagrams/replic.mmd.svg)
+![Flowchart](https://github.com/CDLUC3/mrt-doc/raw/main/diagrams/replic.mmd.svg)
 
 ## Dependencies
 
