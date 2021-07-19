@@ -140,7 +140,7 @@ public class ReplicationService
         throws TException
     {
         if (DEBUG) System.out.print("delete entered");
-        return replicationServiceHandler.deleteObjectNode(true, deleteInvWhenStoreMissing, nodeNum, objectID);
+        return replicationServiceHandler.delete(nodeNum, objectID);
     }
     
     @Override

@@ -72,7 +72,7 @@ public class ReplicationConfig
     //protected FileManager fileManager = null;
     protected LoggerInf logger = null;
     protected boolean shutdown = true;
-    protected NodeIO nodeIO = null;
+    protected static NodeIO nodeIO = null;
     protected Properties cleanupEmailProp = null;
     private static class Test{ };
     
@@ -275,6 +275,7 @@ public class ReplicationConfig
     {
         String qualifier = fileLogger.getString("qualifier");
         String path = fileLogger.getString("path");
+        String name = fileLogger.getString("name");
         Properties logprop = new Properties();
         logprop.setProperty("fileLogger.message.maximumLevel", "" + fileLogger.getInt("messageMaximumLevel"));
         logprop.setProperty("fileLogger.error.maximumLevel", "" + fileLogger.getInt("messageMaximumError"));
@@ -295,7 +296,7 @@ public class ReplicationConfig
             + "\npath:" + path
             + "\nlogpath:" + logPath
         );
-        LoggerInf logger = LoggerAbs.getTFileLogger(qualifier, log.getCanonicalPath() + '/', logprop);
+        LoggerInf logger = LoggerAbs.getTFileLogger(name, log.getCanonicalPath() + '/', logprop);
         return logger;
     }
     
@@ -371,7 +372,7 @@ public class ReplicationConfig
         this.jdb = jdb;
     }
 
-    public NodeIO getNodeIO() {
+    public static NodeIO getNodeIO() {
         return nodeIO;
     }
 

@@ -179,9 +179,21 @@ public class JerseyReplication
         }
     }
     
-    /* Removed because providing node is too dangerous and not db based
-    Use deletesecondary instead
-    Not supported on lower routines
+    /**
+     * This delete on node may only be used for deleting non-primary content
+     * when no inv_collections_inv_nodes entry is found.
+     * 
+     * These resrictions are used to avoid causing inconsistencies in db
+     * Use deletesecondary for removing all secondary content
+     * Use storage and inventory services for removing primary content
+     * @param nodeS node of replicated content to be deleted
+     * @param objectIDS id of replicated content to be deleted
+     * @param formatType
+     * @param cs
+     * @param sc
+     * @return
+     * @throws TException 
+     */
     @DELETE
     @Path("delete/{nodeS}/{objectIDS}")
     public Response callDelete(
@@ -194,7 +206,6 @@ public class JerseyReplication
     {
         return delete(nodeS, objectIDS, formatType, cs, sc);
     }
-    */
     
     @DELETE
     @Path("invdelete/{nodeS}/{objectIDS}")
@@ -494,6 +505,45 @@ public class JerseyReplication
             Identifier objectID = new Identifier(objectIDS);
             int nodeNumber = Integer.parseInt(nodeNumberS);
             StateInf responseState = replicationService.delete(false, nodeNumber, objectID);
+            logger.logMessage(">>Delete "
+                    + " - node=" + nodeNumberS
+                    + " - objectID=" + objectIDS
+                    , 2, true);
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
+    public Response deleteSave(
+            String nodeNumberS,
+            String objectIDS,
+            String formatType,
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log("getServiceState entered:"
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+
+            Identifier objectID = new Identifier(objectIDS);
+            int nodeNumber = Integer.parseInt(nodeNumberS);
+            StateInf responseState = replicationService.delete(false, nodeNumber, objectID);
+            logger.logMessage(">>Delete "
+                    + " - node=" + nodeNumberS
+                    + " - objectID=" + objectIDS
+                    , 2, true);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
         } catch (TException tex) {

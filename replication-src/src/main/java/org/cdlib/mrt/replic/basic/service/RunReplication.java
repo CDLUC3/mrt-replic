@@ -32,11 +32,15 @@ package org.cdlib.mrt.replic.basic.service;
 
 import java.io.File;
 import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.sql.Connection;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 
 import org.cdlib.mrt.replic.basic.action.ReplicationWrapper;
 import org.cdlib.mrt.inv.content.InvNodeObject;
@@ -44,12 +48,15 @@ import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.db.DBUtil;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.ThreadHandler;
+import org.cdlib.mrt.core.ProcessStatus;
 import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.inv.utility.InvUtil;
 import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
+import org.cdlib.mrt.replic.basic.action.Replicator;
 import org.cdlib.mrt.replic.basic.content.CopyNodes;
 import org.cdlib.mrt.replic.utility.ReplicDB;
+import org.cdlib.mrt.replic.utility.ReplicOwn;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TFileLogger;
 import org.cdlib.mrt.utility.TFrame;
@@ -95,7 +102,8 @@ public class RunReplication implements Runnable
     protected String runSQL = null;
 
 
-    protected int capacity = 250;
+    protected int queueCapacity = 250;
+    protected String replicQualify = null;
     protected LinkedList<InvNodeObject> queue = null;
     protected ReplicationRunInfo replicationInfo = null;
     protected NodeIO nodes = null;
@@ -122,28 +130,20 @@ public class RunReplication implements Runnable
         this.logger = logger;
         this.nodes = nodes;
         this.db = db;
-        String replicQualify = replicationInfo.getReplicQualify();
+        this.replicQualify = replicationInfo.getReplicQualify();
         if (StringUtil.isAllBlank(replicQualify)) {
-            replicQualify = "";
+            this.replicQualify = "";
         }
         queue = new LinkedList<InvNodeObject>();
-        runSQL = "select distinct inv_nodes_inv_objects.* "
-                    + "from " + InvNodeObject.NODES_OBJECTS + "," 
-                            + InvNodeObject.COLLECTION_NODES + "," 
-                            + InvNodeObject.COLLECTIONS_OBJECTS + " "
-                    + "where inv_collections_inv_objects.inv_collection_id = inv_collections_inv_nodes.inv_collection_id "
-                    + "and inv_nodes_inv_objects.inv_object_id = inv_collections_inv_objects.inv_object_id "
-                    + "and inv_nodes_inv_objects.role = 'primary' "
-                    + "and inv_nodes_inv_objects.replicated is null "
-                    + " " + replicQualify + " "
-                    + "limit " + capacity + ";";
   
         System.out.println(MESSAGE + "runSQL=" + runSQL);
         poolSize = replicationInfo.getThreadPool();
+        queueCapacity = replicationInfo.getQueueCapacity();
+        System.out.println("queueCapacity:"  + queueCapacity);
     }
 
 
-
+/*
     protected void addEntry(InvNodeObject nodeObj, Connection connection)
         throws TException
     {
@@ -159,7 +159,8 @@ public class RunReplication implements Runnable
             throw new TException(ex);
         }
     }
-
+*/
+    
     /**
      * Extract the oldest block of untested entries and add entries to a queue for
      * testing
@@ -171,15 +172,15 @@ public class RunReplication implements Runnable
     {
         Connection connection = null;
         try {
-            connection = db.getConnection(true);
+            connection = db.getConnection(false);
             
+            queue = ReplicOwn.getOwnListReplic(connection, replicQualify, queueCapacity, logger);
             /* Original
             String sql = "select * "
                     + "from " + InvNodeObject.NODES_OBJECTS + " "
                     + "where role='primary' "
                     + "and replicated is null "
                     + "limit " + capacity + ";";
-            */
             
             Properties [] props = DBUtil.cmd(connection, runSQL, logger);
             if ((props == null) || (props.length==0)) return 0;
@@ -191,6 +192,7 @@ public class RunReplication implements Runnable
             }
             System.out.println("***addSQLEntries completed successfully");
             
+            */
             log("END ADD");
             return queue.size();
 
@@ -261,7 +263,7 @@ public class RunReplication implements Runnable
             replicationInfo.setReplicationProcessing(true);
             ThreadHandler localThreads = ThreadHandler.getThreadHandler(250, poolSize, logger);
             Thread.sleep(5);
-            for (long outcnt=0; outcnt < maxout; outcnt += capacity) {
+            for (long outcnt=0; outcnt < maxout; outcnt += queueCapacity) {
                 log("PROCESS BLOCK:" + outcnt + " - activeThreads:" + localThreads.getActiveCnt());
                 processBlock(localThreads);
                 if (!replicationInfo.isRunReplication()) {
@@ -306,14 +308,16 @@ public class RunReplication implements Runnable
     {
         try {
             if (addSQLEntries() == 0) {
-                log("No ITEM content - sleep 1 minute");
+                log("No ITEM content - sleep 1 minute",2);
                 Thread.sleep(60000);
                 return;
             }
             
             log("Thread pool count:" + localThreads.getThreadCnt());
             if (!replicationInfo.isRunReplication()) return;
-            for(int i = 0; i < capacity; i++){
+            long startMs = System.currentTimeMillis();
+            int queueSize = queue.size();
+            for(int i = 0; i < queueCapacity; i++){
                 if (!replicationInfo.isRunReplication()) break;
                 InvNodeObject nodeObject = getEntry();
                 if (nodeObject == null) break;
@@ -324,7 +328,13 @@ public class RunReplication implements Runnable
                 localThreads.runThread(wrapper);
             }
             endSQLEntries();
-            log("************Termination processBlock");
+            long completeMs = System.currentTimeMillis() - startMs;
+            
+            logger.logMessage(">>>Queue processBlock"
+                    + " - queueCapacity=" + queueCapacity
+                    + " - queueSize=" + queueSize
+                    + " - procTime:" + completeMs
+                    , 1, true);
 
         } catch (TException fe) {
             fe.printStackTrace();

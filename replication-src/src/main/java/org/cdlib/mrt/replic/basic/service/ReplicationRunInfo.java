@@ -68,7 +68,7 @@ public class ReplicationRunInfo
     protected volatile boolean replicationSQL = false;
     protected volatile boolean runReplication = false;
     protected volatile boolean replicationProcessing = false;
-    protected volatile int capacity = 100;
+    protected volatile int queueCapacity = 100;
     protected volatile int threadPool = 4;
     protected volatile String replicQualify = null;
     protected AtomicLong cnt = new AtomicLong();
@@ -90,6 +90,7 @@ public class ReplicationRunInfo
     {
         try {
             threadPool = state.getThreadPool();
+            queueCapacity = state.getQueueCapacity();
             replicQualify = state.getReplicQualify();
     
         } catch (Exception ex) {
@@ -152,6 +153,10 @@ public class ReplicationRunInfo
         return replicQualify;
     }
 
+    public int getQueueCapacity() {
+        return queueCapacity;
+    }
+
     public String dump(String header)
         throws TException
     {
@@ -159,7 +164,7 @@ public class ReplicationRunInfo
         buf.append("ReplicationState:" + header + NL);
         String msg = ""
                 + " - replicationProcessing=" + replicationProcessing + NL
-                + " - capacity=" + capacity + NL
+                + " - queueCapacity=" + queueCapacity + NL
                 + " - threadPool=" + threadPool + NL
                 + " - cnt=" + cnt + NL
                 ;

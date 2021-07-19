@@ -4,6 +4,7 @@ replic-info:
   service:
     threadPool: "{!SSM: replic/config/threadPool !DEFAULT: 5}"
     nodePath: "{!SSM: replic/config/nodePath  !DEFAULT: yaml:}"
+    queueCapacity: "{!SSM: replic/config/queueCapacity !DEFAULT: 15}"
     replicQualify: "{!SSM: replic/config/replicQualify !DEFAULT: NONE}"
     
   state:
@@ -16,7 +17,7 @@ replic-info:
   fileLogger:
     messageMaximumLevel: "{!SSM: replic/config/log/messageMaximumLevel !DEFAULT: 5}"
     messageMaximumError: "{!SSM: replic/config/log/messageMaximumError !DEFAULT: 10}"
-    path: "{!SSM: replic/config/log/path}"
+    path: "{!ENV: LOG_REPLIC !DEFAULT: /dpr2/mrtHomes/replicHome}"
     name: replic
     qualifier: yyMMdd
     trace: 5
@@ -37,6 +38,7 @@ replic-info:
 replic-info-docker: &docker
   service:
     threadPool: "5"
+    queueCapacity: 15
     nodePath: "yaml:"
     replicQualify: "NONE"
     

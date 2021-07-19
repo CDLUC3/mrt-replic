@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.replic.basic.action;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.cdlib.mrt.core.Identifier;
@@ -63,6 +64,7 @@ public class DeleteSecondary
     protected DPRFileDB db = null;
     
     protected NodeIO nodes = null;
+    protected Long singleNode = null;
     
     public static DeleteSecondary getDeleteSecondary(
             Identifier objectID,
@@ -112,6 +114,11 @@ public class DeleteSecondary
             int deleteInvCnt = 0;
             int deleteSecondaryCnt = 0;
             for (ReplicNodesObjects secondary : secondaryList) {
+                System.out.println("for ReplicNodesObjects:"
+                        + " - singleNode:" + singleNode
+                        + " - secondary.nodeNumber:" + secondary.nodeNumber
+                );
+                if ((singleNode != null) && (singleNode != secondary.nodeNumber)) continue;
                 log( 10,"Start delete::" 
                         + " - ark:" + objectID.getValue()
                         + " - node:" + secondary.getNodeNumber()
@@ -174,6 +181,14 @@ public class DeleteSecondary
                 if (connection != null) connection.close();
             } catch (Exception ex) { }
         }
+    }
+    
+    public Long getSingleNode() {
+        return singleNode;
+    }
+
+    public void setSingleNode(Long singleNode) {
+        this.singleNode = singleNode;
     }
 
     public NodesObjectsState getNodesObjectsState() {

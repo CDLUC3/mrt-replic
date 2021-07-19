@@ -30,25 +30,15 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.replic.basic.action;
 
 import java.sql.Connection;
-import org.cdlib.mrt.inv.action.*;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.http.HttpResponse;
-
-import org.cdlib.mrt.inv.content.InvFile;
-import org.cdlib.mrt.inv.content.InvAudit;
 import org.cdlib.mrt.inv.content.InvNode;
-import org.cdlib.mrt.inv.content.InvNodeObject;
 import org.cdlib.mrt.inv.content.InvObject;
-import org.cdlib.mrt.inv.content.InvVersion;
-import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.service.Role;
-import org.cdlib.mrt.inv.service.Version;
 import org.cdlib.mrt.inv.service.VersionsState;
-import org.cdlib.mrt.inv.service.VFile;
 import org.cdlib.mrt.replic.basic.content.ReplicNodesObjects;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.NodeIO;
@@ -190,6 +180,7 @@ public class DeleteStore
             buildStoreURL();
             log( 10,"deleteContent url=" + storeURL);
             //HttpResponse HTTPUtil.postHttpResponse(String requestURL, Properties prop, int timeout)
+            System.out.println("&&&DeleteURL:" + storeURL);
             Properties httpProp = new Properties();
             httpProp.setProperty("t", "xml");
             HttpResponse response = HTTPUtil.deleteHttpResponse(storeURL, 3600000);
@@ -227,7 +218,7 @@ public class DeleteStore
     {
         try {
             int deleteCntStore = 0;
-            Versions runVersions = Versions.getVersions(deleteInvObject.getArk(), null, connection, logger);
+            ReplicVersions runVersions = ReplicVersions.getVersions(deleteInvObject.getArk(), null, connection, logger);
             VersionsState versionState = runVersions.process();
             Set<String> keys = versionState.retrieveKeys();
             if (keys.size() > 0) {
