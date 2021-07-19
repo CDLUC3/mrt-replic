@@ -58,11 +58,11 @@
     </dependency>
       
       <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.16</version>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>2.6.2</version>
       </dependency>
-
+      
       <dependency>
           <groupId>org.cdlib.mrt</groupId>
           <artifactId>mrt-core</artifactId>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.13</version>
+            <version>5.1.41</version>
         </dependency>
 
     <dependency>
@@ -125,7 +125,7 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <!--version>1.11.438 failed segments minio</version-->
-            <version>1.11.527</version>
+            <version>1.11.545</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

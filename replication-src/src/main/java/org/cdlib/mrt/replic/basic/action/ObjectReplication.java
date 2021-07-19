@@ -123,18 +123,18 @@ public class ObjectReplication
         throws TException
     {
         if ((nodeObjectList == null) || (nodeObjectList.size() == 0)) {
-            System.out.println(MESSAGE + "nothing to process");
+            log(MESSAGE + "nothing to process",1);
             return;
         }
         try {
             for (ReplicationInfo.NodeObjectInfo nodeObject : nodeObjectList) {
-                logger.logMessage(
+                log(
                         "***Replication starts::" + info.getObjectID().getValue()
                         + " from node:" + nodeObject.getPrimaryInvNode().getNumber()
                         + " to node:" + nodeObject.getSecondaryInvNode().getNumber()
-                        , 1, true); 
+                        , 1); 
                 CloudManifestCopyTime.Stat stat = processNodeObject(nodeObject);
-                logger.logMessage(
+                log(
                         "***Replication complete::" + info.getObjectID().getValue()
                         + " from node:" + nodeObject.getPrimaryInvNode().getNumber()
                         + " to node:" + nodeObject.getSecondaryInvNode().getNumber()
@@ -142,7 +142,7 @@ public class ObjectReplication
                         + " size:" + stat.objSize
                         + " getTime:" + stat.getTime
                         + " putTime:" + stat.putTime
-                        , 1, true); 
+                        , 1); 
             }
                    
         } catch (TException tex) {
@@ -166,7 +166,7 @@ public class ObjectReplication
         throws TException
     {
         if ((nodeObjectList == null) || (nodeObjectList.size() == 0)) {
-            System.out.println(MESSAGE + "nothing to process");
+            log(MESSAGE + "nothing to process",1);
             return;
         }
         try {
@@ -221,7 +221,7 @@ public class ObjectReplication
             addNodeObjectSecondary(nodeObject, versionCount, connect);
             
             ReplicDB.resetReplicatedCurrent(connect, primary, logger);
-            System.out.println(PropertiesUtil.dumpProperties("***Replicator***", primary.retrieveProp()));
+            log(PropertiesUtil.dumpProperties("***Replicator***", primary.retrieveProp()));
             connect.commit();
             
         } catch (Exception ex) {
@@ -287,7 +287,7 @@ public class ObjectReplication
                     outNode.service,
                     outNode.container,
                     logger);
-            System.out.println("***CloudCloudCopy:"
+            log("***CloudCloudCopy:"
                 + " - in container=" + inNode.container
                 + " - in node=" + nodeFrom
                 + " - out container=" + outNode.container
@@ -327,19 +327,19 @@ public class ObjectReplication
             MatchObjectState state = match.process();
             String combine = state.getCombine();
             if (state.getMatchManifestInv() && state.getMatchManifestStore()) {
-                logger.logMessage(
+                log(
                         "***Match OK:" + info.getObjectID().getValue()
                         + " from node:" + nodeFrom 
                         + " to node:" + nodeTo
                         + ":" + combine
-                        , 1, true); 
+                        , 1); 
             } else {
-                logger.logMessage(
+                log(
                         "***Match FAIL:" + info.getObjectID().getValue()
                         + " from node:" + nodeFrom 
                         + " to node:" + nodeTo
                         + ":" + combine
-                        , 1, true); 
+                        , 1); 
             }
             
         } catch (TException tex) {
@@ -362,7 +362,7 @@ public class ObjectReplication
     {
         try {
             String storeURLS = nodeObject.getStoreURL();
-            System.out.println("copyContentStore: ObjectReplication url=" + storeURLS);
+            log("copyContentStore: ObjectReplication url=" + storeURLS);
             //HttpResponse HTTPUtil.postHttpResponse(String requestURL, Properties prop, int timeout)
             Properties httpProp = new Properties();
             httpProp.setProperty("t", "xml");
@@ -381,7 +381,7 @@ public class ObjectReplication
                         );
             }
             nodeObject.copyResponse = respProp.getProperty("response.value");
-            System.out.println(PropertiesUtil.dumpProperties("copyContent",respProp));
+            log(PropertiesUtil.dumpProperties("copyContent",respProp));
             return true;
                     
         } catch (TException tex) {
@@ -422,7 +422,7 @@ public class ObjectReplication
                 long primaryFileseq = primaryAudit.getFileid();
                 InvAudit targetAudit = InvDBUtil.getAudit(targetNodeseq, objectseq, primaryFileseq, connect, logger);
                 if (targetAudit != null) {
-                    System.out.println(PropertiesUtil.dumpProperties("setAudits exists", auditProp));
+                    log(PropertiesUtil.dumpProperties("setAudits exists", auditProp));
                     continue;
                 }
                 targetAudit = new InvAudit(auditProp, logger);
@@ -447,7 +447,7 @@ public class ObjectReplication
                 long fixityid = dbAdd.insert(targetAudit);
                 targetAudit.setId(fixityid);
                 
-                System.out.println(PropertiesUtil.dumpProperties("setAudits new", auditProp));
+                log(PropertiesUtil.dumpProperties("setAudits new", auditProp));
             }
             return InvDBUtil.getMaxVersion(objectseq, connect, logger);
             
@@ -482,15 +482,15 @@ public class ObjectReplication
                     invNodeObject.getNodesid(), invNodeObject.getObjectsid(), connect, logger);
             long id = 0;
             if (secondaryNodeObject == null) {
-                System.out.println(PropertiesUtil.dumpProperties("New secondary", invNodeObject.retrieveProp()));
+                log(PropertiesUtil.dumpProperties("New secondary", invNodeObject.retrieveProp()));
                 id = dbAdd.insert(invNodeObject);
                 invNodeObject.id = id;
             } else {
                 invNodeObject.setId(secondaryNodeObject.getId());
-                System.out.println(PropertiesUtil.dumpProperties("Old secondary", invNodeObject.retrieveProp()));
+                log(PropertiesUtil.dumpProperties("Old secondary", invNodeObject.retrieveProp()));
                 id = dbAdd.update(invNodeObject);   
             }
-            System.out.println(PropertiesUtil.dumpProperties("addNode", invNodeObject.retrieveProp()));
+            log(PropertiesUtil.dumpProperties("addNode", invNodeObject.retrieveProp()));
             
                     
         } catch (TException tex) {
@@ -514,5 +514,13 @@ public class ObjectReplication
         this.doMatch = doMatch;
     }
     
+    protected void log(String msg)
+    {
+        logger.logMessage(msg, 5, true);
+    }
     
+    protected void log(String msg, int lvl)
+    {
+        logger.logMessage(msg, lvl, true);
+    }
 }

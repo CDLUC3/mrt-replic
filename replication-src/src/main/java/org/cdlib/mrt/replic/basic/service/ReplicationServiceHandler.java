@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -429,6 +430,62 @@ public class ReplicationServiceHandler
             deleteState.addSecondaryNodes(replicNodesObject);
             deleteState.bumpDeleteCnt();
             return deleteState;
+            
+        } catch (TException tex) {
+            throw tex;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+            
+        } finally {
+            try {
+                connect.close();
+            } catch (Exception cex) { }
+        }
+    }
+    
+    public ReplicationDeleteState delete(
+            int nodeNum,
+            Identifier objectID)
+        throws TException
+    {
+        
+        Connection connect = null;
+        try {
+            if (!isSQL()) {
+                throw new TException.SQL_EXCEPTION("delete attempted - MySQL not running");
+            }
+            connect = getConnection(true);
+            InvNodeObject invNodeObject = InvDBUtil.getNodeObject(nodeNum, objectID, connect, logger);
+            if (invNodeObject == null) {
+                ReplicationDeleteState nullDeleteState =  new ReplicationDeleteState(false, objectID, 0);
+                return nullDeleteState;
+            }
+            if (invNodeObject.getRole() == Role.primary) {
+                throw new TException.INVALID_OR_MISSING_PARM("Replication delete may not be used on primary data"
+                        + " - nodeNum=" + nodeNum
+                        + " - objectID=" + objectID.getValue()
+                );
+            }
+            /*
+            ArrayList<InvCollectionNode> list = InvDBUtil.getCollectionNodes(objectID, nodeNum, connect, logger);
+            if (list != null) {
+                InvCollectionNode entry = list.get(0);
+                throw new TException.INVALID_OR_MISSING_PARM(
+                        "Replication delete on node may not be performed "
+                        + "if existing collections-nodes entry for object"
+                        + " - nodeNum=" + nodeNum
+                        + " - objectID=" + objectID.getValue()
+                        + " " + entry.dump("found entry")
+                );
+            }
+            */
+            DeleteSecondary delete = DeleteSecondary.getDeleteSecondary(objectID, db, nodes, logger);
+            long nodeNumL = nodeNum;
+            delete.setSingleNode(nodeNumL);
+            ReplicationDeleteState state = delete.process();
+            return state;
             
         } catch (TException tex) {
             throw tex;

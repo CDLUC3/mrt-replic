@@ -63,6 +63,7 @@ public class ReplicationServiceState
     protected String version = null;
     protected ReplicationScheme serviceScheme = null;
     protected int threadPool = 1;
+    protected int queueCapacity = 100;
     protected ServiceStatus status = ServiceStatus.unknown;
     protected DateState lastModified = null;
     protected Long processCount = null;
@@ -86,6 +87,7 @@ public class ReplicationServiceState
         this.setServiceScheme(instate.getServiceScheme());
         this.setThreadPool(instate.getThreadPool());
         this.setNodePath(instate.getNodePath());
+        this.setQueueCapacity(instate.getQueueCapacity());
     }
 
     public ReplicationServiceState(ReplicationConfig replicationConfig)
@@ -215,6 +217,7 @@ public class ReplicationServiceState
             this.setVersion(stateJSON.getString("version"));
             this.setServiceScheme(stateJSON.getString("serviceScheme"));
             this.setThreadPool(serviceJSON.getString("threadPool"));
+            this.setQueueCapacity(serviceJSON.getInt("queueCapacity"));
             this.setNodePath(serviceJSON.getString("nodePath"));
             
         } catch (Exception ex) {
@@ -306,6 +309,14 @@ public class ReplicationServiceState
 
     public void setNodePath(String nodePath) {
         this.nodePath = nodePath;
+    }
+
+    public int getQueueCapacity() {
+        return queueCapacity;
+    }
+
+    public void setQueueCapacity(int queueCapacity) {
+        this.queueCapacity = queueCapacity;
     }
     
 }
