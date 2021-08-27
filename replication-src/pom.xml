@@ -105,7 +105,10 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.41</version>
+            <!--version>5.1.41</version-->
+            <!--version>5.1.38</version-->
+            <!--version>5.1.13</version WORKS-->
+            <version>5.1.49</version>
         </dependency>
 
     <dependency>

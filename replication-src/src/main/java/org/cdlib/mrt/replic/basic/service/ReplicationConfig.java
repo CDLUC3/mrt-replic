@@ -68,7 +68,8 @@ public class ReplicationConfig
     protected JSONObject serviceJSON = null;
     protected JSONObject cleanupJSON = null;
     protected JSONObject jdb = null;
-//    protected DPRFileDB db = null;
+    protected JSONObject scanJSON = null;
+    protected DPRFileDB db = null;
     //protected FileManager fileManager = null;
     protected LoggerInf logger = null;
     protected boolean shutdown = true;
@@ -107,6 +108,7 @@ public class ReplicationConfig
             serviceJSON = replicInfoJSON.getJSONObject("service");
             cleanupJSON = replicInfoJSON.getJSONObject("cleanup");
             jdb = replicInfoJSON.getJSONObject("db");
+            scanJSON = replicInfoJSON.getJSONObject("scan");
             
             JSONObject jInvLogger = replicInfoJSON.getJSONObject("fileLogger");
             logger = setLogger(jInvLogger);
@@ -212,6 +214,25 @@ public class ReplicationConfig
         }
     }
     
+    public DPRFileDB getDB()
+       throws TException
+    {
+        return db;
+    }
+    
+    public void shutdownDB()
+       throws TException
+    {
+        if (db == null) {
+            return;
+        } else {
+            try {
+                db.shutDown();
+            } catch (Exception ex) { }
+            db = null;
+        }
+    }
+    
     public DPRFileDB startDB(LoggerInf logger)
        throws TException
     {
@@ -253,7 +274,8 @@ public class ReplicationConfig
             }
             String name = jdb.getString("name");
             String url = "jdbc:mysql://" + server + ":3306/" + name + encoding;
-            DPRFileDB db = new DPRFileDB(logger, url, user, password);
+            System.out.println("url:" + url);
+            db = new DPRFileDB(logger, url, user, password);
             return db;
             
         } catch (TException tex) {
@@ -358,6 +380,10 @@ public class ReplicationConfig
 
     public JSONObject getServiceJSON() {
         return serviceJSON;
+    }
+
+    public JSONObject getScanJSON() {
+        return scanJSON;
     }
     
     public void setLogger(LoggerInf logger) {
