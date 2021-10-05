@@ -36,9 +36,7 @@ replic-info:
     encoding: "{!SSM: inv/db-encoding !DEFAULT: useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8}"
     
   scan:
-    nodes: "{!SSM: replic/scan/nodes !DEFAULT: 9502;5001;6001;2002}"
-    maxkeys: "{!SSM: replic/scan/maxkeys !DEFAULT: 5000}"
-    iterations: "{!SSM: replic/scan/iterations !DEFAULT: 5}"
+    maxkeys: "{!SSM: replic/scan/maxkeys !DEFAULT: 500}"
     threadSleep: "{!SSM: replic/scan/threadSleep !DEFAULT: 100}"
 
 replic-info-docker: &docker

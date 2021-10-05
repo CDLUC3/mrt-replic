@@ -1,3 +1,4 @@
+
 /******************************************************************************
 Copyright (c) 2005-2012, Regents of the University of California
 All rights reserved.
@@ -31,17 +32,23 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.replic.basic.service;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.core.Identifier;
-import org.cdlib.mrt.inv.content.InvStorageMaint;
+import org.cdlib.mrt.core.DateState;
+import org.cdlib.mrt.formatter.FormatterAbs;
+import org.cdlib.mrt.formatter.FormatterInf;
+import org.cdlib.mrt.inv.content.InvStorageScan;
 import org.cdlib.mrt.inv.service.VersionsState;
 import org.cdlib.mrt.inv.service.Version;
 import org.cdlib.mrt.inv.service.VFile;
@@ -55,9 +62,15 @@ import org.cdlib.mrt.replic.basic.action.FileInput;
 import org.cdlib.mrt.replic.basic.action.ReplaceWrapper;
 import org.cdlib.mrt.replic.basic.app.ReplicationServiceInit;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
+import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
+import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.NodeIO;
+import org.cdlib.mrt.s3.service.NodeService;
+import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
+import org.cdlib.mrt.utility.PropertiesUtil;
+import org.cdlib.mrt.utility.StateInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TFileLogger;
 import org.json.JSONObject;
@@ -71,29 +84,74 @@ public class ScanManager
 {
     private static final String NAME = "ScanManager";
     private static final String MESSAGE = NAME + ": ";
-    private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = false;
     private static final boolean THREADDEBUG = false;
-    protected ArrayList<Long> scanNodes = null;
+    protected File keyListFile = null;
+    //protected static int failMs = 2*60*60*1000;
+    protected static int failMs = 1*60*1000;
     
-    protected HashMap<Long,NodeScan> nodeScanMap = new HashMap<>();
     protected LoggerInf logger = null;
     protected Exception exception = null;
     protected DPRFileDB db = null;
     protected Integer maxkeys = null;
-    protected Integer iterations = null;
     protected Long threadSleep = null;
     protected ReplicationRunInfo replicationInfo = null;
+    protected InvStorageScan activeScan = null;
+    protected ScanWrapper scanWrapper = null;
+    
     
     public static void main(String args[])
     {
+        main_format(args);
+    }
+    
+    
+    public static void main_format(String args[])
+    {
+
+        int scanNum = 11;
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = ReplicationConfig.useYaml();
+            config.startDB();
+            db = config.getDB();
+            LoggerInf logger = new TFileLogger("DoScan", 9, 10);
+            Connection connection = db.getConnection(true);
+            InvStorageScan activeScan = ScanManager.getStorageScan(scanNum, connection, logger);
+            String response = ScanManager.formatIt("json", logger, activeScan);
+            JSONObject dobj = new JSONObject(response);
+            System.out.println(dobj.toString(2));
+            System.out.println("Test format:" + response);
+            
+        } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println(
+                    "Main: Encountered exception:" + e);
+                System.out.println(
+                        StringUtil.stackTrace(e));
+        } finally {
+            try {
+                db.shutDown();
+            } catch (Exception ex) {
+                //System.out.println("db Exception:" + ex);
+            }
+        }
+    }
+    
+    public static void main_list(String args[])
+    {
 
         long nodeNumber = 9502;
+        String keyList = "7001:scanlist/9502-210913.log";
         LoggerInf logger = new TFileLogger("DoScan", 9, 10);
         DPRFileDB db = null;
         try {
             ReplicationConfig config = ReplicationConfig.useYaml();
-            ScanManager scanManager = getScanManager(config, logger);
+            config.startDB();
+            ReplicationRunInfo info = new ReplicationRunInfo(config);
+            ScanManager scanManager = config.getScanManager(info);
+            info.setRunReplication(true);
+            scanManager.process(nodeNumber, keyList);
             
             
         } catch(Exception e) {
@@ -106,36 +164,122 @@ public class ScanManager
             try {
                 db.shutDown();
             } catch (Exception ex) {
-                System.out.println("db Exception:" + ex);
+                //System.out.println("db Exception:" + ex);
             }
         }
     }
-    public static ScanManager getScanManager(
+    
+    public static void main_list_restart(String args[])
+    {
+
+        int scanNum = 11;
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = ReplicationConfig.useYaml();
+            config.startDB();
+            ReplicationRunInfo info = new ReplicationRunInfo(config);
+            ScanManager scanManager = config.getScanManager(info);
+            info.setRunReplication(true);
+            scanManager.restart(scanNum);
+            
+            
+        } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println(
+                    "Main: Encountered exception:" + e);
+                System.out.println(
+                        StringUtil.stackTrace(e));
+        } finally {
+            try {
+                db.shutDown();
+            } catch (Exception ex) {
+                //System.out.println("db Exception:" + ex);
+            }
+        }
+    }
+    
+    public static void main_start(String args[])
+    {
+
+        long nodeNumber = 5001;
+        LoggerInf logger = new TFileLogger("DoScan", 9, 10);
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = ReplicationConfig.useYaml();
+            config.startDB();
+            ReplicationRunInfo info = new ReplicationRunInfo(config);
+            ScanManager scanManager = config.getScanManager(info);
+            info.setRunReplication(true);
+            scanManager.process(nodeNumber, null);
+            
+            
+        } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println(
+                    "Main: Encountered exception:" + e);
+                System.out.println(
+                        StringUtil.stackTrace(e));
+        } finally {
+            try {
+                db.shutDown();
+            } catch (Exception ex) {
+                //System.out.println("db Exception:" + ex);
+            }
+        }
+    }
+    
+    public static void main_restart(String args[])
+    {
+
+        int scanNum = 9;
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = ReplicationConfig.useYaml();
+            config.startDB();
+            ReplicationRunInfo info = new ReplicationRunInfo(config);
+            ScanManager scanManager = config.getScanManager(info);
+            info.setRunReplication(true);
+            scanManager.restart(scanNum);
+            
+            
+        } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println(
+                    "Main: Encountered exception:" + e);
+                System.out.println(
+                        StringUtil.stackTrace(e));
+        } finally {
+            try {
+                db.shutDown();
+            } catch (Exception ex) {
+                //System.out.println("db Exception:" + ex);
+            }
+        }
+    }
+    public static ScanManager getScanManager( //!!! for testing only - replicationInfo not set
             ReplicationConfig config,
             LoggerInf logger)
         throws TException
     {
         try { 
-            JSONObject scanJSON = config.getScanJSON();
-            DPRFileDB db = config.getDB();
-            if (db == null) {
-                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "Database unavailable at this time");
-            }
             ReplicationRunInfo replicationInfo = new ReplicationRunInfo(config);
-            
-            if (scanJSON == null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "scanJSON missing");
-            }
-            System.out.println("scanJSON=" + scanJSON.toString(2));
-            ArrayList<Long> scanNodes = getScanNodes(scanJSON);
-            Integer maxkeys = scanJSON.getInt("maxkeys");
-            Integer iterations = scanJSON.getInt("iterations");
-            Long threadSleep = scanJSON.getLong("threadSleep");
-            ScanManager scanManager = new ScanManager(scanNodes, db, replicationInfo, maxkeys, iterations, threadSleep, logger);
+            ScanManager scanManager = config.getScanManager(replicationInfo);
             return scanManager;
-                    
-        } catch (TException tex) {
-            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+    public static ScanManager getScanManager(
+            ReplicationRunInfo replicationInfo,
+            ReplicationConfig config,
+            LoggerInf logger)
+        throws TException
+    {
+        try { 
+            ScanManager scanManager = config.getScanManager(replicationInfo);
+            return scanManager;
             
         } catch (Exception ex) {
             throw new TException(ex) ;
@@ -143,51 +287,43 @@ public class ScanManager
         }
     }
 
-    protected ScanManager(
-            ArrayList<Long> scanNodes,
+    public ScanManager(
             DPRFileDB db,
             ReplicationRunInfo replicationInfo,
             Integer maxkeys, 
-            Integer iterations, 
             Long threadSleep,
             LoggerInf logger)
         throws TException
     {
-        this.scanNodes = scanNodes;
         this.db = db;
+        this.replicationInfo = replicationInfo;
         this.maxkeys = maxkeys;
-        this.iterations = iterations;
         this.threadSleep = threadSleep;
         this.logger = logger;
         this.db = db;
-        setup();
+        System.out.println("ScanManager:" 
+                + " - maxkeys=" + maxkeys
+                + " - threadSleep=" + threadSleep
+        );
     }
     
-    protected static ArrayList<Long> getScanNodes(JSONObject scanJSON)
+    public InvStorageScan process(Long nodeNum, String keyList)
         throws TException
     {
-        ArrayList<Long> scanNodes = new ArrayList<>();
-        try { 
-            if (scanJSON == null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "scanJSON missing");
+        try {
+            Connection connection = db.getConnection(true);
+            activeScan = getActiveScan(nodeNum, keyList, connection);
+            if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.started) {
+                System.out.println("return running scan");
+                return activeScan;
             }
-            
-            String nodes = scanJSON.getString("nodes");
-            String parts[] = nodes.split("\\s*\\;\\s*");
-            for (String part : parts) {
-                try {
-                    Long node = Long.parseLong(part);
-                    System.out.println("Add node:" + node);
-                    scanNodes.add(node);
-                    
-                } catch (Exception ex) {
-                    throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "node invalid:" + part);
-                }
+            if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.pending) {
+                
+                System.out.println("start new scan:" + nodeNum);
+                startScan(nodeNum);
+                return activeScan;
             }
-            if (scanNodes.size() == 0) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "scanNodes not found");
-            }
-            return scanNodes;       
+            throw new TException.INVALID_ARCHITECTURE(MESSAGE + "ScanStatus not started or pending:" + activeScan.getScanStatus());
                 
         } catch (TException tex) {
             throw tex ;
@@ -196,74 +332,50 @@ public class ScanManager
             throw new TException(ex) ;
             
         }
+        
     }
     
-    public void setup()
+    public InvStorageScan restart(int scanNum)
         throws TException
     {
-        Connection connection = null;
-        try { 
-            connection = db.getConnection(true);
-            System.out.println("valid:" + connection.isValid(10));
-            for (long scanNode: scanNodes) {
-                nodeSetup(scanNode, connection);
+        try {
+            Connection connection = db.getConnection(true);
+            activeScan = getStorageScan(scanNum, connection, logger);
+            if (activeScan == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
             }
-            
+            if (isActiveScan(activeScan)) {
+                return activeScan;
+            }
+            doResetScan(activeScan, connection);
+            Long nodeNum = InvDBUtil.getNodeNumber(activeScan.getNodeid(), connection, logger);
+            System.out.println("Recovered nodeNum:" + nodeNum);
+            startScan(nodeNum);
+            return activeScan;
                 
         } catch (TException tex) {
             throw tex ;
             
         } catch (Exception ex) {
-            throw new TException(ex) ;
-            
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (Exception ex) { }
-            }
-        }
-    }
-    
-    protected void nodeSetup(long nodeNum, Connection connection)
-        throws TException
-    {
-        try { 
-            NodeScan nodeScan = new NodeScan(nodeNum);
-            nodeScanMap.put(nodeNum, nodeScan);
-            nodeScan.adminStoreMaint = getStoreMaint(nodeNum, connection);
-            setScanWrapper(nodeNum, nodeScan);
-            
-                
-        } catch (TException tex) {
-            throw tex ;
-            
-        } catch (Exception ex) {
+            ex.printStackTrace();
             throw new TException(ex) ;
             
         }
+        
     }
     
-    public InvStorageMaint getStoreMaint(long nodeNum, Connection connection)
+    
+    public InvStorageScan isActive(Long nodeNum, String keyList)
         throws TException
     {
-        try { 
-            System.out.println("getNodeAdmin valid:" + connection.isValid(10));
-            InvStorageMaint storeMaint = InvDBUtil.getStorageMaintAdmin(nodeNum, connection, logger);
-            Long nodeid = InvDBUtil.getNodeSeq(nodeNum,connection, logger);
-            if (storeMaint == null) {
-                storeMaint = new InvStorageMaint(logger);
-                storeMaint.setAdmin(nodeid);
-                connection.setAutoCommit(true);
-                DBAdd dbAdd = new DBAdd(connection, logger);
-                connection.setAutoCommit(true);
-                long ismseq = dbAdd.insert(storeMaint);
-                //connection.commit();
-                System.out.println("added " + nodeNum + " as " + ismseq);
-            } else {
-                System.out.println("getNodeAdmin found:" + storeMaint.getId());
+        try {
+            Connection connection = db.getConnection(true);
+            activeScan = getActiveScan(nodeNum, keyList, connection);
+            if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.started) {
+                System.out.println("return running scan");
+                return activeScan;
             }
-            return storeMaint;
+            throw new TException.REQUESTED_ITEM_NOT_FOUND(MESSAGE + "ScanStatus not started for:" + nodeNum);
                 
         } catch (TException tex) {
             throw tex ;
@@ -272,17 +384,18 @@ public class ScanManager
             throw new TException(ex) ;
             
         }
+        
     }
     
-    protected void setScanWrapper(Long nodeNum, NodeScan nodeScan)
+    public static InvStorageScan getStorageScan(int scanNum, Connection connection, LoggerInf logger)
         throws TException
     {
-        InvStorageMaint storageMaint = nodeScan.adminStoreMaint;
-        try { 
-            nodeScan.wrapper = ScanWrapper.getScanWrapper(replicationInfo, db, storageMaint, nodeNum,
-                    maxkeys, iterations, threadSleep, logger);
-            nodeScan.wrapperThread = new Thread(nodeScan.wrapper);
-            
+        try {
+            InvStorageScan activeScan = InvDBUtil.getStorageScanId(scanNum, connection, logger);
+            if (activeScan == null) {
+               throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "getRestartScan Scan Id not found:" + scanNum);
+            }
+            return activeScan;
                 
         } catch (TException tex) {
             throw tex ;
@@ -291,40 +404,56 @@ public class ScanManager
             throw new TException(ex) ;
             
         }
+        
     }
     
-    public ScanWrapper.RunStatus startDoScan(Long nodeNum)
+    public InvStorageScan getActiveScan(Long nodeNum, String keyList, Connection connection)
         throws TException
     {
-        Connection connection = null;
-        ScanWrapper.RunStatus scanStatus = null;
-        try { 
-            NodeScan nodeScan = nodeScanMap.get(nodeNum);
-            if (nodeScan == null) {
-                throw new TException.INVALID_OR_MISSING_PARM("startDoScan not supported for "+ nodeNum);
+        InvStorageScan activeScan = null;
+        try {
+            List<InvStorageScan> scanList = ScanWrapper.getStorageScanStatus(nodeNum, "started", connection, logger);
+            if (scanList == null) {
+                activeScan = getNewScan(nodeNum, keyList, connection);
+                return activeScan;
             }
-            ScanWrapper scanWrapper = nodeScan.wrapper;
-            if (scanWrapper != null) {
-                DoScan doScan = scanWrapper.getDoScan();
-                if (doScan != null) {
-                    nodeScan.ex = doScan.getException();
-                }
+            activeScan = manageActiveScan(scanList, connection, logger);
+            if (activeScan == null) {
+                activeScan = getNewScan(nodeNum, keyList, connection);
+                return activeScan;
             }
-            if (!replicationInfo.isRunReplication()) {
-                return ScanWrapper.RunStatus.runReplicationOff;
+            return activeScan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+        
+    }
+
+    public void startScan(Long nodeNum)
+        throws TException
+    {
+        try {
+            System.out.println(PropertiesUtil.dumpProperties("startScan", activeScan.retrieveProp()));
+            scanWrapper = ScanWrapper.getScanWrapper(replicationInfo, db, activeScan, nodeNum, maxkeys, threadSleep, logger, keyListFile);
+            if (!replicationInfo.isAllowScan()) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE 
+                        + "Scan may not currently allowed: replicationInfo.isAllowScan=" + replicationInfo.isAllowScan());
             }
-            Thread wrapperThread = nodeScan.wrapperThread;
-            if (wrapperThread != null) {
-                if (wrapperThread.isAlive()) {
-                    return ScanWrapper.RunStatus.running;
-                }
+            if (false) {
+                //scanWrapper.run();
+                
+                return;
             }
-            setScanWrapper(nodeNum, nodeScan);
-            wrapperThread = nodeScan.wrapperThread;
+            Thread wrapperThread = new Thread(scanWrapper);
             wrapperThread.start();
             Thread.currentThread().sleep(100);
-            scanWrapper = nodeScan.wrapper;
-            return scanWrapper.getRunStatus();
+            
+            return;
                 
         } catch (TException tex) {
             throw tex ;
@@ -335,28 +464,197 @@ public class ScanManager
         }
         
     }
-
-    public HashMap<Long, NodeScan> getNodeScanMap() {
-        return nodeScanMap;
-    }
-
-    public NodeScan getNodeScan(Long nodeNum) {
-        if (nodeNum == null) return null;
-        return nodeScanMap.get(nodeNum);
-    }
     
-    public static class NodeScan
+    public InvStorageScan getNewScan(Long nodeNum, String keyListName, Connection connection)
+        throws TException
     {
-        public long nodeNum = 0;
-        public Thread wrapperThread = null;
-        public ScanWrapper wrapper = null;
-        public InvStorageMaint adminStoreMaint = null;
-        public Exception ex = null;
-        public NodeScan(long nodeNum)
-        {
-            this.nodeNum = nodeNum;
+        InvStorageScan activeScan = null;
+        try {
+            String scanType = "next";
+            if (keyListName != null) {
+                scanType = "list";
+                setKeyListFile(keyListName);
+            }
+            activeScan = ScanWrapper.buildInitStorageScan(nodeNum, scanType, keyListName, connection, logger);
+            return activeScan;
+            
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
         }
         
+    }
+    
+    public void doResetScan(InvStorageScan activeScan, Connection connection)
+        throws TException
+    {
+        try {
+            String keyListName = activeScan.getKeyListName();
+            String scanType = "next";
+            if (keyListName != null) {
+                scanType = "list";
+                setKeyListFile(keyListName);
+            }
+            String activeType = activeScan.getScanType().toString();
+            if (!scanType.equals(activeType)) {
+               throw new TException.INVALID_ARCHITECTURE(MESSAGE + "getResetScan-discrpency resetScan and scanType:"
+                       + "dbType=" + activeType
+                       + "expected Type=" + scanType
+               );
+            }
+            ScanWrapper.resetStorageScanStatus("pending", activeScan, connection, logger);
+            
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+        
+    }
+    
+    public InvStorageScan manageActiveScan(List<InvStorageScan> scanList, Connection connection, LoggerInf logger)
+        throws TException
+    {
+        InvStorageScan activeScan = null;
+        ArrayList<InvStorageScan> activeScans = new ArrayList<>();
+        try {
+            int numScans = scanList.size();
+            for (InvStorageScan scan : scanList) {
+                if (scan.getScanStatus() == InvStorageScan.ScanStatus.started) {
+                    if (!isActiveScan(scan)) {
+                        System.out.println(PropertiesUtil.dumpProperties("CANCELLED", scan.retrieveProp()));
+                        scan.setScanStatusDB("cancelled");
+                        ScanWrapper.writeStorageScan(scan, connection, logger);
+                    } else {
+                        activeScans.add(scan);
+                    }
+                }
+            }
+            if (activeScans.size() == 0) return null;
+            if (activeScans.size() == 1) {
+                activeScan = activeScans.get(0);
+                return activeScan;
+            }
+            throw new TException.INVALID_CONFIGURATION(MESSAGE + "Only one active scan per node:" + activeScans.size());
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+        
+    }
+    
+    public boolean isActiveScan(InvStorageScan scan)
+        throws TException
+    {
+            System.out.println("hereB");
+        Boolean active = null;
+        try {
+            
+            if (scan.getScanStatus() != InvStorageScan.ScanStatus.started) return false;
+            System.out.println("hereD");
+            DateState current = new DateState();
+            long currentMs = current.getTimeLong();
+            DateState updated = scan.getUpdated();
+            long updatedMs = updated.getTimeLong();
+            long durationMs = currentMs - updatedMs;
+            System.out.println("durationMs=" + durationMs);
+            if ((durationMs) > failMs) {
+                return false;
+            }
+            return true;
+                
+        }  catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+        }
+        
+    }
+    
+    public void setKeyListFile(String keyList)
+        throws TException
+    {
+        Long nodeNum = null;
+        if (keyList == null) return;
+        try {
+            String [] parts = keyList.split("\\s*\\:\\s*",2);
+            if (parts.length != 2) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "Invalid keyList - form <node>:<storage key>:" + keyList);
+            }
+            try {
+                nodeNum = Long.parseLong(parts[0]);
+            } catch (Exception nex) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "Invalid node in keylist:" + parts[0]);
+            }
+            NodeIO nodeIO = ReplicationConfig.getNodeIO();
+            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(nodeNum);
+            
+            if (accessNode == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "Node not supported:" + nodeNum);
+            }
+            String key = parts[1];
+            keyListFile = FileUtil.getTempFile("scanfile" + nodeNum, ".txt");
+            NodeService nodeService = new NodeService(accessNode, nodeNum, logger);
+            CloudResponse cloudResponse = CloudResponse.get(nodeService.getBucket(), key);
+            nodeService.getObject(key, keyListFile, cloudResponse);
+            Exception ex = cloudResponse.getException();
+            if (ex != null) {
+                if (ex instanceof TException) {
+                    throw (TException) ex;
+                } else {
+                    throw ex;
+                }
+            }
+            
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+        
+    }
+
+    public ReplicationRunInfo getReplicationInfo() {
+        return replicationInfo;
+    }
+    
+     
+
+    public static String formatIt(
+            String formatTypeS,
+            LoggerInf logger,
+            StateInf responseState)
+    {
+        try {
+            if (responseState == null) {
+               return "NULL RESPONSE";
+            }
+            FormatterInf.Format formatType = null;
+            formatType = FormatterInf.Format.valueOf(formatTypeS);
+            FormatterInf formatter = FormatterAbs.getFormatter(formatType, logger);
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream(5000);
+            PrintStream  stream = new PrintStream(outStream, true, "utf-8");
+            formatter.format(responseState, stream);
+            stream.close();
+            byte [] bytes = outStream.toByteArray();
+            String retString = new String(bytes, "UTF-8");
+            return retString;
+
+        } catch (Exception ex) {
+            System.out.println("Exception:" + ex);
+            System.out.println("Trace:" + StringUtil.stackTrace(ex));
+            return null;
+        }
     }
 }
 

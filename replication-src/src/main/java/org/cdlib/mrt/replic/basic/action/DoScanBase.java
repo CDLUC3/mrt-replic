@@ -29,6 +29,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 package org.cdlib.mrt.replic.basic.action;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +44,7 @@ import org.cdlib.mrt.core.Identifier;
 
 import org.cdlib.mrt.cloud.VersionMap;
 import org.cdlib.mrt.core.FileComponent;
+import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.inv.content.InvFile;
 import org.cdlib.mrt.inv.content.InvStorageMaint;
 import org.cdlib.mrt.inv.content.InvObject;
@@ -59,7 +63,8 @@ import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.utility.TFileLogger;import org.cdlib.mrt.s3.service.CloudResponse;
+import org.cdlib.mrt.utility.TFileLogger;
+import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.PropertiesUtil;
@@ -72,136 +77,47 @@ import org.cdlib.mrt.utility.TFileLogger;
  * Run fixity
  * @author dloy
  */
-public class DoScan
+public abstract class DoScanBase
         extends ReplicActionAbs
 {
 
-    protected static final String NAME = "DoScan";
-    protected static final String MESSAGE = NAME + ": ";
+    private static final String NAME = "DoScanAbs";
+    private static final String MESSAGE = NAME + ": ";
+    private static final boolean DEBUG = false;
 
     
     protected CloudStoreInf service = null;
     protected String bucket = null;
-    protected ArrayList<CloudList.CloudEntry> entryList = null;
-    protected ArrayList<CloudList.CloudEntry> failList = new ArrayList<>();
-    protected String lastKey = null;
+    //protected ArrayList<CloudList.CloudEntry> entryList = null;
+    //protected ArrayList<CloudList.CloudEntry> failList = new ArrayList<>();
     protected Long inNode = null;
     protected Long nodeid = null;
+    protected Long storageScanId = null;
     protected String dbArk = null;
     protected HashMap<String,String> dbHash = null;
     protected DBAdd dbAdd = null;
     protected ScanInfo scanInfo = null;
-    public static void main(String args[])
-    {
-
-        long nodeNumber = 9502;
-        LoggerInf logger = new TFileLogger("DoScan", 20, 20);
-        DPRFileDB db = null;
-        try {
-            ReplicationConfig config = ReplicationConfig.useYaml();
-            db = config.startDB();
-            Connection connection = db.getConnection(true);
-            DoScan doScan = DoScan.getScan(nodeNumber, connection, logger);
-            //String afterKey = "ark:/28722/k2xw47w3g|1|system/mrt-mom.txt";
-            String afterKey = "ark:/99999/fk40303r7f|1|producer/nuxeo.cdlib.org/Merritt/2ced9aed-9724-44ff-8d74-52a0f9dad298.xml";
-            int maxKeys=15000;
-            DoScan.ScanInfo info = doScan.process(afterKey, maxKeys);
-            System.out.println(info.dump("Count Dump 1"));
-            afterKey = info.getLastProcessKey();
-            info = doScan.process(
-            );
-            System.out.println(info.dump("Count Dump 2"));
-            
-        } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println(
-                    "Main: Encountered exception:" + e);
-                System.out.println(
-                        StringUtil.stackTrace(e));
-        } finally {
-            try {
-                db.shutDown();
-            } catch (Exception ex) {
-                System.out.println("db Exception:" + ex);
-            }
-        }
-    }
+    protected String lastKey = null;
+    protected long lastPos = 0;
+    protected long currentPos = 0;
     
-    public static void main_prime(String args[])
+    public DoScanBase(
+            Long inNode,
+            Long storageScanId,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
     {
-
-        long nodeNumber = 9502;
-        LoggerInf logger = new TFileLogger("DoScan", 9, 10);
-        DPRFileDB db = null;
-        try {
-            ReplicationConfig config = ReplicationConfig.useYaml();
-            db = config.startDB();
-            Connection connection = db.getConnection(true);
-                
-            DoScan doScan = DoScan.getScan(nodeNumber, connection, logger);
-            String afterKey = " ";
-            int maxKeys=5000;
-            doScan.process(afterKey, maxKeys);
-            DoScan.ScanInfo cnt = doScan.getScanCnt();
-            System.out.println(cnt.dump("Count Dump"));
-            
-        } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println(
-                    "Main: Encountered exception:" + e);
-                System.out.println(
-                        StringUtil.stackTrace(e));
-        } finally {
-            try {
-                db.shutDown();
-            } catch (Exception ex) {
-                System.out.println("db Exception:" + ex);
-            }
-        }
+        super(connection, logger);
+        this.inNode = inNode;
+        this.storageScanId = storageScanId;
+        this.scanInfo = new ScanInfo();
+        setServiceBucket(inNode, connection, logger);
+        setDB(inNode, connection, logger);
+        validate();
     }
-    
-    public static void main_original(String args[])
-    {
 
-        long nodeNumber = 9502;
-        LoggerInf logger = new TFileLogger("DoScan", 9, 10);
-        DPRFileDB db = null;
-        try {
-            ReplicationConfig config = ReplicationConfig.useYaml();
-            db = config.startDB();
-            Connection connection = db.getConnection(true);
-            DoScan doScan = DoScan.getScan(nodeNumber, connection, logger);
-            String afterKey = " ";
-            int maxKeys=2000;
-            ArrayList<CloudList.CloudEntry> entryList = doScan.getList(afterKey, maxKeys);
-            for (CloudList.CloudEntry entry: entryList) {
-                System.out.println(entry.key);
-            }
-            String s3Ark = "ark:/13030/hb0w1005w7";
-            HashMap<String,String> scanHash = doScan.getHash(s3Ark);
-            Set<String> keys = scanHash.keySet();
-            for (String key : keys) {
-                System.out.println("keys:" + key);
-            }
-            doScan.process(afterKey, maxKeys);
-            DoScan.ScanInfo cnt = doScan.getScanCnt();
-            System.out.println(cnt.dump("Count Dump"));
-            
-        } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println(
-                    "Main: Encountered exception:" + e);
-                System.out.println(
-                        StringUtil.stackTrace(e));
-        } finally {
-            try {
-                db.shutDown();
-            } catch (Exception ex) {
-                System.out.println("db Exception:" + ex);
-            }
-        }
-    }
-    public static DoScan getScan(
+    protected void setServiceBucket(
             long inNode,
             Connection connection,
             LoggerInf logger)
@@ -215,28 +131,36 @@ public class DoScan
         if (inAccessNode == null) {
             throw new TException.INVALID_CONFIGURATION("AccessNode not found for given node:" + inNode);
         }
-        DoScan doScan = new DoScan(inNode, inAccessNode.service, inAccessNode.container, connection, logger);
-        return doScan;
+        service = inAccessNode.service;
+        bucket = inAccessNode.container;
     }
-    
-    protected DoScan(
-            Long inNode,
-            CloudStoreInf service,
-            String bucket,
+
+    protected void setDB(
+            long inNode,
             Connection connection,
             LoggerInf logger)
         throws TException
     {
-        super(connection, logger);
-        this.inNode = inNode;
-        this.service = service;
-        this.bucket = bucket;
         
-        setConnectionAuto();
-        validate();
+        try {
+            
+            this.dbAdd = new DBAdd(connection, logger);
+            this.nodeid = InvDBUtil.getNodeSeq(inNode,connection, logger);
+            if (nodeid == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("nodeid not found for:" + inNode);
+            }
+            
+        } catch (TException tex) {
+            tex.printStackTrace();
+            throw tex;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
     }
     
-    protected void validate()
+    private void validate()
         throws TException
     {
         try {
@@ -252,12 +176,6 @@ public class DoScan
             if (logger == null) {
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "logger not supplied");
             }
-
-            nodeid = InvDBUtil.getNodeSeq(inNode,connection, logger);
-            if (nodeid == null) {
-                throw new TException.INVALID_OR_MISSING_PARM("nodeid not found for:" + inNode);
-            }
-            if (DEBUG) System.out.println("nodeid:" + nodeid);
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -269,83 +187,30 @@ public class DoScan
         }
     }
     
-    public ScanInfo process()
-        throws TException
-    {
-        log(15, "process");
-        if (scanInfo == null) {
-            throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "scanInfo missing");
-        }
-        int maxKeys = scanInfo.getMaxkey();
-        String afterKey = scanInfo.getLastProcessKey();
-        return process(afterKey, maxKeys);
-    }
-    
-    public ScanInfo process(int maxKeys)
-        throws TException
-    {
-        return process(" ", maxKeys);
-    }
-
-    public ScanInfo process(String afterKey, int maxKeys)
-        throws TException
-    {
-        if (scanInfo == null) {
-            scanInfo = new ScanInfo(afterKey, maxKeys);
-        }
-        try {
-            if (connection.isClosed()) {
-                throw new TException.GENERAL_EXCEPTION("connection closed");
-            }
-            dbAdd = new DBAdd(connection, logger);
-            String lastProcessKey = null;
-            dbArk = afterKey;
-            List<CloudList.CloudEntry> entryList = getList(afterKey, maxKeys);
-            log(15, "entryList=" + entryList.size());
-            if ((entryList == null) || (entryList.size() < maxKeys)) {
-                System.out.println("EOF set");
-                scanInfo.setEof(true);
-            }
-            for (CloudList.CloudEntry entry: entryList) {
-                test(entry);
-                lastProcessKey = entry.getKey();
-            }
-            scanInfo.setLastProcessKey(lastProcessKey);
-            return scanInfo;
-            
-        } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-
-    public void test(CloudList.CloudEntry entry)
+    protected void test(String key)
         throws TException
     {
         
         try {
-            String key = entry.getKey();
+            scanInfo.lastProcessKey = key;
+            scanInfo.bumpLastScanCnt();
             String parts[] = key.split("\\|", 3);
             String dataArk = parts[0];
             if (!dataArk.startsWith("ark:")) {
-                add(InvStorageMaint.MaintType.mtNonArk, entry);
+                add(InvStorageMaint.MaintType.mtNonArk, key);
                 return;
             }
             if (!dbArk.equals(dataArk)) {
                 dbHash = getHash(dataArk);
                 if (dbHash == null) {
-                    add(InvStorageMaint.MaintType.mtMissArk, entry);
+                    add(InvStorageMaint.MaintType.mtMissArk, key);
                     return;
                 }
                 dbArk = dataArk;
             }
             String response = dbHash.get(key);
             if (response == null) {
-                add(InvStorageMaint.MaintType.mrtMissFile, entry);
+                add(InvStorageMaint.MaintType.mrtMissFile, key);
                 if (false) {
                     dumpHash("***test dataArk:" + dataArk);
                     throw new TException.GENERAL_EXCEPTION("test");
@@ -353,7 +218,7 @@ public class DoScan
                 return;
             }
             scanInfo.bump(InvStorageMaint.MaintType.mrtOK);
-            if (DEBUG) System.out.println(">>MATCH" + entry.getKey());
+            if (DEBUG) System.out.println(">>MATCH" + key);
             return;
             
         } catch (TException tex) {
@@ -366,12 +231,18 @@ public class DoScan
         }
     }
 
-    public void add(InvStorageMaint.MaintType addType, CloudList.CloudEntry entry)
+    protected void add(InvStorageMaint.MaintType addType, String key)
         throws TException
     {
-        
+        if (true) {
+            System.out.println("add(" + scanInfo.getLastScanCnt() + "):"
+                    + " - addType:" + addType.toString()
+                    + " - key:" + key
+            );
+            //return;
+        }
         try {
-            
+            CloudList.CloudEntry entry = getCloudEntry(key);
             log(15, ">>ADD(" + addType.name() + "):" + entry.key);
             scanInfo.bump(addType);
             if (false) return;
@@ -383,10 +254,13 @@ public class DoScan
                 scanInfo.bumpMatch();
                 return;
             }
-            String entryKey = entry.getKey();
             
-            InvStorageMaint invStorageMaint = new InvStorageMaint(nodeid, 1, addType, entry, logger);
-            invStorageMaint.setMaintStatus(InvStorageMaint.MaintStatus.review);
+            InvStorageMaint invStorageMaint = new InvStorageMaint(nodeid, storageScanId, addType, entry, logger);
+            if ((entry.storageClass != null) && entry.storageClass.contains("REDUCED_REDUNDANCY")) {
+                invStorageMaint.setNote("REDUCED_REDUNDANCY");
+            }
+            invStorageMaint.setMaintStatus(InvStorageMaint.MaintStatus.review); 
+            
             long ismseq = dbAdd.insert(invStorageMaint);
             log(15, ">>INSERT(" + addType.name() + "):" + entry.key);
             
@@ -415,7 +289,7 @@ public class DoScan
         }
     }
     
-    public HashMap<String,String> getHash(String s3Ark)
+    protected HashMap<String,String> getHash(String s3Ark)
         throws TException
     {
         try {
@@ -440,21 +314,31 @@ public class DoScan
         }
     }
     
+    abstract public ScanInfo process(
+            int maxKeys,
+            Connection connection)
+        throws TException;
     
+    abstract protected ArrayList<String> getKeys(int maxKeys)
+        throws TException;
     
-    public ArrayList<CloudList.CloudEntry> getList(String afterKey, int maxKeys)
+    /**
+     * 
+     * @return last skipped key
+     * @throws TException 
+     */
+    abstract protected String skip()
+        throws TException;
+
+    
+    public CloudList.CloudEntry getCloudEntry(String key)
         throws TException
     {
-        
+       
         try {
-            
-            CloudResponse response = service.getObjectListAfter(bucket, afterKey, maxKeys);
-            if (response.getException() != null) {
-                throw response.getException();
-            }
-            CloudList cloudList = response.getCloudList();
-            ArrayList<CloudList.CloudEntry> entryList = cloudList.getList();
-            return entryList;
+            Properties objectProp = service.getObjectMeta(bucket, key);
+            CloudList.CloudEntry entry = CloudResponse.getCloudEntry(objectProp);
+            return entry;
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -479,8 +363,20 @@ public class DoScan
         }
     }
 
+    public String getLastKey() {
+        return lastKey;
+    }
+
+    public long getLastPos() {
+        return lastPos;
+    }
+
     public ScanInfo getScanCnt() {
         return scanInfo;
+    }
+
+    public long getCurrentPos() {
+        return currentPos;
     }
     
     public static class ScanInfo  
@@ -488,11 +384,16 @@ public class DoScan
         protected HashMap<InvStorageMaint.MaintType, Long> scanCnt = new HashMap<>();
         protected String lastProcessKey = " ";
         protected int maxkey = 0;
+        protected long lastScanCnt = 0;
         protected long dbCnt = 0;
         protected long matchCnt = 0;
         protected boolean eof = false;
         
-        public ScanInfo(String lastProcessKey, int maxkey)
+        public ScanInfo()
+        {
+        }
+        
+        public void set(String lastProcessKey, int maxkey)
         {
             this.lastProcessKey = lastProcessKey;
             this.maxkey = maxkey;
@@ -515,6 +416,16 @@ public class DoScan
         public void bumpMatch()
         {   
             matchCnt++;
+        }
+        
+        public void bumpLastScanCnt()
+        {   
+            lastScanCnt++;
+        }
+        
+        public long getLastScanCnt()
+        {   
+            return lastScanCnt;
         }
 
         public long get(InvStorageMaint.MaintType addType)

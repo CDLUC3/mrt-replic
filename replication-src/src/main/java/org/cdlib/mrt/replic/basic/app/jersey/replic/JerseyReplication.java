@@ -333,7 +333,89 @@ public class JerseyReplication
                     );
         return matchObjects(sourceNodeS, null, objectIDS, formatType, cs, sc);
     }
+    
+    @POST
+    @Path("scan/{type}/{id}")
+    public Response callScanStart(
+            @PathParam("type") String type,
+            @PathParam("id") String idS,
+            @DefaultValue("none") @QueryParam("keylist") String keylist,
+            @DefaultValue("xhtml") @QueryParam(KeyNameHttpInf.RESPONSEFORM) String formatType,
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        if (DEBUG) System.out.println(MESSAGE + "backupObject entered"
+                    + " - type=" + type + NL
+                    + " - idS=" + idS + NL
+                    + " - keylist=" + keylist + NL
+                    + " - formatType=" + formatType + NL
+                    );
+        String typeCase = type.toLowerCase();
+        
+        if (typeCase.equals("start")) {
+            if (keylist.equals("none")) keylist = null;
+            return scanStart(idS, keylist, formatType, cs, sc);
+        }
+        if (typeCase.equals("restart")) {
+            return scanRestart(idS, formatType, cs, sc);
+        }
+        throw new TException.INVALID_OR_MISSING_PARM("scan type unknown");
+    }
+    
+    @DELETE
+    @Path("scandelete/{id}")
+    public Response callScanDelete(
+            @PathParam("id") String storageMaintIdS,
+            @DefaultValue("xhtml") @QueryParam(KeyNameHttpInf.RESPONSEFORM) String formatType,
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        if (DEBUG) System.out.println(MESSAGE + "backupObject entered"
+                    + " - storageMaintIdS=" + storageMaintIdS + NL
+                    + " - formatType=" + formatType + NL
+                    );
+        return scanDelete(storageMaintIdS, formatType, cs, sc);
+    }
+    
+    @POST
+    @Path("scan/allow/{bool}")
+    public Response callScanAllow(
+            @PathParam("bool") String boolS,
+            @DefaultValue("xhtml") @QueryParam(KeyNameHttpInf.RESPONSEFORM) String formatType,
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        if (DEBUG) System.out.println(MESSAGE + "callScanAllow entered"
+                    + " - boolS=" + boolS + NL
+        );
+        LoggerInf logger = null;  
+        try {
+            logger = defaultLogger;
+            log("getServiceState entered:"
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
 
+            boolean allow = setBool(boolS, true, true, true);
+            System.out.println("Allow:" + allow);
+            replicationService.allowScan(allow);
+            StateInf responseState = replicationService.getReplicationServiceStatus();
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
     /**
      * Get state information about a specific node
      * @param nodeID node identifier
@@ -643,6 +725,96 @@ public class JerseyReplication
                 targetNode = getNumber("targetNode", targetNodeS);
             }
             StateInf responseState = replicationService.matchObjects(sourceNode, targetNode, objectID);
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
+    // matchObject(sourceNodeS, targetNodeS, objectIDS, formatType, cs, sc);
+    public Response scanStart(
+            String nodeS,
+            String keyList,
+            String formatType,
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log("scanStart entered:"
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+            long node = getNumber("node", nodeS);
+            StateInf responseState = replicationService.scanStart(node, keyList);
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
+    
+    // matchObject(sourceNodeS, targetNodeS, objectIDS, formatType, cs, sc);
+    public Response scanRestart(
+            String scanIDS,
+            String formatType,
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log("scanRestart entered:"
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+            int scanID = getNumber("node", scanIDS);
+            StateInf responseState = replicationService.scanRestart(scanID);
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
+    // matchObject(sourceNodeS, targetNodeS, objectIDS, formatType, cs, sc);
+    public Response scanDelete(
+            String storageMaintIdS,
+            String formatType,
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log("scanStart entered:"
+                    + " - storageMaintIdS=" + storageMaintIdS
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+            long storageMaintId = getNumber("node", storageMaintIdS);
+            StateInf responseState = replicationService.scanDelete(storageMaintId);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
         } catch (TException tex) {

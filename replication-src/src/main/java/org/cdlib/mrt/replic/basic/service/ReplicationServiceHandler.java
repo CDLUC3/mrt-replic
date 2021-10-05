@@ -170,6 +170,7 @@ public class ReplicationServiceHandler
             ServiceStatus runStatus = getRunStatus();
             ReplicationServiceState state = 
                     serviceStateManager.getReplicationServiceState(connection, runStatus);
+            state.setAllowScan(replicationInfo.isAllowScan());
             return state;
 
         } catch (Exception ex) {
@@ -196,6 +197,8 @@ public class ReplicationServiceHandler
             ReplicationServiceState state = 
                     serviceStateManager.getReplicationServiceStatus(runStatus, replicationInfo);
             state.setAddQueueCnt(activeAddQueue());
+            if (DEBUG) System.out.println(MESSAGE + "isAllowScan:" + replicationInfo.isAllowScan());
+            state.setAllowScan(replicationInfo.isAllowScan());
             return state;
 
         } catch (Exception ex) {
@@ -678,6 +681,11 @@ public class ReplicationServiceHandler
         if (DEBUG) System.out.println("*********SET SHUTDOWN:" + isShutdown()); //!!!!
     }
     
+    public void setAllowScan(boolean allow)
+    {
+        replicationInfo.setAllowScan(allow);
+    }
+    
     public void pauseReplication()
         throws TException
     {
@@ -746,6 +754,18 @@ public class ReplicationServiceHandler
         }
     }
     
+    public void startScan()
+        throws TException
+    {
+        replicationInfo.setAllowScan(true);
+    }
+    
+    public void stopScan()
+        throws TException
+    {
+        replicationInfo.setAllowScan(false);
+    }
+    
     public void startup()
         throws TException
     {
@@ -781,4 +801,9 @@ public class ReplicationServiceHandler
     {
         return addQueue.getActiveCnt();
     }
+
+    public ReplicationConfig getReplicConfig() {
+        return replicConfig;
+    }
+    
 }

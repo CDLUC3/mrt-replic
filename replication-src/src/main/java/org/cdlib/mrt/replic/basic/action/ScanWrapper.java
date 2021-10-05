@@ -29,10 +29,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 package org.cdlib.mrt.replic.basic.action;
 
+import java.io.File;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import org.cdlib.mrt.core.DateState;
 
 import org.cdlib.mrt.inv.content.InvStorageMaint;
+import org.cdlib.mrt.inv.content.InvStorageScan;
 import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
@@ -65,10 +69,11 @@ public class ScanWrapper
     protected LoggerInf logger = null;
     protected ReplicationRunInfo replicationInfo = null;
     protected Exception exception = null;
-    protected InvStorageMaint invMaint = null;
+    protected InvStorageScan invStorageScan = null;
     
-    protected DoScan doScan = null;
-    protected DoScan.ScanInfo doScanInfo = null;
+    protected DoScanBase doScan = null;
+    protected DoScanBase.ScanInfo doScanInfo = null;
+    protected File keyFile = null;
     protected String msg = null;
     protected String afterKey=null;
     protected int iteratesCnt = 0;
@@ -76,7 +81,6 @@ public class ScanWrapper
     
     protected final Long nodeNum;
     protected final Integer maxKeys;
-    protected final Integer iterate;
     protected final Long threadSleep;
     protected volatile Boolean threadStop = false;
     protected RunStatus runStatus = RunStatus.initial;
@@ -94,8 +98,13 @@ public class ScanWrapper
             testConnect("main", connection);
             ReplicationRunInfo replicationInfo = new ReplicationRunInfo(config);
             replicationInfo.setRunReplication(true);
-            InvStorageMaint invMaint = InvDBUtil.getStorageMaintAdmin(nodeNumber, connection, logger);
-            ScanWrapper scanWrapper = ScanWrapper.getScanWrapper(replicationInfo, db, invMaint, nodeNumber, 2000, 5, 500L, logger);
+            InvStorageScan invStorageScan = ScanWrapper.getLastScan(nodeNumber, "started", connection, logger);
+            if (invStorageScan == null) {
+                invStorageScan = ScanWrapper.buildInitStorageScan(nodeNumber, "next", null, connection, logger);
+            }
+            
+            ScanWrapper scanWrapper = ScanWrapper.getScanWrapper(replicationInfo, db, invStorageScan, nodeNumber, 2000, 500L, logger, null);
+            
             scanWrapper.run();
             System.out.println("end");
             
@@ -114,184 +123,186 @@ public class ScanWrapper
             }
         }
     }
-        
-    public static void main_thread(String args[])
-    {
-
-        long nodeNumber = 9502;
-        LoggerInf logger = new TFileLogger("DoScan", 9, 10);
-        DPRFileDB db = null;
-        try {
-            ReplicationConfig config = ReplicationConfig.useYaml();
-            db = config.startDB();
-            Connection connection = db.getConnection(true);
-            ReplicationRunInfo replicationInfo = new ReplicationRunInfo(config);
-            InvStorageMaint invMaint = InvDBUtil.getStorageMaintAdmin(nodeNumber, connection, logger);
-            ScanWrapper scanWrapper = ScanWrapper.getScanWrapper(replicationInfo, db, invMaint, nodeNumber, 5000, 5, null, logger);
-            scanWrapper.run();
-            System.out.println("end");
-            
-            
-        } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println(
-                    "Main: Encountered exception:" + e);
-                System.out.println(
-                        StringUtil.stackTrace(e));
-        } finally {
-            try {
-                //db.shutDown();
-            } catch (Exception ex) {
-                System.out.println("db Exception:" + ex);
-            }
-        }
-    }
-    public static ScanWrapper getScanWrapper(
-            
+    public static ScanWrapper getScanWrapper(           
             ReplicationRunInfo replicationInfo,
             DPRFileDB db,
-            InvStorageMaint invMaint,
-            Long nodeNum,
-            int maxKeys,
-            int iterate,
+            InvStorageScan invStorageScan,
+            long nodeNum,
+            Integer maxKeys,
             Long threadSleep,
-            LoggerInf logger)
+            LoggerInf logger,
+            File keyFile)
         throws TException
     {
-        ScanWrapper addWrapper = new ScanWrapper(replicationInfo,db, invMaint, nodeNum, maxKeys, iterate, threadSleep, logger);
+        ScanWrapper addWrapper = new ScanWrapper(replicationInfo,db, invStorageScan, nodeNum, maxKeys,threadSleep, logger, keyFile);
         return addWrapper;
     }
 
-    protected ScanWrapper(
-            ReplicationRunInfo replicationInfo,
+    protected ScanWrapper(ReplicationRunInfo replicationInfo,
             DPRFileDB db,
-            InvStorageMaint invMaint,
-            Long nodeNum,
-            int maxKeys,
-            int iterate,
+            InvStorageScan invStorageScan,
+            long nodeNum,
+            Integer maxKeys,
             Long threadSleep,
-            LoggerInf logger)
+            LoggerInf logger,
+            File keyFile)
         throws TException
     {
         this.replicationInfo = replicationInfo;
-        this.invMaint = invMaint;
+                if (replicationInfo == null) System.out.println("runReplication null zero");
+        this.invStorageScan = invStorageScan;
         this.nodeNum = nodeNum;
         this.db = db;
-        this.afterKey = invMaint.getKey();
         this.maxKeys = maxKeys;
-        this.iterate = iterate;
+        this.afterKey = invStorageScan.getLastS3Key();
+        this.keyFile = keyFile;
         this.threadSleep = threadSleep;
         this.threadStop = false;
         this.logger = logger;
+        if (invStorageScan.getScanType() == InvStorageScan.ScanType.list) {
+            if (keyFile == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "keyFile required");
+            }
+            setScanList();
+            
+        } else if (invStorageScan.getScanType() == InvStorageScan.ScanType.next) {
+            setScanNext();
+        }
     }
     
+    protected void setScanList()
+        throws TException
+    {
+        Connection connection = null;
+        try {
+            connection = db.getConnection(true);
+            DoScanList doScanList = DoScanList.getScanList(nodeNum,
+                    invStorageScan.getId(),
+                    keyFile,
+                    invStorageScan.getLastS3Key(),
+                    invStorageScan.getKeysProcessed(),
+                    connection,
+                    logger);
+            doScan = doScanList;
+            
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+        
+    }
+    
+    protected void setScanNext()
+        throws TException
+    {
+        Connection connection = null;
+        try {
+            connection = db.getConnection(true);
+            DoScanNext doScanNext = DoScanNext.getScanNext(nodeNum,
+                    invStorageScan.getId(),
+                    invStorageScan.getLastS3Key(),
+                    connection,
+                    logger);
+            doScan = doScanNext;
+            
+        } catch (TException tex) {
+            tex.printStackTrace();
+            throw tex ;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+            
+        }
+        
+    }
 
     @Override
     public void run()
     {
+        
+        Connection runConnect = null;
+        Connection connection = null;
         try {
             runStatus = RunStatus.running;
-            // connection here used for setup of DoScan
-            Connection connection = db.getConnection(true);
-            testConnect("db", connection);
-            doScan = DoScan.getScan(nodeNum, connection, logger);
-            Connection tconnect = doScan.getConnection();
-            testConnect("initial", tconnect);
-           
-            try {
-                connection.close();
-            } catch (Exception ex) { }
+            runConnect = db.getConnection(true);
             
             scanLog(2, "start");
+            invStorageScan.setScanStatusDB("started");
+            writeStorageScan(invStorageScan, runConnect, logger);
+            scanCnt = 0;
             while(true) {
-                boolean runContinue = iterates(doScan);
-                iteratesCnt++;
+                connection = db.getConnection(true);
+                if (DEBUG) testConnect("whilestart", connection);
+                doScanInfo = doScan.process(maxKeys, connection);
+                scanCnt++;
+                if (DEBUG) System.out.println(doScanInfo.dump("***Count Dump:" + scanCnt));
+                scanLog(8, doScanInfo.dump("Count Dump:" + scanCnt));
+                afterKey = doScanInfo.getLastProcessKey();
+                System.out.println("(" + scanCnt + "):replicationInfo.isAllowScan()=" + replicationInfo.isAllowScan());
+                if (doScanInfo.isEof()) {
+                    scanLog(2, "eof stop");
+                    invStorageScan.setScanStatusDB("completed");
+                    invStorageScan.setLastS3Key(afterKey);
+                    invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
+                    rewriteStorageScan(runConnect);
+                    runStatus = RunStatus.eof;
+                    System.out.println("ScanWrapper eof break");
+                    break;
+                }
+                
+                if (replicationInfo == null) System.out.println("runReplication null 3");
+                if (!replicationInfo.isAllowScan() || threadStop) {
+                    scanLog(2, "replication stop");
+                    invStorageScan.setScanStatusDB("cancelled");
+                    invStorageScan.setLastS3Key(afterKey);
+                    invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
+                    rewriteStorageScan(runConnect);
+                    System.out.println("ScanWrapper stop break");
+                    break;
+
+                }
+                
+                invStorageScan.setLastS3Key(afterKey);
+                invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
+                rewriteStorageScan(runConnect);
+                scanLog(8, "end iteration");
 
                 if ((threadSleep != null) && (threadSleep > 0)) {
                     scanLog(3, "Sleep=" + threadSleep);
                     Thread.sleep(threadSleep);
                 }
+                if (connection != null) {
+                    try {
+                        connection.close();
+                        System.out.println(">>>Connection closed:" + scanCnt);
+                    } catch (Exception ex) { }
+                }
                 
-                scanLog(5, "runContinue=" + runContinue);
-                if (!runContinue) break;
+                    System.out.println("ScanWrapper end while");
+                //if (scanCnt > 3) break;
             }
             runStatus = RunStatus.stopped;
 
         } catch(Exception ex)  {
             exception = ex;
             runStatus = RunStatus.failed;
-    
-        } finally {
-        }
-    }
-    
-    public boolean iterates(DoScan doScan)
-    {
-        Connection connection = null;
-        try {
-            connection = db.getConnection(true);
-            doScan.setConnection(connection);
-            System.out.println(MESSAGE + "Start processing DoScan:"
-                    + " - nodeNum=" + nodeNum
-                    + " - afterKey=" + afterKey
-                    + " - maxKeys=" + maxKeys
-                    + " - iterate=" + iterate
-            );
-            
-            // create new connection to avoid connection timeout
-            scanLog(5, "start iterations");
-            for(int i=1; i <= iterate; i++) {
-                /*
-                connection = resetConnect(connection);
-                doScan.setConnection(connection);
-            Connection tconnect = doScan.getConnection();
-            testConnect("iterate", tconnect);
-*/
-                doScanInfo = doScan.process(afterKey, maxKeys);
-                scanCnt++;
-                System.out.println(doScanInfo.dump("Count Dump:" + i));
-                scanLog(8, doScanInfo.dump("Count Dump:" + i));
-                afterKey = doScanInfo.getLastProcessKey();
-                
-                if (doScanInfo.isEof()) {
-                    scanLog(2, "eof stop");
-                    invMaint.setMaintAdminDB("eof");
-                    invMaint.setKey(afterKey);
-                    rewriteAdminMaint(connection);
-                    runStatus = RunStatus.eof;
-                    return false;
-                }
-                
-                if (!replicationInfo.isRunReplication() || threadStop) {
-                    scanLog(2, "replication stop");
-                    invMaint.setMaintAdminDB("stop");
-                    invMaint.setKey(afterKey);
-                    rewriteAdminMaint(connection);
-                    return false;
-
-                }
-                scanLog(8, "end iteration");
-            }
-            
-            connection = doScan.getConnection();
-            testConnect("after iterate", connection);
-            scanLog(8, "complete iterations");
-            invMaint.setKey(afterKey);
-            rewriteAdminMaint(connection);
-            scanLog(5, "end iterations");
-            return true;
-                
-        } catch(Exception ex)  {
-            exception = ex;
+            System.out.println("ScanWrapper Exception:" + ex);
             ex.printStackTrace();
-            return false;
     
         } finally {
             try {
                 connection.close();
-            } catch (Exception ex)  { }
+            } catch (Exception xx) { }
+            try {
+                runConnect.close();
+            } catch (Exception xx) { }
         }
     }
+    
     
     public static void testConnect(String header, Connection connection)
         throws Exception
@@ -319,7 +330,7 @@ public class ScanWrapper
         return db.getConnection(true);
     }
     
-    public void rewriteAdminMaint(Connection connection)
+    public void rewriteStorageScan(Connection connection)
         throws TException
     {
         try {
@@ -328,9 +339,113 @@ public class ScanWrapper
                 throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "rewriteAdminMaint connection not valid");
             }
             connection.setAutoCommit(true);
-            long ismseq = dbAdd.update(invMaint);
+            invStorageScan.setUpdatedDB();
+            long ismseq = dbAdd.update(invStorageScan);
             //connection.commit();
-            scanLog(8, "rewriteAdminMaint ismseq:" + ismseq + " - " + invMaint.dump("rewriteAdminMaint"));
+            scanLog(8, "rewriteAdminMaint ismseq:" + ismseq + " - " + invStorageScan.dump("rewriteAdminMaint"));
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+    
+    public static InvStorageScan buildInitStorageScan(
+            long nodeNum, 
+            String scanType, 
+            String keyListName, 
+            Connection connection, 
+            LoggerInf logger)
+        throws TException
+    {
+        try {
+            if ((scanType != null) && scanType.equals("list") && StringUtil.isAllBlank(keyListName)) {
+                throw new TException.INVALID_OR_MISSING_PARM("scanType list requires a keyListName");
+            }
+            
+            InvStorageScan scan = getLastScan(nodeNum, "started", connection, logger);
+            if (scan != null) {
+                throw new TException.INVALID_OR_MISSING_PARM("started scan found:" + scan.getId());
+            }
+            long nodeid = InvDBUtil.getNodeSeq(nodeNum,connection, logger);
+            InvStorageScan storageScan = new InvStorageScan(logger);
+            storageScan.setNodeid(nodeid);
+            storageScan.setUpdatedDB();
+            storageScan.setScanStatusDB("pending");
+            storageScan.setScanTypeDB(scanType);
+            storageScan.setLastS3Key(" ");
+            storageScan.setKeyListName(keyListName);
+            writeStorageScan(storageScan, connection, logger);
+            
+            
+            scan = getLastScan(nodeNum, "pending", connection, logger);
+            if (scan == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("created  scan not found" );
+            }
+            return scan;
+            
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+            
+        }
+    }
+
+    public static InvStorageScan getLastScan(
+            long nodeNum,
+            String scanStatus,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
+    {
+        List<InvStorageScan> scanList = getStorageScanStatus(nodeNum, scanStatus, connection, logger);
+        if (scanList == null) {
+            System.out.println("scanList null");
+            return null;
+        }
+        int last = (scanList.size() - 1);
+        System.out.println("**getLastScan:" + last);
+        InvStorageScan scan = scanList.get(last);
+        return scan;
+    }
+
+    public static List<InvStorageScan> getStorageScanStatus(
+            long nodeNum,
+            String scanStatus,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
+    {
+        return InvDBUtil.getStorageScanStatus(nodeNum, scanStatus, connection, logger);
+    }
+
+    public static void resetStorageScanStatus(
+            String scanStatus,
+            InvStorageScan storageScan,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
+    {
+        storageScan.setScanStatusDB(scanStatus);
+        writeStorageScan(storageScan, connection, logger);
+    }
+    
+    public static void writeStorageScan(InvStorageScan storageScan, Connection connection, LoggerInf logger)
+        throws TException
+    {
+        try {
+            DBAdd dbAdd = new DBAdd(connection, logger);
+            if (!connection.isValid(10)) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "rewriteAdminMaint connection not valid");
+            }
+            connection.setAutoCommit(true);
+            long ismseq = dbAdd.insert(storageScan);
                 
         } catch (TException tex) {
             throw tex ;
@@ -369,7 +484,7 @@ public class ScanWrapper
         return threadStop;
     }
 
-    public DoScan getDoScan() {
+    public DoScanBase getDoScan() {
         return doScan;
     }
 

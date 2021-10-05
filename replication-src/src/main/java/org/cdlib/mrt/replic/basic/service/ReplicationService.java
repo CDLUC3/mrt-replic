@@ -43,8 +43,11 @@ import org.cdlib.mrt.inv.action.Versions;
 import org.cdlib.mrt.inv.service.VersionsState;
 import org.cdlib.mrt.inv.service.Version;
 import org.cdlib.mrt.inv.service.VFile;
-import org.cdlib.mrt.inv.content.InvCollectionNode;
+import org.cdlib.mrt.inv.content.InvStorageMaint;
+import org.cdlib.mrt.inv.content.InvStorageScan;
+import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.replic.basic.action.FileInput;
+import org.cdlib.mrt.replic.basic.action.ScanDeleteS3;
 import org.cdlib.mrt.replic.basic.action.ReplaceWrapper;
 import org.cdlib.mrt.replic.basic.app.ReplicationServiceInit;
 import org.cdlib.mrt.s3.service.NodeIO;
@@ -214,6 +217,15 @@ public class ReplicationService
     }
 
     @Override
+    public ReplicationServiceState allowScan(Boolean allow)
+        throws TException
+    {
+        replicationServiceHandler.setAllowScan(allow);
+        ReplicationServiceState invServiceState = replicationServiceHandler.getReplicationServiceState();
+        return invServiceState;
+    }
+
+    @Override
     public ReplicationServiceState pause()
         throws TException
     {
@@ -242,7 +254,95 @@ public class ReplicationService
         ReplicationServiceState replicationServiceState = replicationServiceHandler.getReplicationServiceState();
         return replicationServiceState;
     }
+
+    @Override
+    public InvStorageScan scanStart(
+            Long nodeNumber,
+            String keyList)
+        throws TException
+    {
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = replicationServiceHandler.getReplicConfig();
+            db = config.getDB();
+            if (config.getDB() == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan fails - MySQL unavailable");
+            }
+            ReplicationRunInfo replicationInfo = replicationServiceHandler.getReplicationRunInfo();
+            ScanManager scanManager = replicationServiceHandler.getReplicConfig().getScanManager(replicationInfo);
+            if (!replicationInfo.isRunReplication()) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan failes - Replication not running");
+            }
+            InvStorageScan scan = scanManager.process(nodeNumber, keyList);
+            return scan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
     
+    
+    public InvStorageScan scanRestart(
+            Integer scanID)
+        throws TException
+    {
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = replicationServiceHandler.getReplicConfig();
+            db = config.getDB();
+            if (config.getDB() == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan fails - MySQL unavailable");
+            }
+            ReplicationRunInfo replicationInfo = replicationServiceHandler.getReplicationRunInfo();
+            ScanManager scanManager = replicationServiceHandler.getReplicConfig().getScanManager(replicationInfo);
+            if (!replicationInfo.isRunReplication()) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan failes - Replication not running");
+            }
+            InvStorageScan scan = scanManager.restart(scanID);
+            return scan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+
+    @Override
+    public InvStorageMaint scanDelete(
+            long storageMaintId)
+        throws TException
+    {
+        ScanDeleteS3 scanDelete = null;
+        Connection connection = null;
+        try {
+            
+            ReplicationRunInfo replicationInfo = replicationServiceHandler.getReplicationRunInfo();
+            if (!replicationInfo.isRunReplication()) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan failes - Replication not running");
+            }
+            if (!replicationInfo.isAllowScan()) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan operation not allowed");
+            }
+            
+            connection = replicationServiceHandler.getConnection(true);
+            ScanDeleteS3 scanDeleteS3 = ScanDeleteS3.getScanDeleteS3(storageMaintId, connection, logger);
+            return scanDeleteS3.process();
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
     
     /**
      * Return content without node and using cloud access
