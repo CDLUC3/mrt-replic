@@ -68,6 +68,7 @@ public class ReplicationRunInfo
     protected volatile boolean replicationSQL = false;
     protected volatile boolean runReplication = false;
     protected volatile boolean replicationProcessing = false;
+    protected volatile boolean allowScan = true;
     protected volatile int queueCapacity = 100;
     protected volatile int threadPool = 4;
     protected volatile String replicQualify = null;
@@ -129,6 +130,14 @@ public class ReplicationRunInfo
 
     public void setRunReplication(boolean runReplication) {
         this.runReplication = runReplication;
+    }
+
+    public boolean isAllowScan() {
+        return allowScan;
+    }
+
+    public void setAllowScan(boolean allowScan) {
+        this.allowScan = allowScan;
     }
 
     public int getThreadPool() {

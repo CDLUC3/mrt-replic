@@ -34,6 +34,8 @@ import java.io.File;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.content.InvCollectionNode;
+import org.cdlib.mrt.inv.content.InvStorageMaint;
+import org.cdlib.mrt.inv.content.InvStorageScan;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
 
@@ -132,6 +134,28 @@ public interface ReplicationServiceInf
             Integer targetNode,
             Identifier objectID)
         throws TException;
+    
+    /**
+     * Scan this node for orphaned content
+     * @param nodeNumber node to be scanned
+     * @param keyList node:S3 key to cloud content OR null if next is used
+     * @return working scan status
+     * @throws TException 
+     */
+    public InvStorageScan scanStart(
+            Long nodeNumber,
+            String keyList)
+        throws TException;
+    
+    /**
+     * Restart scan on this previous run
+     * @param scanID inv_storage_scan.id to be restarted
+     * @return restarted scan
+     * @throws TException 
+     */
+    public InvStorageScan scanRestart(
+            Integer scanID)
+        throws TException;
             
     /**
      * Delete object from inv only
@@ -195,6 +219,25 @@ public interface ReplicationServiceInf
      * @throws TException 
      */
     public ReplicationServiceState shutdown()
+        throws TException;
+    
+    /**
+     * Allow or Stop scanning
+     * @param allow true=continue to let run; false=stop
+     * @return service state
+     * @throws TException 
+     */
+    public ReplicationServiceState allowScan(Boolean allow)
+        throws TException;
+    
+    /**
+     * Delete item in Inv_storage_maints table
+     * @param storageMaintId id in inv_storage_maints
+     * @return maints db entry
+     * @throws TException 
+     */
+    public InvStorageMaint scanDelete(
+            long storageMaintId)
         throws TException;
     
     /**

@@ -33,7 +33,11 @@ replic-info:
     password: "{!SSM: inv/readwrite/db-password}"
     host: "{!SSM: inv/db-host}"
     name: "{!SSM: inv/db-name}"
-    encoding: "{!SSM: inv/db-encoding !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"
+    encoding: "{!SSM: inv/db-encoding !DEFAULT: useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8}"
+    
+  scan:
+    maxkeys: "{!SSM: replic/scan/maxkeys !DEFAULT: 500}"
+    threadSleep: "{!SSM: replic/scan/threadSleep !DEFAULT: 100}"
 
 replic-info-docker: &docker
   service:

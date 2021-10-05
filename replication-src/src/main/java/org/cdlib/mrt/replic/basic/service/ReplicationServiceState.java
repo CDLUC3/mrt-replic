@@ -68,6 +68,7 @@ public class ReplicationServiceState
     protected DateState lastModified = null;
     protected Long processCount = null;
     protected List<NodeCountState> nodeCounts = null;
+    protected Boolean allowScan = null;
     protected Boolean replicationSQL = null;
     protected Boolean runReplication = null;
     protected Boolean replicationProcessing = null;
@@ -317,6 +318,14 @@ public class ReplicationServiceState
 
     public void setQueueCapacity(int queueCapacity) {
         this.queueCapacity = queueCapacity;
+    }
+
+    public Boolean getAllowScan() {
+        return allowScan;
+    }
+
+    public void setAllowScan(Boolean allowScan) {
+        this.allowScan = allowScan;
     }
     
 }

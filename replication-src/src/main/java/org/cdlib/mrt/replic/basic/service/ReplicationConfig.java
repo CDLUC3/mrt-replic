@@ -40,6 +40,7 @@ import org.cdlib.mrt.utility.StringUtil;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import org.cdlib.mrt.core.DateState;
 
@@ -68,7 +69,8 @@ public class ReplicationConfig
     protected JSONObject serviceJSON = null;
     protected JSONObject cleanupJSON = null;
     protected JSONObject jdb = null;
-//    protected DPRFileDB db = null;
+    protected JSONObject scanJSON = null;
+    protected DPRFileDB db = null;
     //protected FileManager fileManager = null;
     protected LoggerInf logger = null;
     protected boolean shutdown = true;
@@ -107,6 +109,7 @@ public class ReplicationConfig
             serviceJSON = replicInfoJSON.getJSONObject("service");
             cleanupJSON = replicInfoJSON.getJSONObject("cleanup");
             jdb = replicInfoJSON.getJSONObject("db");
+            scanJSON = replicInfoJSON.getJSONObject("scan");
             
             JSONObject jInvLogger = replicInfoJSON.getJSONObject("fileLogger");
             logger = setLogger(jInvLogger);
@@ -212,6 +215,25 @@ public class ReplicationConfig
         }
     }
     
+    public DPRFileDB getDB()
+       throws TException
+    {
+        return db;
+    }
+    
+    public void shutdownDB()
+       throws TException
+    {
+        if (db == null) {
+            return;
+        } else {
+            try {
+                db.shutDown();
+            } catch (Exception ex) { }
+            db = null;
+        }
+    }
+    
     public DPRFileDB startDB(LoggerInf logger)
        throws TException
     {
@@ -253,7 +275,8 @@ public class ReplicationConfig
             }
             String name = jdb.getString("name");
             String url = "jdbc:mysql://" + server + ":3306/" + name + encoding;
-            DPRFileDB db = new DPRFileDB(logger, url, user, password);
+            System.out.println("url:" + url);
+            db = new DPRFileDB(logger, url, user, password);
             return db;
             
         } catch (TException tex) {
@@ -359,6 +382,10 @@ public class ReplicationConfig
     public JSONObject getServiceJSON() {
         return serviceJSON;
     }
+
+    public JSONObject getScanJSON() {
+        return scanJSON;
+    }
     
     public void setLogger(LoggerInf logger) {
         this.logger = logger;
@@ -442,4 +469,38 @@ public class ReplicationConfig
                 ex.printStackTrace();
         }
     }
+    
+    
+    public ScanManager getScanManager(ReplicationRunInfo replicationInfo)
+        throws TException
+    {
+        try {
+            JSONObject scanJSON = getScanJSON();
+            DPRFileDB db = getDB();
+            if (db == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "Database unavailable at this time");
+            }
+            
+            if (scanJSON == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "scanJSON missing");
+            }
+            if (replicationInfo == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "ReplicationInfo");
+            }
+            System.out.println("scanJSON=" + scanJSON.toString(2));
+            Integer maxkeys = scanJSON.getInt("maxkeys");
+            Long threadSleep = scanJSON.getLong("threadSleep");
+            ScanManager scanManager = new ScanManager(db, replicationInfo, maxkeys, threadSleep, logger);
+            return scanManager;
+                    
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+    
+    
 }
