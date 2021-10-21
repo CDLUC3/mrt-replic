@@ -352,7 +352,7 @@ public class DoScan
                 }
                 return;
             }
-            scanInfo.bump(InvStorageMaint.MaintType.mrtOK);
+            scanInfo.bump(InvStorageMaint.MaintType.mtOK);
             if (DEBUG) System.out.println(">>MATCH" + entry.getKey());
             return;
             
@@ -425,7 +425,9 @@ public class DoScan
                     + " - inNode:" + inNode
                     + " - connection:" + connection.getAutoCommit()
             );
-            HashMap<String,String> hash = ReplicDBUtil.getKeyHash(ark, inNode, connection, logger);
+            ArrayList<String> nodeKeys = ReplicDBUtil.getNodeKeys(ark, connection, logger);
+            if (nodeKeys == null) return null;
+            HashMap<String,String> hash = ReplicDBUtil.getHashNode(inNode, ark, nodeKeys, logger);
             
             scanInfo.bumpDB();
             return hash;
@@ -439,8 +441,6 @@ public class DoScan
             throw new TException(ex);
         }
     }
-    
-    
     
     public ArrayList<CloudList.CloudEntry> getList(String afterKey, int maxKeys)
         throws TException

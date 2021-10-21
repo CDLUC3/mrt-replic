@@ -156,6 +156,15 @@ public interface ReplicationServiceInf
     public InvStorageScan scanRestart(
             Integer scanID)
         throws TException;
+    /**
+     * Check and reset status if active
+     * @param scanID inv_storage_scan.id to be tested
+     * @return
+     * @throws TException 
+     */
+    public InvStorageScan scanStatus(
+            Integer scanID)
+        throws TException;
             
     /**
      * Delete object from inv only

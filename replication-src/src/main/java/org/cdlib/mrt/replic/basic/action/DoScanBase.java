@@ -95,6 +95,7 @@ public abstract class DoScanBase
     protected Long storageScanId = null;
     protected String dbArk = null;
     protected HashMap<String,String> dbHash = null;
+    protected HashMap<String,String> dbHashNoNode = null;
     protected DBAdd dbAdd = null;
     protected ScanInfo scanInfo = null;
     protected String lastKey = null;
@@ -201,24 +202,26 @@ public abstract class DoScanBase
                 return;
             }
             if (!dbArk.equals(dataArk)) {
-                dbHash = getHash(dataArk);
-                if (dbHash == null) {
-                    add(InvStorageMaint.MaintType.mtMissArk, key);
-                    return;
-                }
+                setHash(dataArk);
                 dbArk = dataArk;
             }
-            String response = dbHash.get(key);
-            if (response == null) {
-                add(InvStorageMaint.MaintType.mrtMissFile, key);
-                if (false) {
-                    dumpHash("***test dataArk:" + dataArk);
-                    throw new TException.GENERAL_EXCEPTION("test");
-                }
+            if (dbHashNoNode == null) {
+                add(InvStorageMaint.MaintType.mtMissArk, key);
                 return;
             }
-            scanInfo.bump(InvStorageMaint.MaintType.mrtOK);
-            if (DEBUG) System.out.println(">>MATCH" + key);
+            
+            //matches - no action
+            String responseNode = dbHash.get(key);
+            if (responseNode != null) {
+                return;
+            }
+            
+            String responseNoNode = dbHashNoNode.get(key);
+            if (responseNoNode != null) {
+                add(InvStorageMaint.MaintType.mtOrphanCopy, key);
+                return;
+            }
+            add(InvStorageMaint.MaintType.mrtMissFile, key);
             return;
             
         } catch (TException tex) {
@@ -234,16 +237,23 @@ public abstract class DoScanBase
     protected void add(InvStorageMaint.MaintType addType, String key)
         throws TException
     {
-        if (true) {
+        if (DEBUG) {
             System.out.println("add(" + scanInfo.getLastScanCnt() + "):"
                     + " - addType:" + addType.toString()
                     + " - key:" + key
             );
-            //return;
         }
+        log(10, "add(" + storageScanId + "," + scanInfo.getLastScanCnt() + "):"
+                + " - addType:" + addType.toString()
+                + " - key:" + key
+        );
+            
         try {
             CloudList.CloudEntry entry = getCloudEntry(key);
-            log(15, ">>ADD(" + addType.name() + "):" + entry.key);
+            if (entry == null) {
+                log(2, "Add fail 404:" + key);
+                return;
+            }
             scanInfo.bump(addType);
             if (false) return;
             
@@ -289,7 +299,7 @@ public abstract class DoScanBase
         }
     }
     
-    protected HashMap<String,String> getHash(String s3Ark)
+    protected void setHash(String s3Ark)
         throws TException
     {
         try {
@@ -299,10 +309,16 @@ public abstract class DoScanBase
                     + " - inNode:" + inNode
                     + " - connection:" + connection.getAutoCommit()
             );
-            HashMap<String,String> hash = ReplicDBUtil.getKeyHash(ark, inNode, connection, logger);
+            ArrayList<String> nodeKeys = ReplicDBUtil.getNodeKeys(ark, connection, logger);
+            if (nodeKeys == null) {
+                dbHash = null;
+                dbHashNoNode = null;
+                return;
+            }
+            dbHashNoNode =  ReplicDBUtil.getHashNoNode(ark, nodeKeys, logger);
+            dbHash = ReplicDBUtil.getHashNode(inNode, ark, nodeKeys, logger);
             
             scanInfo.bumpDB();
-            return hash;
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -426,6 +442,10 @@ public abstract class DoScanBase
         public long getLastScanCnt()
         {   
             return lastScanCnt;
+        }
+
+        public void setLastScanCnt(long lastScanCnt) {
+            this.lastScanCnt = lastScanCnt;
         }
 
         public long get(InvStorageMaint.MaintType addType)

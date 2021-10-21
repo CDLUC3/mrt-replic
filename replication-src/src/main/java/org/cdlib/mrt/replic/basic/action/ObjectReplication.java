@@ -61,7 +61,7 @@ import org.cdlib.mrt.utility.URLEncoder;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.tools.CloudManifestCopyTime;
+import org.cdlib.mrt.s3.tools.CloudManifestCopyVersion;
 
 /**
  * Run fixity
@@ -133,7 +133,7 @@ public class ObjectReplication
                         + " from node:" + nodeObject.getPrimaryInvNode().getNumber()
                         + " to node:" + nodeObject.getSecondaryInvNode().getNumber()
                         , 1); 
-                CloudManifestCopyTime.Stat stat = processNodeObject(nodeObject);
+                CloudManifestCopyVersion.Stat stat = processNodeObject(nodeObject);
                 log(
                         "***Replication complete::" + info.getObjectID().getValue()
                         + " from node:" + nodeObject.getPrimaryInvNode().getNumber()
@@ -185,11 +185,11 @@ public class ObjectReplication
         }
     }
     
-    protected CloudManifestCopyTime.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObject) 
+    protected CloudManifestCopyVersion.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObject) 
         throws TException
     {
         try {           
-            CloudManifestCopyTime.Stat stat = new  CloudManifestCopyTime.Stat(nodeObject.getObjectID().getValue());
+            CloudManifestCopyVersion.Stat stat = new  CloudManifestCopyVersion.Stat(nodeObject.getObjectID().getValue());
             copyContent(nodeObject, stat);
             processInv(nodeObject);
             InvNode targetNode = nodeObject.getSecondaryInvNode();
@@ -259,7 +259,7 @@ public class ObjectReplication
      * @return true=success, false=failure
      * @throws TException 
      */
-    protected boolean copyContent(ReplicationInfo.NodeObjectInfo nodeObject, CloudManifestCopyTime.Stat stat) 
+    protected boolean copyContent(ReplicationInfo.NodeObjectInfo nodeObject, CloudManifestCopyVersion.Stat stat) 
         throws TException
     {
         if (copyContentCloud(nodeObject, stat)) {
@@ -271,7 +271,7 @@ public class ObjectReplication
     
     protected boolean copyContentCloud(
             ReplicationInfo.NodeObjectInfo nodeObject, 
-            CloudManifestCopyTime.Stat stat) 
+            CloudManifestCopyVersion.Stat stat) 
         throws TException
     {
         try {
@@ -281,7 +281,7 @@ public class ObjectReplication
             NodeIO.AccessNode inNode = nodes.getAccessNode(nodeFrom);
             NodeIO.AccessNode outNode = nodes.getAccessNode(nodeTo);
             if ((inNode == null) || (outNode == null)) return false;
-            CloudManifestCopyTime cmct = new CloudManifestCopyTime(
+            CloudManifestCopyVersion cmct = new CloudManifestCopyVersion(
                     inNode.service,
                     inNode.container,
                     outNode.service,
