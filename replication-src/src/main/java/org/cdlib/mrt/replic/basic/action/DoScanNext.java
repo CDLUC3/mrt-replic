@@ -68,7 +68,7 @@ public class DoScanNext
             ReplicationConfig config = ReplicationConfig.useYaml();
             db = config.startDB();
             Connection connection = db.getConnection(true);
-            DoScanNext scan = getScanNext(5001, 2L, lastKey, connection, logger);
+            DoScanNext scan = getScanNext(5001, 2L, lastKey, 0L, connection, logger);
             
             connection = db.getConnection(true);
             ScanInfo info = scan.process(10, connection);
@@ -103,11 +103,12 @@ public class DoScanNext
             long inNode,
             Long storageScanId,
             String lastKey,
+            Long lastScanCnt,
             Connection connection,
             LoggerInf logger)
         throws TException
     {
-        DoScanNext doScanNext = new DoScanNext(inNode, storageScanId, lastKey, connection, logger);
+        DoScanNext doScanNext = new DoScanNext(inNode, storageScanId, lastKey, lastScanCnt, connection, logger);
         return doScanNext;
     }
     
@@ -115,12 +116,17 @@ public class DoScanNext
             Long inNode,
             Long storageScanId,
             String lastKey,
+            Long lastScanCnt,
             Connection connection,
             LoggerInf logger)
         throws TException
     {
         super(inNode, storageScanId, connection, logger);
         this.lastKey = lastKey;
+        if (lastScanCnt != null) {
+            scanInfo.setLastScanCnt(lastScanCnt);
+            System.out.println("SetLastScanCnt=" + lastScanCnt);
+        }
         try {
             connection.close();
         } catch (Exception xx) { }

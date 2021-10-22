@@ -88,7 +88,7 @@ public class ScanManager
     private static final boolean THREADDEBUG = false;
     protected File keyListFile = null;
     //protected static int failMs = 2*60*60*1000;
-    protected static int failMs = 1*60*1000;
+    protected static int failMs = 10*60*1000;
     
     protected LoggerInf logger = null;
     protected Exception exception = null;
@@ -364,6 +364,37 @@ public class ScanManager
         
     }
     
+    public InvStorageScan status(int scanNum)
+        throws TException
+    {
+        try {
+            Connection connection = db.getConnection(true);
+            activeScan = getStorageScan(scanNum, connection, logger);
+            if (activeScan == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
+            }
+            System.out.println(PropertiesUtil.dumpProperties("STATUS", activeScan.retrieveProp()));
+            if (activeScan.getScanStatus() != InvStorageScan.ScanStatus.started) {
+                return activeScan;
+            }
+            if (isActiveScan(activeScan)) {
+                return activeScan;
+            }
+            
+            ScanWrapper.resetStorageScanStatus("cancelled", activeScan, connection, logger);
+            return activeScan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+            
+        }
+        
+    }
+    
     
     public InvStorageScan isActive(Long nodeNum, String keyList)
         throws TException
@@ -555,18 +586,17 @@ public class ScanManager
     public boolean isActiveScan(InvStorageScan scan)
         throws TException
     {
-            System.out.println("hereB");
-        Boolean active = null;
         try {
             
             if (scan.getScanStatus() != InvStorageScan.ScanStatus.started) return false;
-            System.out.println("hereD");
             DateState current = new DateState();
             long currentMs = current.getTimeLong();
             DateState updated = scan.getUpdated();
             long updatedMs = updated.getTimeLong();
             long durationMs = currentMs - updatedMs;
-            System.out.println("durationMs=" + durationMs);
+            log(3, "isActiveScan:"
+                    + " - failMs=" + failMs
+                    + " - durationMs=" + durationMs);
             if ((durationMs) > failMs) {
                 return false;
             }
@@ -655,6 +685,12 @@ public class ScanManager
             System.out.println("Trace:" + StringUtil.stackTrace(ex));
             return null;
         }
+    }
+    
+    private void log(int lvl, String msg) 
+    {
+        logger.logMessage(msg, lvl, true);
+        if (lvl <= 3) System.out.println(msg);
     }
 }
 

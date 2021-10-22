@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Properties;
 import org.cdlib.mrt.cloud.ManifestSAX;
 
@@ -67,7 +68,7 @@ public class KeyTest
             ReplicationConfig config =  ReplicationConfig.useYaml();
             db = config.startDB();
             Connection connect = db.getConnection(true);
-            ArrayList<String> keyList = ReplicDBUtil.getKeys( objectID,nodeNumber,connect, logger);
+            ArrayList<String> keyList = ReplicDBUtil.getNodeKeys(objectID, connect,logger);
             if (keyList == null) {
                 System.out.println("empty list");
                 return;
@@ -80,8 +81,18 @@ public class KeyTest
             System.out.println("******");
             System.out.println("count=" + cnt);
             System.out.println("******");
-            HashMap<String,String> hash = ReplicDBUtil.getKeyHash(objectID,nodeNumber,connect, logger);
+            HashMap<String,String> hash = ReplicDBUtil.getHashNode(nodeNumber, objectID, keyList, logger);
+            Set<String> keys = hash.keySet();
+            for (String key : keys) {
+                System.out.println("HashNode key:" + key);
+            }
             System.out.println("hash:" + hash.size());
+            hash = ReplicDBUtil.getHashNoNode(objectID, keyList, logger);
+            keys = hash.keySet();
+            for (String key : keys) {
+                System.out.println("HashNoNode key:" + key);
+            }
+            System.out.println("hashNoNode:" + hash.size());
             
         } catch(Exception e) {
                 e.printStackTrace();

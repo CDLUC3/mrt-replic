@@ -84,6 +84,7 @@ public class ScanWrapper
     protected final Long threadSleep;
     protected volatile Boolean threadStop = false;
     protected RunStatus runStatus = RunStatus.initial;
+    protected long keysProcessed = 0;
     
     public static void main(String args[])
     {
@@ -156,6 +157,9 @@ public class ScanWrapper
         this.maxKeys = maxKeys;
         this.afterKey = invStorageScan.getLastS3Key();
         this.keyFile = keyFile;
+        if (invStorageScan.getKeysProcessed() == null) invStorageScan.setKeysProcessed(0L);
+        this.keysProcessed = invStorageScan.getKeysProcessed();
+        System.out.print("KEYSPROCESSED:" + this.keysProcessed);
         this.threadSleep = threadSleep;
         this.threadStop = false;
         this.logger = logger;
@@ -204,6 +208,7 @@ public class ScanWrapper
             DoScanNext doScanNext = DoScanNext.getScanNext(nodeNum,
                     invStorageScan.getId(),
                     invStorageScan.getLastS3Key(),
+                    keysProcessed,
                     connection,
                     logger);
             doScan = doScanNext;
@@ -236,13 +241,14 @@ public class ScanWrapper
             scanCnt = 0;
             while(true) {
                 connection = db.getConnection(true);
+                
                 if (DEBUG) testConnect("whilestart", connection);
                 doScanInfo = doScan.process(maxKeys, connection);
                 scanCnt++;
                 if (DEBUG) System.out.println(doScanInfo.dump("***Count Dump:" + scanCnt));
                 scanLog(8, doScanInfo.dump("Count Dump:" + scanCnt));
                 afterKey = doScanInfo.getLastProcessKey();
-                System.out.println("(" + scanCnt + "):replicationInfo.isAllowScan()=" + replicationInfo.isAllowScan());
+                if (DEBUG) System.out.println("(" + scanCnt + "):replicationInfo.isAllowScan()=" + replicationInfo.isAllowScan());
                 if (doScanInfo.isEof()) {
                     scanLog(2, "eof stop");
                     invStorageScan.setScanStatusDB("completed");
@@ -251,6 +257,7 @@ public class ScanWrapper
                     rewriteStorageScan(runConnect);
                     runStatus = RunStatus.eof;
                     System.out.println("ScanWrapper eof break");
+                    log(2, "ScanWrapper Exit(" + invStorageScan.getId() + "," + scanCnt + "): eof");
                     break;
                 }
                 
@@ -262,10 +269,23 @@ public class ScanWrapper
                     invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
                     rewriteStorageScan(runConnect);
                     System.out.println("ScanWrapper stop break");
+                    log(2, "ScanWrapper Exit(" + invStorageScan.getId() + "," + scanCnt + "): stop");
                     break;
 
                 }
                 
+                InvStorageScan testStorageScan = InvDBUtil.getStorageScan(invStorageScan.getId(), connection, logger);
+                if (testStorageScan.getScanStatus() == InvStorageScan.ScanStatus.cancelled) {
+                    scanLog(2, "replication db cancelled");
+                    invStorageScan.setScanStatusDB("cancelled");
+                    invStorageScan.setLastS3Key(afterKey);
+                    invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
+                    rewriteStorageScan(runConnect);
+                    System.out.println("ScanWrapper stop cancelled");
+                    log(2, "ScanWrapper Exit(" + invStorageScan.getId() + "," + scanCnt + "): db cancel");
+                    break;
+                    
+                }
                 invStorageScan.setLastS3Key(afterKey);
                 invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
                 rewriteStorageScan(runConnect);
@@ -278,11 +298,11 @@ public class ScanWrapper
                 if (connection != null) {
                     try {
                         connection.close();
-                        System.out.println(">>>Connection closed:" + scanCnt);
+                        if (DEBUG) System.out.println(">>>Connection closed:" + scanCnt);
                     } catch (Exception ex) { }
                 }
                 
-                    System.out.println("ScanWrapper end while");
+               
                 //if (scanCnt > 3) break;
             }
             runStatus = RunStatus.stopped;

@@ -36,10 +36,9 @@ public class ReplicDBUtil
     protected static final String NAME = "ReplicDBUtil";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
-
-    public static ArrayList<String> getKeys(
+    
+    public static ArrayList<String> getNodeKeys(
             Identifier objectID,
-            long nodeNumber,
             Connection connection,
             LoggerInf logger)
         throws TException
@@ -47,19 +46,19 @@ public class ReplicDBUtil
         log("getKeys entered");
         
         ArrayList<String> list = new ArrayList<>();
-        String sql = "SELECT v.ark, v.number, f.pathname "
+        String sql = "SELECT n.number nnum, v.ark, v.number vnum, f.pathname "
                + "FROM inv_versions v, "
                + "inv_files f, "
                + "inv_nodes_inv_objects NO, "
                + "inv_nodes n  "
                + "WHERE v.ark='" + objectID.getValue() + "' "
-               + "AND n.number=" + nodeNumber + " "
                + "AND f.inv_version_id=v.id "
                + "AND f.billable_size > 0 "
                + "AND NO.inv_object_id=v.inv_object_id "
                + "AND n.id = NO.inv_node_id "
                + ";";
         log("sql:" + sql);
+        if (DEBUG) System.out.println("sql:" + sql);
         Properties[] propArray = DBUtil.cmd(connection, sql, logger);
         if ((propArray == null)) {
             log("InvDBUtil - prop null");
@@ -70,35 +69,62 @@ public class ReplicDBUtil
         }
         
         for (Properties prop : propArray) {
-            String key = buildKey(prop);
+            String key = buildNodeKey(prop);
             if (key == null) continue;
             list.add(key);
         }
         return list;
     }
 
-    public static HashMap<String,String> getKeyHash(
+    public static HashMap<String,String> getHashNode(
+            long nodeNum,
             Identifier objectID,
-            long nodeNumber,
-            Connection connection,
+            ArrayList<String> nodeKeys,
             LoggerInf logger)
         throws TException
     {
+        String found = "found";
         try {
+            if (nodeKeys == null) return null;
             HashMap<String, String> map = new HashMap<>();
-            ArrayList<String> keyList = getKeys(objectID, nodeNumber, connection, logger);
-            String found = "found";
-            if (keyList == null) return null;
-            keyList.add(objectID.getValue() + "|manifest");
-            keyList.add(objectID.getValue() + "|manifest.save");
-            for (String key: keyList) {
+            nodeKeys.add("" + nodeNum + ";" + objectID.getValue() + "|manifest");
+            nodeKeys.add("" + nodeNum + ";" + objectID.getValue() + "|manifest.save");
+            for (String nodeKey : nodeKeys) {
+                String [] parts = nodeKey.split("\\;",2);
+                long keyNode = Long.parseLong(parts[0]);
+                if (keyNode != nodeNum) continue;
+                String key = parts[1];
                 map.put(key, found);
             }
+            
+            if (map.size() == 0) return null;
             return map;
             
-        } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+
+    public static HashMap<String,String> getHashNoNode(
+            Identifier objectID,
+            ArrayList<String> nodeKeys,
+            LoggerInf logger)
+        throws TException
+    {
+        String found = "found";
+        try {
+            if (nodeKeys == null) return null;
+            HashMap<String, String> map = new HashMap<>();
+            nodeKeys.add("00000;" + objectID.getValue() + "|manifest");
+            nodeKeys.add("00000;" + objectID.getValue() + "|manifest.save");
+            for (String nodeKey : nodeKeys) {
+                String [] parts = nodeKey.split("\\;",2);
+                String key = parts[1];
+                map.put(key, found);
+            }
+            if (map.size() == 0) return null;
+            return map;
             
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -106,14 +132,39 @@ public class ReplicDBUtil
         }
     }
     
-    protected static String buildKey(Properties prop)
+    
+
+    public static HashMap<String,String> getKeyHash(
+            Identifier objectID,
+            long nodeNum,
+            Connection connect,
+            LoggerInf logger)
+        throws TException
     {
+        String found = "found";
+        try {
+            ArrayList<String> keyList = ReplicDBUtil.getNodeKeys(objectID, connect,logger);
+            if (keyList == null) {
+                System.out.println("empty list");
+                return null;
+            }
+            return  ReplicDBUtil.getHashNode(nodeNum, objectID, keyList, logger);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+    
+    protected static String buildNodeKey(Properties prop)
+    {
+        String node = prop.getProperty("nnum");
         String ark = prop.getProperty("ark");
-        String version  = prop.getProperty("number");
+        String version  = prop.getProperty("vnum");
         String pathname  = prop.getProperty("pathname");
         
         if ((ark != null) && (version != null) && (pathname != null)) {
-            return ark + "|" + version + "|" + pathname;
+            return node + ";" + ark + "|" + version + "|" + pathname;
         }
         return null;
     }
