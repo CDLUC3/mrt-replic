@@ -145,6 +145,15 @@ public interface ReplicationServiceInf
     public InvStorageScan scanStart(
             Long nodeNumber,
             String keyList)
+        throws TException; 
+    
+    /**
+     * scanCancel - set db entry to cancelled - this will eventually cancel scan run for node
+     * @param scanID inv_storage_scan.id to be cancelled
+     * @return cancelled scan entry
+     */
+    public InvStorageScan scanCancel(
+            Integer scanID)
         throws TException;
     
     /**
@@ -156,6 +165,7 @@ public interface ReplicationServiceInf
     public InvStorageScan scanRestart(
             Integer scanID)
         throws TException;
+    
     /**
      * Check and reset status if active
      * @param scanID inv_storage_scan.id to be tested

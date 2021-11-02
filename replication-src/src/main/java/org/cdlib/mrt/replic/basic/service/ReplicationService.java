@@ -314,6 +314,32 @@ public class ReplicationService
         }
     }
     
+    
+    public InvStorageScan scanCancel(
+            Integer scanID)
+        throws TException
+    {
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = replicationServiceHandler.getReplicConfig();
+            db = config.getDB();
+            if (db == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan fails - MySQL unavailable");
+            }
+            ReplicationRunInfo replicationInfo = replicationServiceHandler.getReplicationRunInfo();
+            ScanManager scanManager = replicationServiceHandler.getReplicConfig().getScanManager(replicationInfo);
+            InvStorageScan scan = scanManager.cancelScan(scanID);
+            return scan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+    
     public InvStorageScan scanStatus(
             Integer scanID)
         throws TException

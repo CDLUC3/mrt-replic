@@ -361,6 +361,29 @@ public class ScanManager
             throw new TException(ex) ;
             
         }
+    }
+    
+    public InvStorageScan cancelScan(int scanNum)
+        throws TException
+    {
+        try {
+            Connection connection = db.getConnection(true);
+            activeScan = getStorageScan(scanNum, connection, logger);
+            if (activeScan == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
+            }
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("***cancelScan***", activeScan.retrieveProp()));
+            activeScan.setScanStatusDB("cancelled");
+            ScanWrapper.writeStorageScan(activeScan, connection, logger);
+            return activeScan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+        }
         
     }
     

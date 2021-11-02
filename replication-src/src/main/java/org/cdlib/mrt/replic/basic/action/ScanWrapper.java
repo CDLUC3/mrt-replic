@@ -390,7 +390,11 @@ public class ScanWrapper
             if (scan != null) {
                 throw new TException.INVALID_OR_MISSING_PARM("started scan found:" + scan.getId());
             }
-            long nodeid = InvDBUtil.getNodeSeq(nodeNum,connection, logger);
+            Long nodeid = InvDBUtil.getNodeSeq(nodeNum,connection, logger);
+            if (nodeid == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("Scan node invalid:" + nodeNum);
+            }
+            
             InvStorageScan storageScan = new InvStorageScan(logger);
             storageScan.setNodeid(nodeid);
             storageScan.setUpdatedDB();
@@ -408,6 +412,7 @@ public class ScanWrapper
             return scan;
             
         } catch (TException tex) {
+            tex.printStackTrace();
             throw tex ;
             
         } catch (Exception ex) {
