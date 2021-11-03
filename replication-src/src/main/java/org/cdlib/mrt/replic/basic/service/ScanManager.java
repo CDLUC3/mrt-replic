@@ -63,6 +63,7 @@ import org.cdlib.mrt.replic.basic.action.ReplaceWrapper;
 import org.cdlib.mrt.replic.basic.app.ReplicationServiceInit;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
+import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.s3.service.NodeService;
@@ -310,8 +311,9 @@ public class ScanManager
     public InvStorageScan process(Long nodeNum, String keyList)
         throws TException
     {
+        Connection connection = null;
         try {
-            Connection connection = db.getConnection(true);
+            connection = db.getConnection(true);
             activeScan = getActiveScan(nodeNum, keyList, connection);
             if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.started) {
                 System.out.println("return running scan");
@@ -331,6 +333,8 @@ public class ScanManager
         } catch (Exception ex) {
             throw new TException(ex) ;
             
+        } finally {
+            ReplicDB.closeConnect(connection);
         }
         
     }
@@ -338,8 +342,9 @@ public class ScanManager
     public InvStorageScan restart(int scanNum)
         throws TException
     {
+        Connection connection = null;
         try {
-            Connection connection = db.getConnection(true);
+            connection = db.getConnection(true);
             activeScan = getStorageScan(scanNum, connection, logger);
             if (activeScan == null) {
                 throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
@@ -360,14 +365,17 @@ public class ScanManager
             ex.printStackTrace();
             throw new TException(ex) ;
             
+        } finally {
+            ReplicDB.closeConnect(connection);
         }
     }
     
     public InvStorageScan cancelScan(int scanNum)
         throws TException
     {
+        Connection connection = null;
         try {
-            Connection connection = db.getConnection(true);
+            connection = db.getConnection(true);
             activeScan = getStorageScan(scanNum, connection, logger);
             if (activeScan == null) {
                 throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
@@ -383,6 +391,9 @@ public class ScanManager
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new TException(ex) ;
+            
+        } finally {
+            ReplicDB.closeConnect(connection);
         }
         
     }
@@ -390,8 +401,9 @@ public class ScanManager
     public InvStorageScan status(int scanNum)
         throws TException
     {
+        Connection connection = null;
         try {
-            Connection connection = db.getConnection(true);
+            connection = db.getConnection(true);
             activeScan = getStorageScan(scanNum, connection, logger);
             if (activeScan == null) {
                 throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
@@ -414,6 +426,8 @@ public class ScanManager
             ex.printStackTrace();
             throw new TException(ex) ;
             
+        } finally {
+            ReplicDB.closeConnect(connection);
         }
         
     }
@@ -422,8 +436,9 @@ public class ScanManager
     public InvStorageScan isActive(Long nodeNum, String keyList)
         throws TException
     {
+        Connection connection = null;
         try {
-            Connection connection = db.getConnection(true);
+            connection = db.getConnection(true);
             activeScan = getActiveScan(nodeNum, keyList, connection);
             if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.started) {
                 System.out.println("return running scan");
@@ -437,6 +452,8 @@ public class ScanManager
         } catch (Exception ex) {
             throw new TException(ex) ;
             
+        } finally {
+            ReplicDB.closeConnect(connection);
         }
         
     }

@@ -247,4 +247,15 @@ public class ReplicDB
         primaryNodeObject.setReplicated((DateState)null);
         return resetReplicatedRetry(db, primaryNodeObject, logger);
     }
+    
+    public static void closeConnect(Connection connection)
+    {
+        try {
+            if (connection == null) return;
+            connection.close();
+            
+        } catch (Exception ex) {  
+        
         }
+    }
+}
