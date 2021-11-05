@@ -34,6 +34,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,7 @@ import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.Identifier;
 
 import org.cdlib.mrt.cloud.VersionMap;
+import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.FileComponent;
 import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.inv.content.InvFile;
@@ -59,6 +61,7 @@ import org.cdlib.mrt.replic.utility.ReplicDBUtil;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
+import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
@@ -84,6 +87,7 @@ public abstract class DoScanBase
     private static final String NAME = "DoScanAbs";
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
+    private static final long CURRENT_DATE_DELTA = 1000*60*60*24;
 
     
     protected CloudStoreInf service = null;
@@ -254,6 +258,16 @@ public abstract class DoScanBase
                 log(2, "Add fail 404:" + key);
                 return;
             }
+            if (isCurrentEntry(entry, CURRENT_DATE_DELTA)) {
+                log(5,"Current skip"
+                            + " - node:" + inNode
+                            + " - date:" + entry.lastModified
+                            + " - key:" + entry.key
+                            + " - size:" + entry.size
+                );
+                scanInfo.bumpCurrentCnt();
+                return;
+            }
             scanInfo.bump(addType);
             if (false) return;
             
@@ -282,6 +296,30 @@ public abstract class DoScanBase
         } catch (TException tex) {
             tex.printStackTrace();
             throw tex;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+
+    public static boolean isCurrentEntry(CloudList.CloudEntry entry, long currentSkip)
+        throws TException
+    {
+        try {
+            //System.out.println("ISO:" + DateTimeFormatter.ISO_DATE_TIME.toString());
+            String lastModified = entry.getLastModified();
+            int lpos = lastModified.lastIndexOf(":");
+            if (lpos >= 0) {
+                lastModified = lastModified.substring(0,lpos) + lastModified.substring(lpos+1);
+                //System.out.println("lastModified:" + lastModified);
+            }
+            Date modifiedDate = DateUtil.getDateFromString(lastModified, "yyyy-MM-dd'T'HH:mm:ssZ");
+            Date currentDate = DateUtil.getCurrentDate();
+            long modifiedTime = modifiedDate.getTime();
+            long currentTime = currentDate.getTime();
+            if ((modifiedTime + currentSkip) > currentTime) return true;
+            return false;
             
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -403,6 +441,7 @@ public abstract class DoScanBase
         protected long lastScanCnt = 0;
         protected long dbCnt = 0;
         protected long matchCnt = 0;
+        protected long currentCnt = 0;
         protected boolean eof = false;
         
         public ScanInfo()
@@ -439,6 +478,11 @@ public abstract class DoScanBase
             lastScanCnt++;
         }
         
+        public void bumpCurrentCnt()
+        {   
+           currentCnt++;
+        }
+        
         public long getLastScanCnt()
         {   
             return lastScanCnt;
@@ -469,6 +513,7 @@ public abstract class DoScanBase
             }
             buf.append(" - dbCnt=" + dbCnt + "\n");
             buf.append(" - matchCnt=" + matchCnt + "\n");
+            buf.append(" - currentCnt=" + matchCnt + "\n");
             buf.append(" - LastProcessKey:" + lastProcessKey + "\n");
             buf.append(" - eof:" + eof + "\n");
             return buf.toString();
@@ -496,6 +541,30 @@ public abstract class DoScanBase
 
         public void setEof(boolean eof) {
             this.eof = eof;
+        }
+
+        public long getDbCnt() {
+            return dbCnt;
+        }
+
+        public void setDbCnt(long dbCnt) {
+            this.dbCnt = dbCnt;
+        }
+
+        public long getMatchCnt() {
+            return matchCnt;
+        }
+
+        public void setMatchCnt(long matchCnt) {
+            this.matchCnt = matchCnt;
+        }
+
+        public long getCurrentCnt() {
+            return currentCnt;
+        }
+
+        public void setCurrentCnt(long currentCnt) {
+            this.currentCnt = currentCnt;
         }
         
     }
