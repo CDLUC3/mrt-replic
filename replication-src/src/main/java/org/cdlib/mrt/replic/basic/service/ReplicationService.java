@@ -50,6 +50,7 @@ import org.cdlib.mrt.replic.basic.action.FileInput;
 import org.cdlib.mrt.replic.basic.action.ScanDeleteS3;
 import org.cdlib.mrt.replic.basic.action.ReplaceWrapper;
 import org.cdlib.mrt.replic.basic.app.ReplicationServiceInit;
+import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
@@ -395,6 +396,8 @@ public class ReplicationService
         } catch (Exception ex) {
             throw new TException(ex) ;
             
+        } finally {
+            ReplicDB.closeConnect(connection);
         }
     }
     
