@@ -53,7 +53,7 @@ public class ReplicDBUtil
                + "inv_nodes n  "
                + "WHERE v.ark='" + objectID.getValue() + "' "
                + "AND f.inv_version_id=v.id "
-               + "AND f.billable_size > 0 "
+               + "AND f.billable_size = f.full_size "
                + "AND NO.inv_object_id=v.inv_object_id "
                + "AND n.id = NO.inv_node_id "
                + ";";
