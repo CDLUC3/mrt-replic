@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import org.cdlib.mrt.cloud.ManifestStr;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -19,6 +20,7 @@ import org.cdlib.mrt.db.DBUtil;
 import org.cdlib.mrt.inv.content.InvCollectionNode;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.inv.content.InvNodeObject;
+import org.cdlib.mrt.inv.content.InvStorageMaint;
 import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.utility.LoggerInf;
@@ -72,6 +74,42 @@ public class ReplicDBUtil
             String key = buildNodeKey(prop);
             if (key == null) continue;
             list.add(key);
+        }
+        return list;
+    }
+    
+    public static ArrayList<InvStorageMaint> getMaintsStatus(
+            InvStorageMaint.MaintStatus status,
+            long node,
+            int limit,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
+    {
+        log("getDeleteMaints entered");
+        
+        ArrayList<InvStorageMaint> list = new ArrayList<>();
+        String sql = "SELECT sm.* "
+             + "FROM inv_storage_maints sm, "
+             + "inv_nodes n "
+             + "WHERE sm.maint_status='" + status + "' "
+             + "AND n.id=sm.inv_node_id "
+             + "AND n.number=" + node + " "
+             + "LIMIT " + limit + " ;" ;
+        log("sql:" + sql);
+        if (DEBUG) System.out.println("sql:" + sql);
+        Properties[] propArray = DBUtil.cmd(connection, sql, logger);
+        if ((propArray == null)) {
+            log("InvDBUtil - prop null");
+            return null;
+        } else if (propArray.length == 0) {
+            log("InvDBUtil - length == 0");
+            return null;
+        }
+        
+        for (Properties prop : propArray) {
+            InvStorageMaint addMaint = new InvStorageMaint(prop, logger);
+            list.add(addMaint);
         }
         return list;
     }
@@ -145,7 +183,7 @@ public class ReplicDBUtil
         try {
             ArrayList<String> keyList = ReplicDBUtil.getNodeKeys(objectID, connect,logger);
             if (keyList == null) {
-                System.out.println("empty list");
+                if (DEBUG) System.out.println("empty list");
                 return null;
             }
             return  ReplicDBUtil.getHashNode(nodeNum, objectID, keyList, logger);

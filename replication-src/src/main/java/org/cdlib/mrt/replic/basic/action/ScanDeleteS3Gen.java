@@ -50,6 +50,7 @@ import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import static org.cdlib.mrt.replic.basic.action.ReplicActionAbs.DEBUG;
+import static org.cdlib.mrt.replic.basic.action.ScanDeleteS3.MESSAGE;
 import static org.cdlib.mrt.replic.basic.action.ScanWrapper.MESSAGE;
 import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.utility.ReplicDB;
@@ -76,7 +77,7 @@ import org.cdlib.mrt.utility.TFileLogger;
  * Run fixity
  * @author dloy
  */
-public class ScanDeleteS3
+public class ScanDeleteS3Gen
         extends ReplicActionAbs
 {
 
@@ -87,70 +88,42 @@ public class ScanDeleteS3
     protected Long inNode = null;
     protected Long inNodeSeq = null;
     protected DBAdd dbAdd = null;
-    protected InvStorageMaint storageMaint = null;
     public static void main(String args[])
     {
-        main_s3c(args);
-    }
-    public static void main_id(String args[])
-    {
-
-        long storageMaintId=895; //OK
-        String existsKey = "ark:/99999/stg01n5001a|1|system/mrt-membership.txt";
-        String existsKey2 = "ark:/99999/stg01n5001a|manifest";
-        String existsKey3 = "ark:/99999/stg01n5001a|1|system/mrt-membership2.txt";
-        // long maintID=894; //Fail
-        LoggerInf logger = new TFileLogger("DoScan", 20, 20);
-        DPRFileDB db = null;
-        long inNode = 5001;
-        try {
-            ReplicationConfig config = ReplicationConfig.useYaml();
-            db = config.startDB();
-            Connection connection = db.getConnection(true);
-            
-            
-            ScanDeleteS3 scanDeleteS3 = ScanDeleteS3.getScanDeleteS3(storageMaintId, connection, logger);
-            scanDeleteS3.process();
-            
-        } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println(
-                    "Main: Encountered exception:" + e);
-                System.out.println(
-                        StringUtil.stackTrace(e));
-        } finally {
-            try {
-                db.shutDown();
-            } catch (Exception ex) {
-                System.out.println("db Exception:" + ex);
-            }
-        }
+        main_storageMaint(args);
     }
     public static void main_storageMaint(String args[])
     {
 
-        long maintID=894; //OK
+        long maintID=17138;
+        long inNode = 9502;
+        
+        
+        maintID=1;
+        inNode = 5001;
+        
         String existsKey = "ark:/99999/stg01n5001a|1|system/mrt-membership.txt";
         String existsKey2 = "ark:/99999/stg01n5001a|manifest";
         String existsKey3 = "ark:/99999/stg01n5001a|1|system/mrt-membership2.txt";
         // long maintID=894; //Fail
         LoggerInf logger = new TFileLogger("DoScan", 20, 20);
         DPRFileDB db = null;
-        long inNode = 5001;
         try {
             ReplicationConfig config = ReplicationConfig.useYaml();
             db = config.startDB();
             Connection connection = db.getConnection(true);
             InvStorageMaint storageMaint = InvDBUtil.getStorageMaintsFromId(maintID,connection, logger);
+            System.out.println(PropertiesUtil.dumpProperties("BEFORE", storageMaint.retrieveProp()));
+            ScanDeleteS3Gen scanDeleteS3 = ScanDeleteS3Gen.getScanDeleteS3(inNode, connection, logger);
             
-            ScanDeleteS3 scanDeleteS3 = ScanDeleteS3.getScanDeleteS3(storageMaint, connection, logger);
-            System.out.println(PropertiesUtil.dumpProperties("test", storageMaint.retrieveProp()));
+            scanDeleteS3.delete(storageMaint);
+            System.out.println(PropertiesUtil.dumpProperties("AFTER", storageMaint.retrieveProp()));
             if (false) {
-                String key = scanDeleteS3.getStorageMaint().getKey();
+                String key = storageMaint.getKey();
                 key = existsKey3;
                 System.out.println("scan=" + scanDeleteS3.reconfirmCanDelete(key));
+                return;
             }
-            scanDeleteS3.process();
             
         } catch(Exception e) {
                 e.printStackTrace();
@@ -167,92 +140,13 @@ public class ScanDeleteS3
         }
     }
     
-    public static void main_s3c(String args[])
-    {
-
-        //long maintID=894; //OK
-        String key = "ark:/99999/test|1|prod/test1526587205349";
-        //String key = "ark:/99999/test|1|prod/test1526586905288";
+    public static ScanDeleteS3Gen getScanDeleteS3(
+            Long inNode,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
+    {    
         
-        // long maintID=894; //Fail
-        LoggerInf logger = new TFileLogger("DoScan", 20, 20);
-        DPRFileDB db = null;
-        long inNode = 5001;
-        try {
-            ReplicationConfig config = ReplicationConfig.useYaml();
-
-            NodeIO nodeIO = ReplicationConfig.getNodeIO();
-            if (nodeIO == null) {
-                throw new TException.INVALID_CONFIGURATION("NodeIO not set");
-            }
-            NodeIO.AccessNode inAccessNode = nodeIO.getAccessNode(inNode);
-            if (inAccessNode == null) {
-                throw new TException.INVALID_CONFIGURATION("AccessNode not found for given node:" + inNode);
-            }
-
-            NodeService nodeService =  NodeService.getNodeService(nodeIO, inNode, logger);
-            
-            Properties tprop = nodeService.getObjectMeta(key);
-            if ((tprop == null) || (tprop.size() == 0)) {
-                System.out.println("before cloud key missing:" + key);
-            } else {
-                System.out.println(PropertiesUtil.dumpProperties("before cloud key found", tprop));
-            }
-            
-        } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println(
-                    "Main: Encountered exception:" + e);
-                System.out.println(
-                        StringUtil.stackTrace(e));
-        }
-    }
-    
-    public static ScanDeleteS3 getScanDeleteS3(
-            long storageScanId,
-            Connection connection,
-            LoggerInf logger)
-        throws TException
-    {    
-        try {
-            if (logger == null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "logger not supplied");
-            }
-            if (storageScanId < 1) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "storageMaint id required");
-            }
-            if ((connection == null) || connection.isClosed()) {
-                throw new TException.GENERAL_EXCEPTION("connection closed");
-            }
-            
-            InvStorageMaint storageMaint = InvDBUtil.getStorageMaintsFromId(storageScanId, connection, logger);
-            return getScanDeleteS3(storageMaint, connection, logger);
-            
-        } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-    
-    public static ScanDeleteS3 getScanDeleteS3(
-            InvStorageMaint storageMaint,
-            Connection connection,
-            LoggerInf logger)
-        throws TException
-    {    
-        if (storageMaint == null) {
-            throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "storageMaint required");
-        }
-
-        if (storageMaint.getMaintStatus() != InvStorageMaint.MaintStatus.delete) {
-            throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "storageMaint status not equal delete(" 
-                    + storageMaint.getId() + "):" + storageMaint.getMaintStatus());
-        }
-        Long inNode = InvDBUtil.getNodeNumber(storageMaint.getNodeid(), connection, logger);
         if (inNode == null) {
             throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "inNode not found");
         }
@@ -266,14 +160,13 @@ public class ScanDeleteS3
         }
         
         NodeService nodeService =  NodeService.getNodeService(nodeIO, inNode, logger);
-        ScanDeleteS3 scanDelete = new ScanDeleteS3(inNode, nodeService, storageMaint, connection, logger);
+        ScanDeleteS3Gen scanDelete = new ScanDeleteS3Gen(inNode, nodeService, connection, logger);
         return scanDelete;
     }
     
-    protected ScanDeleteS3(
+    protected ScanDeleteS3Gen(
             Long inNode,
             NodeService nodeService,
-            InvStorageMaint storageMaint,
             Connection connection,
             LoggerInf logger)
         throws TException
@@ -281,7 +174,6 @@ public class ScanDeleteS3
         super(connection, logger);
         this.inNode = inNode;
         this.nodeService = nodeService;
-        this.storageMaint = storageMaint;
         
         setConnectionAuto();
         validate();
@@ -304,13 +196,6 @@ public class ScanDeleteS3
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "nodeid not found for:" + inNode);
             }
             
-            if (inNodeSeq != storageMaint.getNodeid()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "storageMaint nodeid not = inNode nodeseq:"
-                        + " - inNode.nodeid=" + inNodeSeq
-                        + " - StorageMaint.nodeid=" + storageMaint.getNodeid()
-                );
-            }
-            
         } catch (TException tex) {
             tex.printStackTrace();
             throw tex;
@@ -321,22 +206,33 @@ public class ScanDeleteS3
         }
     }
     
-    public InvStorageMaint process()
+    public InvStorageMaint delete(InvStorageMaint storageMaint)
         throws TException
     {
-        log(15, "process");
+        log(15, "process delete");
         try {
+            if (storageMaint == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "storageMaint required");
+            }
             if (connection == null) {
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "connection not supplied");
             }
-            
+            if (storageMaint.getMaintStatus() != InvStorageMaint.MaintStatus.delete) {
+                log(9, "status InvStorageMaint not equal 'delete' - skipped - status:" + storageMaint.getMaintStatus());
+                return storageMaint;
+            }
             String key = storageMaint.getKey();
             boolean delete = reconfirmCanDelete(key);
             if (DEBUG) System.out.println("delete:" + delete);
             if (reconfirmCanDelete(key)) {
-                System.out.println("doDelete");
+                if (false) {
+                    System.out.println(PropertiesUtil.dumpProperties("TEST: NO DELETE", storageMaint.retrieveProp()));
+                    if (false) throw new TException.REQUESTED_ITEM_NOT_FOUND("test fail");
+                    return storageMaint;
+                }
+                if (DEBUG) System.out.println("doDelete");
                 deleteS3(key);
-                updateDB();
+                updateDB(storageMaint);
             }
             
             log(2, PropertiesUtil.dumpProperties((MESSAGE + "delete"), storageMaint.retrieveProp())
@@ -344,12 +240,26 @@ public class ScanDeleteS3
             return storageMaint;
             
         } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
+            String detail = tex.getDetail();
+            storageMaint.setNote(detail);
+            storageMaint.setMaintStatus(InvStorageMaint.MaintStatus.error);
+            try {
+                updateMaint(storageMaint);
+            } catch (Exception uex) {
+                throw tex;
+            }
+            return storageMaint;
             
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new TException(ex);
+            storageMaint.setNote(ex.toString());
+            storageMaint.setMaintStatus(InvStorageMaint.MaintStatus.error);
+            try {
+                updateMaint(storageMaint);
+            } catch (Exception uex) {
+                throw ex;
+            }
+            return storageMaint;
         }
     }
     
@@ -358,7 +268,14 @@ public class ScanDeleteS3
     {
         
         try {
-            testMeta("before", key);
+            // no s3 key
+            if (!isMeta(key)) {
+                log(5, "deleteS3: content no longer exists:"
+                        + " - node=" + inNode
+                        + " - key=" + key
+                );
+                return true;
+            }
             CloudResponse response = nodeService.deleteObject(key);
             Exception ex = response.getException();
             if (ex != null) {
@@ -407,7 +324,53 @@ public class ScanDeleteS3
         }
     }
     
-    public void updateDB()
+    public boolean isMeta(String key)
+        throws TException
+    {
+        
+        try {
+            Properties tprop = nodeService.getObjectMeta(key);
+            if ((tprop == null) || (tprop.size() == 0)) {
+                return false;
+            } else {
+                return true;
+            }
+            
+        } catch (TException tex) {
+            tex.printStackTrace();
+            throw tex;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+    
+    public void updateDB(InvStorageMaint storageMaint)
+        throws TException
+    {
+        long dbCnt = 0;
+        try {
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("TEST: updateDB", storageMaint.retrieveProp()));
+            if (connection.isClosed()) {
+                System.out.println("updateDB connection closed");
+                throw new TException.GENERAL_EXCEPTION("connection closed");
+            }
+            storageMaint.setMaintStatus(InvStorageMaint.MaintStatus.removed);
+            storageMaint.setRemoved();
+            updateMaint(storageMaint);
+            
+        } catch (TException tex) {
+            tex.printStackTrace();
+            throw tex;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+    
+    public void updateMaint(InvStorageMaint storageMaint)
         throws TException
     {
         long dbCnt = 0;
@@ -415,8 +378,6 @@ public class ScanDeleteS3
             if (connection.isClosed()) {
                 throw new TException.GENERAL_EXCEPTION("connection closed");
             }
-            storageMaint.setMaintStatus(InvStorageMaint.MaintStatus.removed);
-            storageMaint.setRemoved();
             dbAdd = new DBAdd(connection, logger);
             connection.setAutoCommit(true);
             dbCnt = dbAdd.update(storageMaint);
@@ -481,10 +442,6 @@ public class ScanDeleteS3
 
     public Long getInNodeSeq() {
         return inNodeSeq;
-    }
-
-    public InvStorageMaint getStorageMaint() {
-        return storageMaint;
     }
 
 

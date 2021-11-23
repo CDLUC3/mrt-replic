@@ -260,6 +260,16 @@ public interface ReplicationServiceInf
         throws TException;
     
     /**
+     * Delete multiple items usingInv_storage_maints table for this node
+     * @param node number
+     * @return scans db entry
+     * @throws TException 
+     */
+    public InvStorageScan scanDeleteNode(
+            Long node)
+        throws TException;
+    
+    /**
      * Startup services
      * @return service state
      * @throws TException 

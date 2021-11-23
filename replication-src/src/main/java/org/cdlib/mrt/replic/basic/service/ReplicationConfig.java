@@ -503,4 +503,36 @@ public class ReplicationConfig
     }
     
     
+    public ScanDeleteManager getScanDeleteManager(ReplicationRunInfo replicationInfo)
+        throws TException
+    {
+        try {
+            JSONObject scanJSON = getScanJSON();
+            DPRFileDB db = getDB();
+            if (db == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "Database unavailable at this time");
+            }
+            
+            if (scanJSON == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "scanJSON missing");
+            }
+            if (replicationInfo == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "ReplicationInfo");
+            }
+            System.out.println("scanJSON=" + scanJSON.toString(2));
+            Integer maxkeys = scanJSON.getInt("maxkeys");
+            Long threadSleep = scanJSON.getLong("threadSleep");
+            ScanDeleteManager scanManager = new ScanDeleteManager(db, replicationInfo, maxkeys, threadSleep, logger);
+            return scanManager;
+                    
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+    
+    
 }

@@ -315,6 +315,34 @@ public class ReplicationService
         }
     }
     
+    public InvStorageScan scanDeleteNode(
+            Long node)
+        throws TException
+    {
+        DPRFileDB db = null;
+        try {
+            ReplicationConfig config = replicationServiceHandler.getReplicConfig();
+            db = config.getDB();
+            if (config.getDB() == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan fails - MySQL unavailable");
+            }
+            ReplicationRunInfo replicationInfo = replicationServiceHandler.getReplicationRunInfo();
+            ScanDeleteManager scanDeleteManager = replicationServiceHandler.getReplicConfig().getScanDeleteManager(replicationInfo);
+            if (!replicationInfo.isRunReplication()) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Scan failes - Replication not running");
+            }
+            InvStorageScan scan = scanDeleteManager.process(node);
+            return scan;
+                
+        } catch (TException tex) {
+            throw tex ;
+            
+        } catch (Exception ex) {
+            throw new TException(ex) ;
+            
+        }
+    }
+    
     
     public InvStorageScan scanCancel(
             Integer scanID)

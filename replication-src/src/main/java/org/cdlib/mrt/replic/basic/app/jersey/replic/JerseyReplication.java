@@ -385,6 +385,22 @@ public class JerseyReplication
         return scanDelete(storageMaintIdS, formatType, cs, sc);
     }
     
+    @DELETE
+    @Path("scandelete-list/{node}")
+    public Response callScanDeleteNode(
+            @PathParam("node") String nodeS,
+            @DefaultValue("xhtml") @QueryParam(KeyNameHttpInf.RESPONSEFORM) String formatType,
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        if (DEBUG) System.out.println(MESSAGE + "scandelete-list entered"
+                    + " - nodeS=" + nodeS + NL
+                    + " - formatType=" + formatType + NL
+                    );
+        return scanDeleteNode(nodeS, formatType, cs, sc);
+    }
+    
     @POST
     @Path("scan/allow/{bool}")
     public Response callScanAllow(
@@ -880,6 +896,36 @@ public class JerseyReplication
             logger = replicationService.getLogger();
             long storageMaintId = getNumber("node", storageMaintIdS);
             StateInf responseState = replicationService.scanDelete(storageMaintId);
+            return getStateResponse(responseState, formatType, logger, cs, sc);
+
+        } catch (TException tex) {
+            return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
+    // matchObject(sourceNodeS, targetNodeS, objectIDS, formatType, cs, sc);
+    public Response scanDeleteNode(
+            String nodeS,
+            String formatType,
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log("scanDeleteNode entered:"
+                    + " - storageMaintIdS=" + nodeS
+                    + " - formatType=" + formatType
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+            long node = getNumber("node", nodeS);
+            StateInf responseState = replicationService.scanDeleteNode(node);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
         } catch (TException tex) {

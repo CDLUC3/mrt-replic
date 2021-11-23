@@ -57,13 +57,17 @@ import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.replic.basic.action.DoScan;
-import org.cdlib.mrt.replic.basic.action.ScanWrapper;
 import org.cdlib.mrt.replic.basic.action.FileInput;
 import org.cdlib.mrt.replic.basic.action.ReplaceWrapper;
+import org.cdlib.mrt.replic.basic.action.ScanDeleteNode;
 import org.cdlib.mrt.replic.basic.app.ReplicationServiceInit;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
+import static org.cdlib.mrt.replic.basic.service.ScanManager.getStorageScan;
 import org.cdlib.mrt.replic.utility.ReplicDB;
+import org.cdlib.mrt.replic.utility.ScanUtil;
+import static org.cdlib.mrt.replic.utility.ScanUtil.getLastScan;
+import static org.cdlib.mrt.replic.utility.ScanUtil.writeStorageScan;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.s3.service.NodeService;
@@ -81,7 +85,7 @@ import org.json.JSONObject;
  * @author  dloy
  */
 
-public class ScanManager
+public class ScanDeleteManager
 {
     private static final String NAME = "ScanManager";
     private static final String MESSAGE = NAME + ": ";
@@ -98,15 +102,15 @@ public class ScanManager
     protected Long threadSleep = null;
     protected ReplicationRunInfo replicationInfo = null;
     protected InvStorageScan activeScan = null;
-    protected ScanWrapper scanWrapper = null;
+    protected ScanDeleteNode scanDeleteNode = null;
     
     
     public static void main(String args[])
     {
-        main_format(args);
+        //main_format(args);
     }
     
-    
+    /*
     public static void main_format(String args[])
     {
 
@@ -118,8 +122,8 @@ public class ScanManager
             db = config.getDB();
             LoggerInf logger = new TFileLogger("DoScan", 9, 10);
             Connection connection = db.getConnection(true);
-            InvStorageScan activeScan = ScanManager.getStorageScan(scanNum, connection, logger);
-            String response = ScanManager.formatIt("json", logger, activeScan);
+            InvStorageScan activeScan = ScanDeleteManager.getStorageScan(scanNum, connection, logger);
+            String response = ScanDeleteManager.formatIt("json", logger, activeScan);
             JSONObject dobj = new JSONObject(response);
             System.out.println(dobj.toString(2));
             System.out.println("Test format:" + response);
@@ -150,7 +154,7 @@ public class ScanManager
             ReplicationConfig config = ReplicationConfig.useYaml();
             config.startDB();
             ReplicationRunInfo info = new ReplicationRunInfo(config);
-            ScanManager scanManager = config.getScanManager(info);
+            ScanDeleteManager scanManager = config.getScanManager(info);
             info.setRunReplication(true);
             scanManager.process(nodeNumber, keyList);
             
@@ -179,7 +183,7 @@ public class ScanManager
             ReplicationConfig config = ReplicationConfig.useYaml();
             config.startDB();
             ReplicationRunInfo info = new ReplicationRunInfo(config);
-            ScanManager scanManager = config.getScanManager(info);
+            ScanDeleteManager scanManager = config.getScanManager(info);
             info.setRunReplication(true);
             scanManager.restart(scanNum);
             
@@ -209,7 +213,7 @@ public class ScanManager
             ReplicationConfig config = ReplicationConfig.useYaml();
             config.startDB();
             ReplicationRunInfo info = new ReplicationRunInfo(config);
-            ScanManager scanManager = config.getScanManager(info);
+            ScanDeleteManager scanManager = config.getScanManager(info);
             info.setRunReplication(true);
             scanManager.process(nodeNumber, null);
             
@@ -238,7 +242,7 @@ public class ScanManager
             ReplicationConfig config = ReplicationConfig.useYaml();
             config.startDB();
             ReplicationRunInfo info = new ReplicationRunInfo(config);
-            ScanManager scanManager = config.getScanManager(info);
+            ScanDeleteManager scanManager = config.getScanManager(info);
             info.setRunReplication(true);
             scanManager.restart(scanNum);
             
@@ -257,14 +261,15 @@ public class ScanManager
             }
         }
     }
-    public static ScanManager getScanManager( //!!! for testing only - replicationInfo not set
+    */
+    public static ScanDeleteManager getScanDeleteManager( //!!! for testing only - replicationInfo not set
             ReplicationConfig config,
             LoggerInf logger)
         throws TException
     {
         try { 
             ReplicationRunInfo replicationInfo = new ReplicationRunInfo(config);
-            ScanManager scanManager = config.getScanManager(replicationInfo);
+            ScanDeleteManager scanManager = config.getScanDeleteManager(replicationInfo);
             return scanManager;
             
         } catch (Exception ex) {
@@ -272,23 +277,8 @@ public class ScanManager
             
         }
     }
-    public static ScanManager getScanManager(
-            ReplicationRunInfo replicationInfo,
-            ReplicationConfig config,
-            LoggerInf logger)
-        throws TException
-    {
-        try { 
-            ScanManager scanManager = config.getScanManager(replicationInfo);
-            return scanManager;
-            
-        } catch (Exception ex) {
-            throw new TException(ex) ;
-            
-        }
-    }
-
-    public ScanManager(
+    
+    public ScanDeleteManager(
             DPRFileDB db,
             ReplicationRunInfo replicationInfo,
             Integer maxkeys, 
@@ -302,19 +292,19 @@ public class ScanManager
         this.threadSleep = threadSleep;
         this.logger = logger;
         this.db = db;
-        System.out.println("ScanManager:" 
+        System.out.println("ScanDeleteManager:" 
                 + " - maxkeys=" + maxkeys
                 + " - threadSleep=" + threadSleep
         );
     }
     
-    public InvStorageScan process(Long nodeNum, String keyList)
+    public InvStorageScan process(Long nodeNum)
         throws TException
     {
         Connection connection = null;
         try {
             connection = db.getConnection(true);
-            activeScan = getActiveScan(nodeNum, keyList, connection);
+            activeScan = getActiveDeleteScan(nodeNum,connection);
             if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.started) {
                 System.out.println("return running scan");
                 return activeScan;
@@ -322,7 +312,7 @@ public class ScanManager
             if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.pending) {
                 
                 System.out.println("start new scan:" + nodeNum);
-                startScan(nodeNum);
+                startDeleteScan(nodeNum);
                 return activeScan;
             }
             throw new TException.INVALID_ARCHITECTURE(MESSAGE + "ScanStatus not started or pending:" + activeScan.getScanStatus());
@@ -339,18 +329,15 @@ public class ScanManager
         
     }
     
-    public InvStorageScan restart(int scanNum)
+    public InvStorageScan restartDelete(int scanNum)
         throws TException
     {
         Connection connection = null;
         try {
             connection = db.getConnection(true);
-            activeScan = getStorageScan(scanNum, connection, logger);
+            activeScan = ScanUtil.getStorageScan(scanNum, connection, logger);
             if (activeScan == null) {
                 throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
-            }
-            if (activeScan.getScanType() == InvStorageScan.ScanType.delete) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE  + "restart delete scan not permitted");
             }
             if (isActiveScan(activeScan)) {
                 return activeScan;
@@ -358,7 +345,7 @@ public class ScanManager
             doResetScan(activeScan, connection);
             Long nodeNum = InvDBUtil.getNodeNumber(activeScan.getNodeid(), connection, logger);
             System.out.println("Recovered nodeNum:" + nodeNum);
-            startScan(nodeNum);
+            startDeleteScan(nodeNum);
             return activeScan;
                 
         } catch (TException tex) {
@@ -373,68 +360,32 @@ public class ScanManager
         }
     }
     
-    public InvStorageScan cancelScan(int scanNum)
+    public InvStorageScan getActiveDeleteScan(Long nodeNum, Connection connection)
         throws TException
     {
-        Connection connection = null;
+        InvStorageScan activeScan = null;
         try {
-            connection = db.getConnection(true);
-            activeScan = getStorageScan(scanNum, connection, logger);
-            if (activeScan == null) {
-                throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
+            List<InvStorageScan> scanList = ScanUtil.getStorageScanStatus(nodeNum, "started", connection, logger);
+            if (scanList == null) {
+                activeScan = getNewDeleteScan(nodeNum,connection);
+                return activeScan;
             }
-            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("***cancelScan***", activeScan.retrieveProp()));
-            activeScan.setScanStatusDB("cancelled");
-            ScanWrapper.writeStorageScan(activeScan, connection, logger);
+            activeScan = manageActiveDeleteScan(scanList, connection, logger);
+            if (activeScan == null) {
+                activeScan = getNewDeleteScan(nodeNum, connection);
+                return activeScan;
+            }
             return activeScan;
                 
         } catch (TException tex) {
             throw tex ;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
             throw new TException(ex) ;
             
-        } finally {
-            ReplicDB.closeConnect(connection);
         }
         
     }
-    
-    public InvStorageScan status(int scanNum)
-        throws TException
-    {
-        Connection connection = null;
-        try {
-            connection = db.getConnection(true);
-            activeScan = getStorageScan(scanNum, connection, logger);
-            if (activeScan == null) {
-                throw new TException.INVALID_OR_MISSING_PARM("ScanID not found:" + scanNum);
-            }
-            System.out.println(PropertiesUtil.dumpProperties("STATUS", activeScan.retrieveProp()));
-            if (activeScan.getScanStatus() != InvStorageScan.ScanStatus.started) {
-                return activeScan;
-            }
-            if (isActiveScan(activeScan)) {
-                return activeScan;
-            }
-            
-            ScanWrapper.resetStorageScanStatus("cancelled", activeScan, connection, logger);
-            return activeScan;
-                
-        } catch (TException tex) {
-            throw tex ;
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new TException(ex) ;
-            
-        } finally {
-            ReplicDB.closeConnect(connection);
-        }
-        
-    }
-    
     
     public InvStorageScan isActive(Long nodeNum, String keyList)
         throws TException
@@ -442,7 +393,7 @@ public class ScanManager
         Connection connection = null;
         try {
             connection = db.getConnection(true);
-            activeScan = getActiveScan(nodeNum, keyList, connection);
+            activeScan = getActiveDeleteScan(nodeNum, connection);
             if (activeScan.getScanStatus() == InvStorageScan.ScanStatus.started) {
                 System.out.println("return running scan");
                 return activeScan;
@@ -460,60 +411,13 @@ public class ScanManager
         }
         
     }
-    
-    public static InvStorageScan getStorageScan(int scanNum, Connection connection, LoggerInf logger)
-        throws TException
-    {
-        try {
-            InvStorageScan activeScan = InvDBUtil.getStorageScanId(scanNum, connection, logger);
-            if (activeScan == null) {
-               throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "getRestartScan Scan Id not found:" + scanNum);
-            }
-            return activeScan;
-                
-        } catch (TException tex) {
-            throw tex ;
-            
-        } catch (Exception ex) {
-            throw new TException(ex) ;
-            
-        }
-        
-    }
-    
-    public InvStorageScan getActiveScan(Long nodeNum, String keyList, Connection connection)
-        throws TException
-    {
-        InvStorageScan activeScan = null;
-        try {
-            List<InvStorageScan> scanList = ScanWrapper.getStorageScanStatus(nodeNum, "started", connection, logger);
-            if (scanList == null) {
-                activeScan = getNewScan(nodeNum, keyList, connection);
-                return activeScan;
-            }
-            activeScan = manageActiveScan(scanList, connection, logger);
-            if (activeScan == null) {
-                activeScan = getNewScan(nodeNum, keyList, connection);
-                return activeScan;
-            }
-            return activeScan;
-                
-        } catch (TException tex) {
-            throw tex ;
-            
-        } catch (Exception ex) {
-            throw new TException(ex) ;
-            
-        }
-        
-    }
 
-    public void startScan(Long nodeNum)
+    public void startDeleteScan(Long nodeNum)
         throws TException
     {
         try {
             System.out.println(PropertiesUtil.dumpProperties("startScan", activeScan.retrieveProp()));
-            scanWrapper = ScanWrapper.getScanWrapper(replicationInfo, db, activeScan, nodeNum, maxkeys, threadSleep, logger, keyListFile);
+            scanDeleteNode = ScanDeleteNode.getScanDeleteNode(replicationInfo, db, activeScan, nodeNum, maxkeys, threadSleep, logger);
             if (!replicationInfo.isAllowScan()) {
                 throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE 
                         + "Scan may not currently allowed: replicationInfo.isAllowScan=" + replicationInfo.isAllowScan());
@@ -523,7 +427,7 @@ public class ScanManager
                 
                 return;
             }
-            Thread wrapperThread = new Thread(scanWrapper);
+            Thread wrapperThread = new Thread(scanDeleteNode);
             wrapperThread.start();
             Thread.currentThread().sleep(100);
             
@@ -539,17 +443,13 @@ public class ScanManager
         
     }
     
-    public InvStorageScan getNewScan(Long nodeNum, String keyListName, Connection connection)
+    public InvStorageScan getNewDeleteScan(Long nodeNum, Connection connection)
         throws TException
     {
         InvStorageScan activeScan = null;
         try {
-            String scanType = "next";
-            if (keyListName != null) {
-                scanType = "list";
-                setKeyListFile(keyListName);
-            }
-            activeScan = ScanWrapper.buildInitStorageScan(nodeNum, scanType, keyListName, connection, logger);
+            String scanType = "delete";
+            activeScan = buildInitDeleteStorageScan(nodeNum, connection, logger);
             return activeScan;
             
         } catch (TException tex) {
@@ -566,12 +466,7 @@ public class ScanManager
         throws TException
     {
         try {
-            String keyListName = activeScan.getKeyListName();
-            String scanType = "next";
-            if (keyListName != null) {
-                scanType = "list";
-                setKeyListFile(keyListName);
-            }
+            String scanType = "delete";
             String activeType = activeScan.getScanType().toString();
             if (!scanType.equals(activeType)) {
                throw new TException.INVALID_ARCHITECTURE(MESSAGE + "getResetScan-discrpency resetScan and scanType:"
@@ -579,7 +474,7 @@ public class ScanManager
                        + "expected Type=" + scanType
                );
             }
-            ScanWrapper.resetStorageScanStatus("pending", activeScan, connection, logger);
+            ScanUtil.resetStorageScanStatus("pending", activeScan, connection, logger);
             
         } catch (TException tex) {
             throw tex ;
@@ -591,7 +486,7 @@ public class ScanManager
         
     }
     
-    public InvStorageScan manageActiveScan(List<InvStorageScan> scanList, Connection connection, LoggerInf logger)
+    public InvStorageScan manageActiveDeleteScan(List<InvStorageScan> scanList, Connection connection, LoggerInf logger)
         throws TException
     {
         InvStorageScan activeScan = null;
@@ -603,9 +498,14 @@ public class ScanManager
                     if (!isActiveScan(scan)) {
                         System.out.println(PropertiesUtil.dumpProperties("CANCELLED", scan.retrieveProp()));
                         scan.setScanStatusDB("cancelled");
-                        ScanWrapper.writeStorageScan(scan, connection, logger);
+                        ScanUtil.writeStorageScan(scan, connection, logger);
                     } else {
-                        activeScans.add(scan);
+                        if (scan.getScanType() == InvStorageScan.ScanType.delete) {
+                            activeScans.add(scan);
+                        } else {
+                            throw new TException.INVALID_CONFIGURATION(MESSAGE 
+                                    + "Delete may not run during active scan:" + scan.getId());
+                        }
                     }
                 }
             }
@@ -727,6 +627,50 @@ public class ScanManager
             System.out.println("Exception:" + ex);
             System.out.println("Trace:" + StringUtil.stackTrace(ex));
             return null;
+        }
+    }
+    
+    public static InvStorageScan buildInitDeleteStorageScan(
+            long nodeNum, 
+            Connection connection, 
+            LoggerInf logger)
+        throws TException
+    {
+        try {
+            
+            InvStorageScan scan = getLastScan(nodeNum, "started", connection, logger);
+            if (scan != null) {
+                throw new TException.INVALID_OR_MISSING_PARM("started scan found:" + scan.getId());
+            }
+            Long nodeid = InvDBUtil.getNodeSeq(nodeNum,connection, logger);
+            if (nodeid == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("Scan node invalid:" + nodeNum);
+            }
+            
+            InvStorageScan storageScan = new InvStorageScan(logger);
+            storageScan.setNodeid(nodeid);
+            storageScan.setUpdatedDB();
+            storageScan.setScanStatusDB("pending");
+            storageScan.setScanTypeDB("delete");
+            storageScan.setLastS3Key(" ");
+            storageScan.setKeyListName(null);
+            writeStorageScan(storageScan, connection, logger);
+            
+            
+            scan = getLastScan(nodeNum, "pending", connection, logger);
+            if (scan == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("created  scan not found" );
+            }
+            return scan;
+            
+        } catch (TException tex) {
+            tex.printStackTrace();
+            throw tex ;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+            
         }
     }
     
