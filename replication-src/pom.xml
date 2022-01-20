@@ -8,6 +8,23 @@
   <name>UC3-mrtReplicationSrc</name>
   <url>http://uc3.cdlib.org</url>
 
+
+
+  <repositories>
+    <repository>
+      <id>cdl-releases</id>
+      <url>https://mvn.cdlib.org/content/repositories/cdl-releases</url>
+    </repository>
+    <repository>
+      <id>cdl-snapshots</id>
+      <url>https://mvn.cdlib.org/content/repositories/cdl-snapshots</url>
+    </repository>
+    <repository>
+      <id>thirdparty</id>
+      <url>https://mvn.cdlib.org/content/repositories/thirdparty</url>
+    </repository>
+  </repositories>
+  
   <!-- force UTF-8 -->
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,7 +77,7 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
-        <version>2.6.2</version>
+        <version>2.17.1</version>
       </dependency>
       
       <dependency>
@@ -88,11 +105,11 @@
           <version>1.0-SNAPSHOT</version>
       </dependency>
 
-        <!--dependency>
+        <dependency>
             <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-confs3</artifactId>
+            <artifactId>mrt-cloudconf</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency-->
+        </dependency>
 
 <!--
         <dependency>
