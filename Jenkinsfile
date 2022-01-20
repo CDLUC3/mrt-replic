@@ -111,7 +111,7 @@ pipeline {
             steps {
                 script {
                   sh "cp build.current.txt ${tagname}"
-                  archiveArtifacts artifacts: "${tagname}, build.current.txt, mrt-replic/replic-war/target/mrt-replicationwar-1.0-SNAPSHOT.war", onlyIfSuccessful: true
+                  archiveArtifacts artifacts: "${tagname}, build.current.txt, mrt-replic/replication-war/target/mrt-replicationwar-1.0-SNAPSHOT.war", onlyIfSuccessful: true
                 } 
             }
         }
