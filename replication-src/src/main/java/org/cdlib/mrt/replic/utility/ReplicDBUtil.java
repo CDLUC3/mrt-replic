@@ -207,6 +207,45 @@ public class ReplicDBUtil
         return null;
     }
     
+    public static Long[] getVersionSize(
+            Long objectseq,
+            Long lastVersion,
+            Connection connection,
+            LoggerInf logger)
+        throws TException
+    {
+        log("getKeys entered");
+        
+        ArrayList<String> list = new ArrayList<>();
+        String sql = "SELECT SUM(f.billable_size) bsize, MAX(v.number) maxver "
+               + "FROM inv_versions v, "
+               + "inv_files f "
+               + "WHERE v.id = f.inv_version_id "
+               + "AND v.inv_object_id = " + objectseq + " "
+               + "AND v.number > " + lastVersion + " "
+               + ";"; 
+        
+        log("sql:" + sql);
+        if (DEBUG) System.out.println("sql:" + sql);
+        Properties[] propArray = DBUtil.cmd(connection, sql, logger);
+        if ((propArray == null)) {
+            log("InvDBUtil - prop null");
+            return null;
+        } else if (propArray.length == 0) {
+            log("InvDBUtil - length == 0");
+            return null;
+        }
+        
+        Long[] ret = new Long[2];
+        String sizeS = propArray[0].getProperty("bsize");
+        if (sizeS == null) return null;
+        ret[0] = Long.parseLong(sizeS);
+        
+        String maxverS = propArray[0].getProperty("maxver");
+        if (maxverS == null) return null;
+        ret[1] = Long.parseLong(maxverS);
+        return ret;
+    }
     
     protected static void log(String msg)
     {

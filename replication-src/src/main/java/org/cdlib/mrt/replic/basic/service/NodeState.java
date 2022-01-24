@@ -17,6 +17,7 @@ public class NodeState
 {
     protected Long node = null;
     protected Long id = null;
+    protected String status = null;
     public NodeState(Long node, Long id) {
        this.node = node;
        this.id = id;
@@ -36,6 +37,14 @@ public class NodeState
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
     
 }
