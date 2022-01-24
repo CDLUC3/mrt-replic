@@ -87,7 +87,7 @@ public class ReplicationAddState
     public void setReplicationCount(int replicatonCount) {
         this.replicatonCount = replicatonCount;
     }
-
+    
     public List<NodeState> getNodes() {
         return nodes;
     }

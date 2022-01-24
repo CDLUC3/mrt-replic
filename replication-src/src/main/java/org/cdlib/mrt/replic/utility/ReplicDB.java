@@ -48,7 +48,7 @@ import org.cdlib.mrt.inv.utility.DPRFileDB;
  */
 public class ReplicDB 
 {
-    
+    private static final boolean DEBUG = false;
     
     public static boolean resetReplicatedRetry(
             DPRFileDB db, 
@@ -105,7 +105,53 @@ public class ReplicDB
             DBAdd dbAdd = new DBAdd(connection, logger);
             dbAdd.update(tableName, newProp);
            
-            System.out.println(PropertiesUtil.dumpProperties("resetReplicated: replicated reset", newProp)
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("resetReplicated: replicated reset", newProp)
+                    + " - id=" + primaryNodeObject.getId()
+                    + " - nodeseq=" + primaryNodeObject.getNodesid()
+                    + " - objectseq=" + primaryNodeObject.getObjectsid()
+                    + " - replicated=" + primaryNodeObject.getReplicatedDB()
+            );
+            return true;
+            
+        } catch (Exception ex) {
+            System.out.println("WARNING resetBackup fails:" + ex);
+            ex.printStackTrace();
+            String exS = ex.toString().toLowerCase();
+            if (exS.contains("lock")) {
+                System.out.println("Lock failure");
+                ex.printStackTrace();
+                return false;
+            }
+            throw new RuntimeException(ex);
+            
+        }
+        
+    }
+
+    /**
+     * Reset node object to allow later replication attempt
+     * @param primaryNodeObject reset node object
+     * @return true=ok, false=fail
+     */
+    public static boolean resetReplicatedAuto(
+            Connection connection, 
+            InvNodeObject primaryNodeObject,
+            LoggerInf logger)
+    {
+        try {
+            if (primaryNodeObject == null) return true;
+            if (!connection.isValid(10)) {
+                System.out.println(PropertiesUtil.dumpProperties(
+                        "INFO: - connection invalid:", primaryNodeObject.retrieveProp()));
+                return false;
+            }
+            String tableName = primaryNodeObject.getDBName();
+            Properties prop = primaryNodeObject.retrieveProp();
+            DBAdd dbAdd = new DBAdd(connection, logger);
+            connection.setAutoCommit(true);
+            dbAdd.update(tableName, prop);
+           
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("resetReplicated: replicated reset", prop)
                     + " - id=" + primaryNodeObject.getId()
                     + " - nodeseq=" + primaryNodeObject.getNodesid()
                     + " - objectseq=" + primaryNodeObject.getObjectsid()
@@ -213,7 +259,7 @@ public class ReplicDB
             DPRFileDB db, InvNodeObject primaryNodeObject, LoggerInf logger)
     {
         //replicated=1970-01-01 00:00:00
-        DateState zeroDate = new DateState(28800000);
+        DateState zeroDate = getReplicatedDayOne();
         DateState inDate = primaryNodeObject.getReplicated();
         if ((inDate != null) && (inDate.getIsoDate().equals(zeroDate.getIsoDate()))) {
             System.out.println("***Date already set:" + primaryNodeObject.getId());
@@ -227,7 +273,7 @@ public class ReplicDB
             DPRFileDB db, InvNodeObject primaryNodeObject, LoggerInf logger)
     {
         //replicated=1970-01-01 00:00:00
-        DateState yearDate = new DateState(31507200000L);
+        DateState yearDate = getReplicatedYear();
         DateState inDate = primaryNodeObject.getReplicated();
         if ((inDate != null) && (inDate.getIsoDate().equals(yearDate.getIsoDate()))) {
             System.out.println("***Date already set:" + primaryNodeObject.getId());
@@ -246,6 +292,17 @@ public class ReplicDB
         }
         primaryNodeObject.setReplicated((DateState)null);
         return resetReplicatedRetry(db, primaryNodeObject, logger);
+    }
+    
+    public static DateState getReplicatedDayOne()
+    {
+        return new DateState(28800000);
+    }
+    
+    public static DateState getReplicatedYear()
+    {
+        //replicated=1970-01-01 00:00:00
+        return new DateState(31507200000L);
     }
     
     public static void closeConnect(Connection connection)

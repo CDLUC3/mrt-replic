@@ -83,6 +83,7 @@ public class ObjectReplication
     protected NodeIO nodes = null;
     protected boolean nearLineDelete = false;
     protected boolean doMatch = false;
+    protected NodeObjectMaint nodeObjectMaint = null;
     
     public static ObjectReplication getObjectReplication(ReplicationInfo info, DPRFileDB db, NodeIO nodes)
         throws TException
@@ -103,7 +104,7 @@ public class ObjectReplication
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "missing CopyNodes");
             }
             this.nodes = nodes;
-            
+            nodeObjectMaint = NodeObjectMaint.getNodeObjectMaint(info, db);
             nodeObjectList = info.getSecondaryList();
             //logger.logMessage("***Replication begins:" + info.getObjectID().getValue(), 1, true);
     
@@ -127,23 +128,25 @@ public class ObjectReplication
             return;
         }
         try {
-            for (ReplicationInfo.NodeObjectInfo nodeObject : nodeObjectList) {
+            nodeObjectMaint.updatePrimaryStart();
+            for (ReplicationInfo.NodeObjectInfo nodeObjectInfo : nodeObjectList) {
                 log(
                         "***Replication starts::" + info.getObjectID().getValue()
-                        + " from node:" + nodeObject.getPrimaryInvNode().getNumber()
-                        + " to node:" + nodeObject.getSecondaryInvNode().getNumber()
+                        + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
+                        + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber()
                         , 1); 
-                CloudManifestCopyVersion.Stat stat = processNodeObject(nodeObject);
+                CloudManifestCopyVersion.Stat stat = processNodeObject(nodeObjectInfo);
                 log(
                         "***Replication complete::" + info.getObjectID().getValue()
-                        + " from node:" + nodeObject.getPrimaryInvNode().getNumber()
-                        + " to node:" + nodeObject.getSecondaryInvNode().getNumber()
+                        + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
+                        + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber()
                         + " cnt:" + stat.objCnt
                         + " size:" + stat.objSize
                         + " getTime:" + stat.getTime
                         + " putTime:" + stat.putTime
                         , 1); 
             }
+            nodeObjectMaint.updatePrimaryEnd();
                    
         } catch (TException tex) {
             logger.logError(
@@ -170,8 +173,8 @@ public class ObjectReplication
             return;
         }
         try {
-            for (ReplicationInfo.NodeObjectInfo nodeObject : nodeObjectList) {
-                processInv(nodeObject);
+            for (ReplicationInfo.NodeObjectInfo nodeObjectInfo : nodeObjectList) {
+                processInv(nodeObjectInfo);
             }
                     
         } catch (TException tex) {
@@ -185,16 +188,28 @@ public class ObjectReplication
         }
     }
     
-    protected CloudManifestCopyVersion.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObject) 
+    protected CloudManifestCopyVersion.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObjectInfo) 
         throws TException
     {
         try {           
-            CloudManifestCopyVersion.Stat stat = new  CloudManifestCopyVersion.Stat(nodeObject.getObjectID().getValue());
-            copyContent(nodeObject, stat);
-            processInv(nodeObject);
-            InvNode targetNode = nodeObject.getSecondaryInvNode();
+            CloudManifestCopyVersion.Stat stat = new  CloudManifestCopyVersion.Stat(nodeObjectInfo.getObjectID().getValue());
+            InvNodeObject secondary = nodeObjectInfo.getInvNodeObject();
+            secondary = nodeObjectMaint.setSecondaryStart(secondary);
+            try {
+                
+                if (false && (secondary.getNodesid() == 18) && (secondary.getObjectsid() == 58178)) {
+                    throw new TException.GENERAL_EXCEPTION("Test Something bad happened");
+                }
+                
+                copyContent(nodeObjectInfo, stat);
+                secondary = nodeObjectMaint.setSecondaryEnd(secondary, null);
+            } catch (Exception exCopy) {
+                secondary = nodeObjectMaint.setSecondaryEnd(secondary, exCopy);
+            }
+            processInv(nodeObjectInfo);
+            InvNode targetNode = nodeObjectInfo.getSecondaryInvNode();
             if ( doMatch ) {
-                match(nodeObject);
+                match(nodeObjectInfo);
             }
             return stat;
                     
@@ -210,15 +225,15 @@ public class ObjectReplication
         
     }
     
-    public void processInv(ReplicationInfo.NodeObjectInfo nodeObject) 
+    public void processInv(ReplicationInfo.NodeObjectInfo nodeObjectInfo) 
         throws TException
     {
         Connection connect = null;
         InvNodeObject primary = info.getPrimaryInvNodeObject();
         try {
             connect = db.getConnection(false);
-            long versionCount = setAudits(nodeObject, connect);
-            addNodeObjectSecondary(nodeObject, versionCount, connect);
+            long versionCount = setAudits(nodeObjectInfo, connect);
+            addNodeObjectSecondary(nodeObjectInfo, versionCount, connect);
             
             ReplicDB.resetReplicatedCurrent(connect, primary, logger);
             log(PropertiesUtil.dumpProperties("***Replicator***", primary.retrieveProp()));
@@ -469,22 +484,22 @@ public class ObjectReplication
      * @param nodeObject
      * @throws TException 
      */
-    protected void addNodeObjectSecondary(ReplicationInfo.NodeObjectInfo nodeObject, 
+    protected void addNodeObjectSecondary(ReplicationInfo.NodeObjectInfo nodeObjectInfo, 
             long versionCount, 
             Connection connect) 
         throws TException
     {
         try {
             DBAdd dbAdd = new DBAdd(connect, logger);
-            InvNodeObject invNodeObject = nodeObject.getInvNodeObject();
-            invNodeObject.setVersionNumber(versionCount);
+            InvNodeObject invNodeObject = nodeObjectInfo.getInvNodeObject();
+            //invNodeObject.setVersionNumber(versionCount);
             InvNodeObject secondaryNodeObject = InvDBUtil.getNodeObject(
                     invNodeObject.getNodesid(), invNodeObject.getObjectsid(), connect, logger);
             long id = 0;
             if (secondaryNodeObject == null) {
                 log(PropertiesUtil.dumpProperties("New secondary", invNodeObject.retrieveProp()));
                 id = dbAdd.insert(invNodeObject);
-                invNodeObject.id = id;
+                invNodeObject.setId(id);
             } else {
                 invNodeObject.setId(secondaryNodeObject.getId());
                 log(PropertiesUtil.dumpProperties("Old secondary", invNodeObject.retrieveProp()));

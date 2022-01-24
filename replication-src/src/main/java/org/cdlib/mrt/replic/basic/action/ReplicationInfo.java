@@ -96,7 +96,7 @@ public class ReplicationInfo
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "missing primaryInvNodeObject");
             }
             this.primaryInvNodeObject = primaryInvNodeObject;
-            System.out.println(MESSAGE + PropertiesUtil.dumpProperties("constructor",primaryInvNodeObject.retrieveProp()));
+            if (DEBUG) System.out.println(MESSAGE + PropertiesUtil.dumpProperties("constructor",primaryInvNodeObject.retrieveProp()));
             invObject = getObject();
             objectID = invObject.getArk();
             
@@ -398,6 +398,10 @@ public class ReplicationInfo
         }
             
     }
+
+    public ArrayList<InvNodeObject> getInvNodeObjects() {
+        return invNodeObjects;
+    }
     
     public int getSecondaryCount()
     {
@@ -424,6 +428,10 @@ public class ReplicationInfo
 
     public InvNodeObject getPrimaryInvNodeObject() {
         return primaryInvNodeObject;
+    }
+
+    public int getMaxPrimaryVersion() {
+        return maxPrimaryVersion;
     }
     
     public static class NodeObjectInfo
@@ -561,7 +569,7 @@ public class ReplicationInfo
         public void setCopyResponse(String copyResponse) {
             this.copyResponse = copyResponse;
         }
-       
+
         public String dump()
         {
             StringBuilder buf = new StringBuilder();

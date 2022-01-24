@@ -31,6 +31,7 @@ package org.cdlib.mrt.replic.basic.action;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.Identifier;
@@ -117,7 +118,7 @@ public class Replicator
                         + PropertiesUtil.dumpProperties(NAME, nodeObject.retrieveProp())
                 );
                 InvNodeObject primary = info.primaryInvNodeObject;
-                resetReplicationDate(info.getMaxReplication(), primary);
+                //resetReplicationDate(info.getMaxReplication(), primary);
                 return;
             }
             objectReplication.process();
@@ -187,8 +188,21 @@ public class Replicator
     
     public ReplicationAddState getResult()
     {
+        ArrayList<NodeState> matchNodeNumbers = new ArrayList<>();
         ArrayList<NodeState> nodeNumbers = info.getReplicationNodeNumbers();
-        ReplicationAddState addState = new ReplicationAddState(info.getObjectID(), nodeNumbers);
+        List<ReplicationInfo.NodeObjectInfo> infoList = info.getSecondaryList();
+        if (infoList != null)
+        for (ReplicationInfo.NodeObjectInfo nodeObjectInfo : infoList) {
+            InvNodeObject test = nodeObjectInfo.getInvNodeObject();
+            for (NodeState nodeState : nodeNumbers) {
+                if (nodeState.getId() == test.getNodesid()) {
+                    nodeState.setStatus(test.getCompletionStatus().toString());
+                    matchNodeNumbers.add(nodeState);
+                    
+                }
+            }
+        }
+        ReplicationAddState addState = new ReplicationAddState(info.getObjectID(), matchNodeNumbers);
         return addState;
     }
     
