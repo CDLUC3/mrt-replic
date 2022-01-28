@@ -201,7 +201,7 @@ public class ObjectReplication
                     throw new TException.GENERAL_EXCEPTION("Test Something bad happened");
                 }
                 
-                copyContent(nodeObjectInfo, stat);
+                copyContentCloud(nodeObjectInfo, stat);
                 secondary = nodeObjectMaint.setSecondaryEnd(secondary, null);
             } catch (Exception exCopy) {
                 secondary = nodeObjectMaint.setSecondaryEnd(secondary, exCopy);
@@ -313,7 +313,7 @@ public class ObjectReplication
             return true;
             
         } catch (TException.REQUESTED_ITEM_NOT_FOUND rinf) {
-            return false;
+            throw rinf;
                     
         } catch (TException tex) {
             tex.printStackTrace();
