@@ -63,6 +63,9 @@ import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 /**
  * Thin Jersey layer for fixity handling
  * @author  David Loy
@@ -79,6 +82,7 @@ public class JerseyReplication
             = FormatterInf.Format.xml;
     protected static final boolean DEBUG = false;
     protected static final String NL = System.getProperty("line.separator");
+    protected static final Logger ecslogger = LogManager.getLogger();
 
     /**
      * Get state information about a specific node
@@ -305,12 +309,14 @@ public class JerseyReplication
             @Context ServletConfig sc)
         throws TException
     {
-        if (DEBUG) System.out.println(MESSAGE + "backupObject entered"
+        if (DEBUG) System.out.println(MESSAGE + "callMatchObjects entered"
                     + " - sourceNodeS=" + sourceNodeS + NL
                     + " - targetNodeS=" + targetNodeS + NL
                     + " - objectIDS=" + objectIDS + NL
                     + " - formatType=" + formatType + NL
                     );
+        ecslogger.debug("{} callMatchObjects entered - sourceNodeS={} - targetNodeS={} - objectIDS={} - formatType={}",
+		MESSAGE, sourceNodeS, targetNodeS, objectIDS, formatType);
         return matchObjects(sourceNodeS, targetNodeS, objectIDS, formatType, cs, sc);
     }
     
@@ -331,6 +337,8 @@ public class JerseyReplication
                     + " - objectIDS=" + objectIDS + NL
                     + " - formatType=" + formatType + NL
                     );
+        ecslogger.debug("{} backupObject entered - sourceNodeS={} - targetNodeS={} - objectIDS={} - formatType={}",
+		MESSAGE, sourceNodeS, targetNodeS, objectIDS, formatType);
         return matchObjects(sourceNodeS, null, objectIDS, formatType, cs, sc);
     }
     
@@ -351,6 +359,8 @@ public class JerseyReplication
                     + " - keylist=" + keylist + NL
                     + " - formatType=" + formatType + NL
                     );
+        ecslogger.debug("{} backupObject entered - type={} - idS={} - keylist={} - formatType={}",
+		MESSAGE, type, idS, keylist, formatType);
         String typeCase = type.toLowerCase();
         
         if (typeCase.equals("start")) {
@@ -382,6 +392,8 @@ public class JerseyReplication
                     + " - storageMaintIdS=" + storageMaintIdS + NL
                     + " - formatType=" + formatType + NL
                     );
+        ecslogger.debug("{} backupObject entered - storageMaintIdS={} - formatType={}",
+		MESSAGE, storageMaintIdS, formatType);
         return scanDelete(storageMaintIdS, formatType, cs, sc);
     }
     
@@ -398,6 +410,8 @@ public class JerseyReplication
                     + " - nodeS=" + nodeS + NL
                     + " - formatType=" + formatType + NL
                     );
+        ecslogger.debug("{} scandelete-list entered - nodeS={} - formatType={}",
+		MESSAGE, nodeS, formatType);
         return scanDeleteNode(nodeS, formatType, cs, sc);
     }
     
@@ -413,12 +427,14 @@ public class JerseyReplication
         if (DEBUG) System.out.println(MESSAGE + "callScanAllow entered"
                     + " - boolS=" + boolS + NL
         );
+        ecslogger.debug("{} callScanAllow entered - boolS={}", boolS);
         LoggerInf logger = null;  
         try {
             logger = defaultLogger;
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -458,6 +474,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -492,6 +509,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -519,6 +537,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -546,6 +565,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -573,6 +593,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -602,6 +623,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -613,6 +635,7 @@ public class JerseyReplication
                     + " - node=" + nodeNumberS
                     + " - objectID=" + objectIDS
                     , 2, true);
+            ecslogger.warn(">>Delete - node={} - objectID={}", nodeNumberS, objectID);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
         } catch (TException tex) {
@@ -637,6 +660,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -648,6 +672,7 @@ public class JerseyReplication
                     + " - node=" + nodeNumberS
                     + " - objectID=" + objectIDS
                     , 2, true);
+            ecslogger.warn(">>Delete - node={} - objectID={}", nodeNumberS, objectID);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
         } catch (TException tex) {
@@ -676,6 +701,7 @@ public class JerseyReplication
                     + " - version=" + versionID
                     + " - fileID=" + fileID
                     );
+            ecslogger.debug("getContent entered: - objectIDS={} - version={} - fileID={}", objectID.getValue(), versionID, fileID);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -705,6 +731,7 @@ public class JerseyReplication
             log("getManifest entered:"
                     + " - objectIDS=" + objectID.getValue()
                     );
+            ecslogger.debug("getManifest entered: - objectIDS={}", objectID.getValue());
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -736,6 +763,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -772,6 +800,7 @@ public class JerseyReplication
             log("scanStart entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("scanStart entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -802,6 +831,7 @@ public class JerseyReplication
             log("scanRestart entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("scanRestart entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -832,6 +862,7 @@ public class JerseyReplication
             log("scanRestart entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("scanRestart entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -861,6 +892,7 @@ public class JerseyReplication
             log("scanRestart entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("scanRestart entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -891,6 +923,7 @@ public class JerseyReplication
                     + " - storageMaintIdS=" + storageMaintIdS
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("scanStart entered: - storageMaintIdS={} - formatType={}", storageMaintIdS, formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -921,6 +954,7 @@ public class JerseyReplication
                     + " - storageMaintIdS=" + nodeS
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("scanDeleteNode entered: - storageMaintIdS={} - formatType={}", nodeS, formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -950,6 +984,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -980,6 +1015,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -1010,6 +1046,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -1040,6 +1077,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -1069,6 +1107,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -1105,6 +1144,7 @@ public class JerseyReplication
             log("getServiceState entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("getServiceState entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
@@ -1134,6 +1174,7 @@ public class JerseyReplication
             log("replace entered:"
                     + " - formatType=" + formatType
                     );
+            ecslogger.debug("replace entered: - formatType={}", formatType);
             ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
