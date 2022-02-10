@@ -230,10 +230,15 @@ public class ObjectReplication
     {
         Connection connect = null;
         InvNodeObject primary = info.getPrimaryInvNodeObject();
+        InvNodeObject secondary = nodeObjectInfo.getInvNodeObject();
         try {
             connect = db.getConnection(false);
-            long versionCount = setAudits(nodeObjectInfo, connect);
-            addNodeObjectSecondary(nodeObjectInfo, versionCount, connect);
+            if (secondary.getCompletionStatus() == InvNodeObject.CompletionStatus.ok) {
+                long versionCount = setAudits(nodeObjectInfo, connect);
+            } else {
+                log(PropertiesUtil.dumpProperties("audit fail", secondary.retrieveProp()),5);
+            }
+            addNodeObjectSecondary(nodeObjectInfo, connect);
             
             ReplicDB.resetReplicatedCurrent(connect, primary, logger);
             log(PropertiesUtil.dumpProperties("***Replicator***", primary.retrieveProp()));
@@ -485,7 +490,6 @@ public class ObjectReplication
      * @throws TException 
      */
     protected void addNodeObjectSecondary(ReplicationInfo.NodeObjectInfo nodeObjectInfo, 
-            long versionCount, 
             Connection connect) 
         throws TException
     {
