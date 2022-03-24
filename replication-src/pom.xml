@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cdlib.mrt</groupId>
@@ -8,8 +9,7 @@
   <name>UC3-mrtReplicationSrc</name>
   <url>http://uc3.cdlib.org</url>
 
-
-
+<!--
   <repositories>
     <repository>
       <id>cdl-releases</id>
@@ -24,8 +24,8 @@
       <url>https://mvn.cdlib.org/content/repositories/thirdparty</url>
     </repository>
   </repositories>
+-->
   
-  <!-- force UTF-8 -->
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <java.compiler>1.8</java.compiler>
@@ -38,10 +38,10 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.0</version>
         <configuration>
-            <source>${java.compiler}</source>
-            <target>${java.compiler}</target>
-            <compilerArgument>${compilerArgument}</compilerArgument>
-            <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
+          <source>${java.compiler}</source>
+          <target>${java.compiler}</target>
+          <compilerArgument>${compilerArgument}</compilerArgument>
+          <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
         </configuration>
       </plugin>
     </plugins>
@@ -49,90 +49,62 @@
 
   <dependencies>
       
+    <!-- Internal dependencies -->
     <dependency>
-        <groupId>org.glassfish.jersey.containers</groupId>
-        <artifactId>jersey-container-servlet</artifactId>
-        <version>2.25.1</version>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-cloudconf</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
-    
+
     <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-multipart</artifactId>
-        <version>2.25.1</version>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-core</artifactId>
+      <version>2.0-SNAPSHOT</version>
     </dependency>
-    
 
     <dependency>
-        <groupId>org.glassfish.jersey.core</groupId>
-        <artifactId>jersey-client</artifactId>
-        <version>2.25.1</version>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-inventorysrc</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
-    
+
     <dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>mail</artifactId>
-        <version>1.4.1</version>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-replicationconf</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
-      
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>2.17.1</version>
-      </dependency>
-      
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-core</artifactId>
-          <version>2.0-SNAPSHOT</version>
-      </dependency>
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-inventorysrc</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
-
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-replicationconf</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-s3srcpub</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
-
-        <dependency>
-            <groupId>org.cdlib.mrt</groupId>
-            <artifactId>mrt-cloudconf</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-<!--
-        <dependency>
-          <groupId>javax.ws.rs</groupId>
-          <artifactId>jsr311-api</artifactId>
-          <version>1.1</version>
-        </dependency>
-        -->
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <!--version>5.1.41</version-->
-            <!--version>5.1.38</version-->
-            <!--version>5.1.13</version WORKS-->
-            <version>5.1.49</version>
-        </dependency>
 
     <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.5</version>
-        <scope>provided</scope>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-s3srcpub</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <!-- 3rd party dependencies -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk</artifactId>
+      <!--version>1.11.438 failed segments minio</version-->
+      <version>1.11.545</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.9.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -141,28 +113,56 @@
       <version>4.5</version>
       <scope>test</scope>
     </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <!--version>1.11.438 failed segments minio</version-->
-            <version>1.11.545</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.9.7</version>
-        </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.49</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.17.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet</artifactId>
+      <version>2.25.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+      <version>2.25.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>2.25.1</version>
+    </dependency>
   </dependencies>
   
-    <reporting>
-        <outputDirectory>/uc3qa/nexus34211/tomcat/webapps/report/mrt/core</outputDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.0.1</version>
-            </plugin>
-        </plugins>
+  <reporting>
+    <outputDirectory>/uc3qa/nexus34211/tomcat/webapps/report/mrt/core</outputDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.0.1</version>
+      </plugin>
+    </plugins>
    </reporting>
 
 </project>
+
+
+<!-- commented out dependencies
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+      <version>1.1</version>
+    </dependency>
+    -->

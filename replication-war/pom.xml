@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cdlib.mrt</groupId>
@@ -8,28 +9,27 @@
   <name>UC3-mrtReplicationWar</name>
   <url>http://uc3.cdlib.org</url>
 
-  <!-- force UTF-8 -->
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <propertyDir>test</propertyDir>
   </properties>
 
-    <profiles>
-      <profile>
-          <id>uc3</id>
-          <activation>
-            <activeByDefault>true</activeByDefault>
-          </activation>
-          <properties>
-              <warLocation>war/${propertyDir}</warLocation>
-              <warName>mrtreplic.war</warName>
-          </properties>
-      </profile>
-    </profiles>
+  <profiles>
+    <profile>
+      <id>uc3</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <warLocation>war/${propertyDir}</warLocation>
+        <warName>mrtreplic.war</warName>
+      </properties>
+    </profile>
+  </profiles>
 
   <build>
     <plugins>
-    <plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
@@ -42,13 +42,13 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                    <groupId>org.cdlib.mrt</groupId>
-                    <artifactId>mrt-replicationwar</artifactId>
-                    <version>1.0-SNAPSHOT</version>
-                    <type>war</type>
-                     <overWrite>true</overWrite>
-                     <outputDirectory>./${warLocation}</outputDirectory>
-                     <destFileName>${warName}</destFileName>
+                  <groupId>org.cdlib.mrt</groupId>
+                  <artifactId>mrt-replicationwar</artifactId>
+                  <version>1.0-SNAPSHOT</version>
+                  <type>war</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>./${warLocation}</outputDirectory>
+                  <destFileName>${warName}</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -59,6 +59,119 @@
   </build>
 
   <dependencies>
+
+    <!-- Internal dependencies -->
+    <dependency>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-replicationsrc</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-inventorysrc</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-replicationconf</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-s3srcpub</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <!-- 3rd party dependencies -->
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.7.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>12.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.jolbox</groupId>
+      <artifactId>bonecp</artifactId>
+      <!--version>0.7.2-SNAPSHOT</version-->
+      <version>0.7.1-rc3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jdom</groupId>
+      <artifactId>jdom</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.james</groupId>
+      <artifactId>apache-mime4j</artifactId>
+      <version>0.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.49</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.17.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>1.4.01</version>
+    </dependency> 
+
+  </dependencies>
+  
+</project>
+
+
+<!-- commented out dependencies -->
+
     <!-- Use version brought in by org.cdlib.mrt:mrt-invsrc
     <dependency>
         <groupId>org.cdlib.mrt</groupId>
@@ -67,33 +180,12 @@
     </dependency>
     mrt-inventoryconf-1.0-SNAPSHOT
     -->
-    
-    <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-replicationsrc</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-replicationconf</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </dependency>
+
     <!--dependency>
         <groupId>org.cdlib.mrt</groupId>
         <artifactId>mrt-confmysql</artifactId>
         <version>${propertyDir}-1.0-SNAPSHOT</version>
     </dependency-->
-    <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-inventorysrc</artifactId>
-          <version>1.0-SNAPSHOT</version>
-    </dependency>
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-s3srcpub</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
 
         <!--dependency>
             <groupId>org.cdlib.mrt</groupId>
@@ -102,63 +194,6 @@
             <scope>provided</scope>
         </dependency-->
         
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.james</groupId>
-            <artifactId>apache-mime4j</artifactId>
-            <version>0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.7.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jdom</groupId>
-            <artifactId>jdom</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>12.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.jolbox</groupId>
-            <artifactId>bonecp</artifactId>
-            <!--version>0.7.2-SNAPSHOT</version-->
-            <version>0.7.1-rc3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.49</version>
-        </dependency>
       
       <!--dependency>
         <groupId>log4j</groupId>
@@ -172,11 +207,6 @@
         <version>2.6.2</version>
       </dependency-->
       
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>2.17.1</version>
-      </dependency>
       
   <!-- upgrade tika handling 
         <dependency>
@@ -185,29 +215,3 @@
             <version>1.20</version>
         </dependency-->
         
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.11.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.4.01</version>
-        </dependency> 
-<!-- << upgrade tika handling -->
-  </dependencies>
-  
-</project>
-
-
-
-
-
-
-
-
-
-
-
