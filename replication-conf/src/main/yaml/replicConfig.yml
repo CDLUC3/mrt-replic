@@ -75,6 +75,10 @@ replic-info-docker: &docker
     password: password
     encoding: utf8   # schema won't load if it's utf8mb4
 
+  scan:
+    maxkeys: 500
+    threadSleep: 100
+
 inv-info-docker-dev: 
   <<: *docker
 
