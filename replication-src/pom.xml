@@ -48,12 +48,14 @@
   </build>
 
   <dependencies>
+
+<!--
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
-      <!--version>1.11.438 failed segments minio</version-->
       <version>1.11.545</version>
     </dependency>
+-->
 
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -61,11 +63,13 @@
       <version>1.11.545</version>
     </dependency>
 
+<!--
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
       <version>2.9.7</version>
     </dependency>
+-->
 
     <dependency>
       <groupId>javax.mail</groupId>
@@ -93,11 +97,13 @@
       <scope>test</scope>
     </dependency>
 
+<!--
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.49</version>
     </dependency>
+-->
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -105,16 +111,19 @@
       <version>4.4.1</version>
     </dependency>
 
+<!--
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>2.17.1</version>
     </dependency>
+-->
 
     <dependency>
       <groupId>org.cdlib.mrt</groupId>
       <artifactId>mrt-cloudconf</artifactId>
       <version>1.0-SNAPSHOT</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
@@ -139,6 +148,7 @@
       <groupId>org.cdlib.mrt</groupId>
       <artifactId>mrt-replicationconf</artifactId>
       <version>1.0-SNAPSHOT</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
@@ -154,9 +164,11 @@
     </dependency>
 
     <dependency>
+      <!-- should this get moved to replication-war? -->
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-servlet</artifactId>
       <version>2.25.1</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
@@ -165,6 +177,7 @@
       <version>2.25.1</version>
     </dependency>
 
+<!--
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
@@ -176,6 +189,8 @@
       <artifactId>jersey-client</artifactId>
       <version>2.25.1</version>
     </dependency>
+-->
+
   </dependencies>
   
   <reporting>
@@ -192,10 +207,25 @@
 </project>
 
 
-<!-- commented out dependencies
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>jsr311-api</artifactId>
-      <version>1.1</version>
-    </dependency>
-    -->
+<!--
+[INFO] - maven-dependency-plugin:2.1:analyze (default-cli) @ mrt-replicationsrc -
+[WARNING] Unused declared dependencies found:
+[WARNING]    com.amazonaws:aws-java-sdk:jar:1.11.545:compile
+[WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.9.7:compile
+[WARNING]    junit:junit:jar:4.5:test
+[WARNING]    mysql:mysql-connector-java:jar:5.1.49:compile
+[WARNING]    org.apache.logging.log4j:log4j-core:jar:2.17.1:compile
+[WARNING]    org.cdlib.mrt:mrt-cloudconf:jar:1.0-SNAPSHOT:compile
+[WARNING]    org.cdlib.mrt:mrt-replicationconf:jar:1.0-SNAPSHOT:compile
+[WARNING]    org.glassfish.jersey.containers:jersey-container-servlet:jar:2.25.1:compile
+[WARNING]    org.glassfish.jersey.media:jersey-media-multipart:jar:2.25.1:compile
+[WARNING]    org.glassfish.jersey.core:jersey-client:jar:2.25.1:compile
+
+Keeping:
+  org.cdlib.mrt:mrt-cloudconf:jar:1.0-SNAPSHOT:runtime
+  org.cdlib.mrt:mrt-replicationconf:jar:1.0-SNAPSHOT:runtime
+  org.glassfish.jersey.containers:jersey-container-servlet:jar:2.25.1:runtime
+    but shouldn't this get moved to replication-war
+
+-->
+
