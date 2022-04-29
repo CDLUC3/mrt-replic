@@ -12,10 +12,10 @@ pipeline {
     environment {      
       //Branch/tag names to incorporate into the build.  Create one var for each repo.
       BRANCH_CORE = 'java-refactor'
-      BRANCH_CLOUD = 'java-refactor'
-      BRANCH_ZK = 'java-refactor'
-      BRANCH_MRTZOO = 'master'
-      BRANCH_INV = 'java-refactor'
+      BRANCH_CLOUD = 'main'
+      BRANCH_ZK = 'main'
+      BRANCH_MRTZOO = 'main'
+      BRANCH_INV = 'main'
 
       //working vars
       M2DIR = "${HOME}/.m2-replic"
