@@ -118,7 +118,7 @@ public class Replicator
                         + PropertiesUtil.dumpProperties(NAME, nodeObject.retrieveProp())
                 );
                 InvNodeObject primary = info.primaryInvNodeObject;
-                //resetReplicationDate(info.getMaxReplication(), primary);
+                resetReplicationNoUpdate(primary, info.getMaxPrimaryVersion());
                 return;
             }
             objectReplication.process();
@@ -153,22 +153,17 @@ public class Replicator
 
     }
     
-    public void resetReplicationDate(DateState maxReplicationDate, InvNodeObject primary) 
+    protected void resetReplicationNoUpdate(InvNodeObject primary, int versionNumber) 
         throws TException
     {
         Connection connect = null;
 
         try {
             connect = db.getConnection(false);
-            if (maxReplicationDate == null) {
-                ReplicDB.resetReplicatedNull(connect, nodeObject, logger);
-                System.out.println(MESSAGE + "resetReplicationDate: null");
-            } else {
-                primary.setReplicated(maxReplicationDate);
-                ReplicDB.resetReplicated(connect, primary, logger);
-                System.out.println(MESSAGE + "resetReplicationDate max:" + maxReplicationDate.getIsoDate());
-            }
-            connect.commit();
+            long versionNumberL = (long)versionNumber;
+            primary = NodeObjectMaint.setPrimaryNoUpdate(primary, versionNumberL, logger);
+            System.out.println(PropertiesUtil.dumpProperties("resetReplicationNoUpdate", primary.retrieveProp()));
+            ReplicDB.resetReplicatedAuto(connect, primary, logger);
             
         } catch (Exception ex) {
  

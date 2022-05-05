@@ -560,6 +560,22 @@ public class NodeObjectMaint
         }
     }
     
+    public static InvNodeObject setPrimaryNoUpdate(
+            InvNodeObject primary, 
+            Long versionNumber,
+            LoggerInf logger)
+        throws TException
+    {
+        DateState start = new DateState();
+        primary.setReplicated(start);
+        primary.setVersionNumber(versionNumber);
+        primary.setCompletionStatus(InvNodeObject.CompletionStatus.ok);
+        if (primary.getSize() == null){
+            primary.setSize(0L);
+        }
+        return primary;
+    }
+    
     public static String getExceptionNote(Exception localEx)
         throws Exception
     { 
