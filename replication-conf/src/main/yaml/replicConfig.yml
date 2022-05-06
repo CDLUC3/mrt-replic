@@ -73,7 +73,7 @@ replic-info-docker: &docker
     name: db-name
     user: user
     password: password
-    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false"   # schema won't load if it's utf8mb4
+    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&serverTimezone=UTC"   # schema won't load if it's utf8mb4
 
   scan:
     maxkeys: 500
