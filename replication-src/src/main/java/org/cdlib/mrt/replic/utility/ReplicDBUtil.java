@@ -170,6 +170,35 @@ public class ReplicDBUtil
         }
     }
     
+    public static HashMap<String,String> getHashAlias(
+            Identifier objectID,
+            HashMap<Long,String> hashOrphan,
+            ArrayList<String> nodeKeys,
+            LoggerInf logger)
+        throws TException
+    {
+        String found = "found";
+        try {
+            if (nodeKeys == null) return null;
+            if (hashOrphan == null) return null;
+            HashMap<String, String> map = new HashMap<>();
+            nodeKeys.add("00000;" + objectID.getValue() + "|manifest");
+            nodeKeys.add("00000;" + objectID.getValue() + "|manifest.save");
+            for (String nodeKey : nodeKeys) {
+                String [] parts = nodeKey.split("\\;",2);
+                String key = parts[1];
+                long keyNode = Long.parseLong(parts[0]);
+                if (hashOrphan.get(keyNode) == null) continue;
+                map.put(key, found);
+            }
+            if (map.size() == 0) return null;
+            return map;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
     
 
     public static HashMap<String,String> getKeyHash(

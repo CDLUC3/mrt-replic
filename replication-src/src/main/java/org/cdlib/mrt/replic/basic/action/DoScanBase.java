@@ -99,7 +99,9 @@ public abstract class DoScanBase
     protected Long storageScanId = null;
     protected String dbArk = null;
     protected HashMap<String,String> dbHash = null;
+    protected HashMap<String,String> dbHashAlias = null;
     protected HashMap<String,String> dbHashNoNode = null;
+    protected HashMap<Long,String> hashAlias = null;
     protected DBAdd dbAdd = null;
     protected ScanInfo scanInfo = null;
     protected String lastKey = null;
@@ -118,6 +120,7 @@ public abstract class DoScanBase
         this.storageScanId = storageScanId;
         this.scanInfo = new ScanInfo();
         setServiceBucket(inNode, connection, logger);
+        hashAlias = getAliasHash(inNode, logger);
         setDB(inNode, connection, logger);
         validate();
     }
@@ -138,6 +141,31 @@ public abstract class DoScanBase
         }
         service = inAccessNode.service;
         bucket = inAccessNode.container;
+    }
+    
+       public static HashMap<Long,String> getAliasHash(
+            long inNode,
+            LoggerInf logger)
+        throws TException
+    {
+        HashMap<Long,String> hashOrphan = new HashMap<>();
+        NodeIO nodeIO = ReplicationConfig.getNodeIO();
+        if (nodeIO == null) {
+            throw new TException.INVALID_CONFIGURATION("setOrphanHash: NodeIO not set");
+        }
+        NodeIO.AccessNode accessNode = nodeIO.getAccessNode(inNode);
+        String bucket = accessNode.container;
+        //System.out.println("getOrphanHash(" + inNode + ")=" + bucket);
+        for (NodeIO.AccessNode inAccessNode : nodeIO.getAccessNodesList()) {
+            //System.out.println("node(" + inAccessNode.nodeNumber + "):" + inAccessNode.container);
+            if (bucket.equals(inAccessNode.container) && (inNode != inAccessNode.nodeNumber)) {
+                hashOrphan.put(inAccessNode.nodeNumber, "found");
+                logger.logMessage(MESSAGE + "orphan alias founde: base:" + inNode + " - alias:" + inAccessNode.nodeNumber, 
+                        2, true);
+            }
+        }
+        if (hashOrphan.size() == 0) return null;
+        return hashOrphan;
     }
 
     protected void setDB(
@@ -218,6 +246,14 @@ public abstract class DoScanBase
             String responseNode = dbHash.get(key);
             if (responseNode != null) {
                 return;
+            }
+            
+            // matches alias
+            if (dbHashAlias != null) {
+                responseNode = dbHashAlias.get(key);
+                if (responseNode != null) {
+                    return;
+                }
             }
             
             String responseNoNode = dbHashNoNode.get(key);
@@ -354,6 +390,7 @@ public abstract class DoScanBase
                 return;
             }
             dbHashNoNode =  ReplicDBUtil.getHashNoNode(ark, nodeKeys, logger);
+            dbHashAlias =  ReplicDBUtil.getHashAlias(ark, hashAlias, nodeKeys, logger);
             dbHash = ReplicDBUtil.getHashNode(inNode, ark, nodeKeys, logger);
             
             scanInfo.bumpDB();
@@ -414,6 +451,19 @@ public abstract class DoScanBase
         Set<String> keys = dbHash.keySet();
         for (String key : keys) {
             System.out.println("dbHash Key:" + key);
+        }
+    }
+    
+    public void dumpHash(HashMap<String,String> hash, String header)
+    {
+        System.out.println("dumpHash <" + header + ">");
+        if (hash == null) {
+            System.out.println(header + " - hash null");
+            return;
+        }
+        Set<String> keys = hash.keySet();
+        for (String key : keys) {
+            System.out.println(header + " Key:" + key);
         }
     }
 
