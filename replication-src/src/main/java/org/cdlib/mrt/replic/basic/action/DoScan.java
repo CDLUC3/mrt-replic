@@ -51,7 +51,7 @@ import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.replic.utility.ReplicDBUtil;
-        ;
+
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
@@ -59,7 +59,8 @@ import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.utility.TFileLogger;import org.cdlib.mrt.s3.service.CloudResponse;
+import org.cdlib.mrt.utility.TFileLogger;
+import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.PropertiesUtil;
