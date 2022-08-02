@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -23,25 +24,37 @@ public class ServiceDriverIT {
         private int replNode = 8888;
         private String cp = "mrtreplic";
 
-        public ServiceDriverIT() {
+        public ServiceDriverIT() throws IOException, JSONException {
                 try {
                         port = Integer.parseInt(System.getenv("it-server.port"));
                 } catch (NumberFormatException e) {
                         System.err.println("it-server.port not set, defaulting to " + port);
                 }
+                initService();
         }
 
         @Test
         public void SimpleTest() throws IOException, JSONException {
                 String url = String.format("http://localhost:%d/%s/state?t=json", port, cp);
                 JSONObject json = getJsonContent(url, 200);
-                assertTrue(json.has("invsv:invServiceState"));
-                assertEquals("running", json.getJSONObject("invsv:invServiceState").get("invsv:systemStatus"));
-                assertEquals("running", json.getJSONObject("invsv:invServiceState").get("invsv:zookeeperStatus"));
-                assertEquals("running", json.getJSONObject("invsv:invServiceState").get("invsv:dbStatus"));
-                
+                System.out.println(json.toString());
+                assertTrue(json.has("repsvc:replicationServiceState"));
+                assertEquals("running", json.getJSONObject("repsvc:replicationServiceState").get("repsvc:status"));       
         }
 
+        public void initService() throws IOException, JSONException {
+                String url = String.format("http://localhost:%d/%s/service/start?t=json", port, cp);
+                try (CloseableHttpClient client = HttpClients.createDefault()) {
+                        HttpPost post = new HttpPost(url);
+                        HttpResponse response = client.execute(post);
+                        assertEquals(200, response.getStatusLine().getStatusCode());
+                        String s = new BasicResponseHandler().handleResponse(response).trim();
+                        assertFalse(s.isEmpty());
+
+                        JSONObject json =  new JSONObject(s);
+                        assertNotNull(json);
+                }
+        }
         public String getContent(String url, int status) throws HttpResponseException, IOException {
                 try (CloseableHttpClient client = HttpClients.createDefault()) {
                     HttpGet request = new HttpGet(url);

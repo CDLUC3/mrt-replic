@@ -100,6 +100,22 @@
                     <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                     <images>
                       <image>
+                        <name>${itDockerRegistry}/mrt-minio-it:dev</name>
+                        <alias>minio-server</alias>
+                        <run>
+                          <network>
+                            <name>network</name>
+                            <alias>minio-server</alias>
+                          </network>
+                          <ports>
+                            <port>minio-server.port:9000</port>
+                          </ports>
+                          <wait>
+                            <time>2000</time>
+                          </wait>
+                        </run>
+                      </image>
+                      <image>
                         <name>${itDockerRegistry}/mrt-it-database:dev</name>
                         <alias>mrt-it-database</alias>
                         <run>
@@ -211,7 +227,7 @@
       
           <dependency>
             <groupId>org.cdlib.mrt</groupId>
-            <artifactId>mrt-inventorysrc</artifactId>
+            <artifactId>mrt-replicationsrc</artifactId>
             <version>1.0-SNAPSHOT</version>
           </dependency>
       

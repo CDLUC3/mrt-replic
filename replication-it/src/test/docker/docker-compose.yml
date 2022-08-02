@@ -40,3 +40,13 @@ services:
       target: 4567
     networks:
       merrittnet:
+  minio-server:
+    container_name: minio-server
+    image: ${ECR_REGISTRY}/mrt-minio-it:dev
+    ports:
+    - published: 9000
+      target: 9000
+    - published: 8098
+      target: 9001
+    networks:
+      merrittnet:
