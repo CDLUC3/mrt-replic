@@ -116,7 +116,7 @@
                         </run>
                       </image>
                       <image>
-                        <name>${itDockerRegistry}/mrt-it-database:dev</name>
+                        <name>${itDockerRegistry}/mrt-it-database-audit-replic:dev</name>
                         <alias>mrt-it-database</alias>
                         <run>
                           <network>
@@ -129,6 +129,9 @@
                             <MYSQL_PASSWORD>password</MYSQL_PASSWORD>
                             <MYSQL_ROOT_PASSWORD>root-password</MYSQL_ROOT_PASSWORD>
                           </env>
+                          <ports>
+                            <port>mrt-it-database.port:3306</port>
+                          </ports>
                           <wait>
                             <time>1000</time>
                           </wait>
@@ -205,6 +208,7 @@
                 <environmentVariables>
                   <it-server.port>${it-server.port}</it-server.port>
                   <mock-merritt-it.port>${mock-merritt-it.port}</mock-merritt-it.port>
+                  <mrt-it-database.port>${mrt-it-database.port}</mrt-it-database.port>
                 </environmentVariables>
               </configuration>
             </plugin>
@@ -274,6 +278,13 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>4.4</version>
+          </dependency>
+
+          <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <!--version>5.1.38</version-->
+            <version>8.0.18</version>
           </dependency>
         </dependencies>
       </project> 

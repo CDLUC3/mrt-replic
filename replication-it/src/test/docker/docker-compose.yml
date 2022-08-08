@@ -4,12 +4,15 @@ networks:
 services:
   mrt-it-database:
     container_name: mrt-it-database
-    image: ${ECR_REGISTRY}/mrt-it-database:dev
+    image: ${ECR_REGISTRY}/mrt-it-database-audit-replic:dev
     environment:
       MYSQL_DATABASE: 'inv'
       MYSQL_USER: 'user'
       MYSQL_PASSWORD: 'password'
       MYSQL_ROOT_PASSWORD: 'root-password'
+    ports:
+    - published: 9999
+      target: 3306
     networks:
       merrittnet:
   it-server:
@@ -42,7 +45,7 @@ services:
       merrittnet:
   minio-server:
     container_name: minio-server
-    image: ${ECR_REGISTRY}/mrt-minio-it:dev
+    image: ${ECR_REGISTRY}/mrt-minio-it-with-content:dev
     ports:
     - published: 9000
       target: 9000
