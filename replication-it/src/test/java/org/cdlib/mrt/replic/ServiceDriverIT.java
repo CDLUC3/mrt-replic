@@ -37,6 +37,7 @@ public class ServiceDriverIT {
         private int primaryNode = 7777;
         private int replNode = 8888;
         private String cp = "mrtreplic";
+        String[] ARKS = {"ark:/1111/2222", "ark:/1111/3333", "ark:/1111/4444" };
 
         private String connstr;
         private String user = "user";
@@ -44,6 +45,8 @@ public class ServiceDriverIT {
 
         private String audit_count_sql = "select count(*) from inv_audits where inv_node_id = " + 
           "(select id from inv_nodes where number=?)";
+        private String storage_maints_sql = "select count(*) from inv_storage_maints where inv_storage_scan_id=? and maint_type=?";
+        private String storage_maints_del_sql = "delete from inv_storage_maints";
 
         public ServiceDriverIT() throws IOException, JSONException, SQLException {
                 try {
@@ -65,13 +68,40 @@ public class ServiceDriverIT {
                 assertEquals("running", json.getJSONObject("repsvc:replicationServiceState").get("repsvc:status"));       
         }
 
+        public void deleteReplication(String ark, int status) throws IOException, JSONException {
+                String url = String.format("http://localhost:%d/%s/deletesecondary/%s?t=json",
+                        port,
+                        cp,
+                        URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
+                );
+                try (CloseableHttpClient client = HttpClients.createDefault()) {
+                        HttpDelete del = new HttpDelete(url);
+                        HttpResponse response = client.execute(del);
+                        if (status > 0) {
+                                assertEquals(status, response.getStatusLine().getStatusCode());
+                                if (status == 200) {
+                                        String s = new BasicResponseHandler().handleResponse(response).trim();
+                                        assertFalse(s.isEmpty());
+                                        JSONObject json = new JSONObject(s);
+                                        assertTrue(json.has("repdel:replicationDeleteState"));                
+                                }
+                        }
+                }
+        }
 
         public void deleteReplications(int status) throws IOException, JSONException {
                 String[] arks = {"ark:/1111/2222", "ark:/1111/3333", "ark:/1111/4444" };
                 for(String ark: arks) {
-                        String url = String.format("http://localhost:%d/%s/deletesecondary/%s?t=json",
+                        deleteReplication(ark, status);
+                }
+        }
+
+        public void deleteReplicationsFromNode(int number, int status) throws IOException, JSONException {
+                for(String ark: ARKS) {
+                        String url = String.format("http://localhost:%d/%s/delete/%d/%s?t=json",
                                 port,
                                 cp,
+                                number,
                                 URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
                         );
                         try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -83,6 +113,27 @@ public class ServiceDriverIT {
                                                 String s = new BasicResponseHandler().handleResponse(response).trim();
                                                 assertFalse(s.isEmpty());
                                                 JSONObject json = new JSONObject(s);
+                                                System.out.println(json.toString(2));
+                                                assertTrue(json.has("repdel:replicationDeleteState"));                
+                                        }
+                                }
+                        }
+                        url = String.format("http://localhost:%d/%s/invdelete/%d/%s?t=json",
+                                port,
+                                cp,
+                                number,
+                                URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
+                        );
+                        try (CloseableHttpClient client = HttpClients.createDefault()) {
+                                HttpDelete del = new HttpDelete(url);
+                                HttpResponse response = client.execute(del);
+                                if (status > 0) {
+                                        assertEquals(status, response.getStatusLine().getStatusCode());
+                                        if (status == 200) {
+                                                String s = new BasicResponseHandler().handleResponse(response).trim();
+                                                assertFalse(s.isEmpty());
+                                                JSONObject json = new JSONObject(s);
+                                                System.out.println(json.toString(2));
                                                 assertTrue(json.has("repdel:replicationDeleteState"));                
                                         }
                                 }
@@ -90,23 +141,117 @@ public class ServiceDriverIT {
                 }
         }
 
-        @Test
-        public void TestReplication() throws IOException, JSONException, InterruptedException, SQLException {
-                int repCount = getDatabaseVal(audit_count_sql, 8888, -1);
-                if (repCount > 0) {
-                        deleteReplications(0);
-                        runUpdate("update inv_nodes_inv_objects set replicated = null");
+        public void addReplications() throws IOException, JSONException {
+                for(String ark: ARKS) {
+                        String url = String.format("http://localhost:%d/%s/add/%s?t=json",
+                                port,
+                                cp,
+                                URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
+                        );
+                        try (CloseableHttpClient client = HttpClients.createDefault()) {
+                                HttpPost post = new HttpPost(url);
+                                HttpResponse response = client.execute(post);
+                                assertEquals(200, response.getStatusLine().getStatusCode());
+                                String s = new BasicResponseHandler().handleResponse(response).trim();
+                                assertFalse(s.isEmpty());
+                                JSONObject json = new JSONObject(s);
+                                assertTrue(json.has("repadd:replicationAddState"));                
+                        }
+                        url = String.format("http://localhost:%d/%s/addinv/%s?t=json",
+                                port,
+                                cp,
+                                URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
+                        );
+                        try (CloseableHttpClient client = HttpClients.createDefault()) {
+                                HttpPost post = new HttpPost(url);
+                                HttpResponse response = client.execute(post);
+                                assertEquals(200, response.getStatusLine().getStatusCode());
+                                String s = new BasicResponseHandler().handleResponse(response).trim();
+                                assertFalse(s.isEmpty());
+                                JSONObject json = new JSONObject(s);
+                                assertTrue(json.has("repadd:replicationAddState"));                
+                        }
                 }
-
-                checkInvDatabase(audit_count_sql, "Confirm replication cleared for 8888", 8888, 0);
-                int orig = getDatabaseVal(audit_count_sql, 7777, -1);
-                //allow time for the replication to complete
-                Thread.sleep(10000);
-                checkInvDatabase(audit_count_sql, "Confirm a complete replication from 7777 to 8888", 8888, orig);
-                deleteReplications(200);
-                checkInvDatabase(audit_count_sql, "Confirm replication cleared for 8888", 8888, 0);
         }
 
+        public void resetReplication() throws IOException, JSONException, InterruptedException, SQLException {
+                int repCount = getDatabaseVal(audit_count_sql, replNode, -1);
+                if (repCount > 0) {
+                        deleteReplications(0);
+                }
+                runUpdate("update inv_nodes_inv_objects set replicated = null");
+                checkInvDatabase(audit_count_sql, "Confirm replication cleared for Repl Node", replNode, 0);
+        }
+
+        public void letReplicationRun()  throws IOException, JSONException, InterruptedException, SQLException {
+                int orig = getDatabaseVal(audit_count_sql, primaryNode, -1);
+                //allow time for the replication to complete
+                int count = getDatabaseVal(audit_count_sql, replNode, -1);
+                for(int i=0; i < 10 && count != orig; i++) {
+                        Thread.sleep(5000);
+                        count = getDatabaseVal(audit_count_sql, replNode, -1);
+                }
+                assertEquals(orig, count);
+        }
+
+        public void matchObject(String ark) throws IOException, JSONException, InterruptedException, SQLException {
+                String url = String.format("http://localhost:%d/%s/match/%d/%d/%s?t=json",
+                        port,
+                        cp,
+                        primaryNode,
+                        replNode,
+                        URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
+                );
+                JSONObject json = getJsonContent(url, 200);
+                assertTrue(json.has("obj:matchObjectState"));
+                assertEquals(true, json.getJSONObject("obj:matchObjectState").getBoolean("obj:matchManifestInv"));
+                assertEquals(true, json.getJSONObject("obj:matchObjectState").getBoolean("obj:matchManifestStore"));
+        }
+
+        @Test
+        public void TestReplication() throws IOException, JSONException, InterruptedException, SQLException {
+                resetReplication();
+                letReplicationRun();
+
+                for(String ark: ARKS) {
+                        matchObject(ark);
+                }
+
+                deleteReplications(200);
+                checkInvDatabase(audit_count_sql, "Confirm replication cleared for Replication Node", replNode, 0);
+        }
+
+        @Test
+        public void TestAccessHelperMethods() throws IOException, JSONException, InterruptedException, SQLException {
+                for(String ark: ARKS) {
+                        String url = String.format("http://localhost:%d/%s/manifest/%s",
+                                port,
+                                cp,
+                                URLEncoder.encode(ark, StandardCharsets.UTF_8.name())
+                        );
+                        getContent(url, 200);
+
+                        url = String.format("http://localhost:%d/%s/content/%s/%d/%s",
+                                port,
+                                cp,
+                                URLEncoder.encode(ark, StandardCharsets.UTF_8.name()),
+                                1,
+                                URLEncoder.encode("producer/mrt-dc.xml", StandardCharsets.UTF_8.name())
+                        );
+                        getContent(url, 200);
+                }
+
+        }
+
+        @Test
+        public void TestReplicationExplictAddDelete() throws IOException, JSONException, InterruptedException, SQLException {
+                resetReplication();
+                int orig = getDatabaseVal(audit_count_sql, primaryNode, -1);
+                addReplications();
+                checkInvDatabase(audit_count_sql, "Confirm a complete replication from Primary Node to Repl Node", replNode, orig);
+                deleteReplicationsFromNode(replNode, 200);
+                checkInvDatabase(audit_count_sql, "Confirm replication cleared for Repl Node", replNode, 0);
+        }
 
         public void initService() throws IOException, JSONException, SQLException {
                 String url = String.format("http://localhost:%d/%s/service/start?t=json", port, cp);
@@ -158,6 +303,19 @@ public class ServiceDriverIT {
                 }
         }
 
+        public void checkInvDatabase(String sql, String message, int n, String s, int value) throws SQLException {
+                try(Connection con = DriverManager.getConnection(connstr, user, password)){
+                        try (PreparedStatement stmt = con.prepareStatement(sql)){
+                                stmt.setInt(1, n);
+                                stmt.setString(2, s);
+                                ResultSet rs=stmt.executeQuery();
+                                while(rs.next()) {
+                                        assertEquals(message, value, rs.getInt(1));  
+                                }  
+                        }
+                }
+        }
+
         public int getDatabaseVal(String sql, int n, int value) throws SQLException {
                 try(Connection con = DriverManager.getConnection(connstr, user, password)){
                         try (PreparedStatement stmt = con.prepareStatement(sql)){
@@ -179,17 +337,85 @@ public class ServiceDriverIT {
                 }
         }
 
-        /* 
-         * For testing
-        - content
-        - manifest - get primary 
+        public JSONObject startScan(int nodenum) throws IOException, JSONException {
+                String url = String.format("http://localhost:%d/%s/scan/start/%d?t=json", port, cp, nodenum);
+                try (CloseableHttpClient client = HttpClients.createDefault()) {
+                        HttpPost post = new HttpPost(url);
+                        HttpResponse response = client.execute(post);
+                        assertEquals(200, response.getStatusLine().getStatusCode());
+                        String s = new BasicResponseHandler().handleResponse(response).trim();
+                        assertFalse(s.isEmpty());
 
-        Do test
-        - delete/node
-        - invdelete/node
-        - delete secondary
-        - add - adds if replic is needed
-        - adding - adds if database update is needed
-        - match - check if matching (not critical to test)
-        */
+                        JSONObject json =  new JSONObject(s);
+                        assertNotNull(json);
+                        assertTrue(json.has("repscan:invStorageScan"));
+                        return json;
+                }
+        }
+
+        public JSONObject scanStatus(int scanid) throws IOException, JSONException {
+                String url = String.format("http://localhost:%d/%s/scan/status/%d?t=json", port, cp, scanid);
+                try (CloseableHttpClient client = HttpClients.createDefault()) {
+                        HttpPost post = new HttpPost(url);
+                        HttpResponse response = client.execute(post);
+                        assertEquals(200, response.getStatusLine().getStatusCode());
+                        String s = new BasicResponseHandler().handleResponse(response).trim();
+                        assertFalse(s.isEmpty());
+
+                        JSONObject json =  new JSONObject(s);
+                        assertNotNull(json);
+                        assertTrue(json.has("repscan:invStorageScan"));
+                        return json;
+                }
+        }
+
+        public boolean testCompleted(JSONObject json) throws JSONException {
+                return json.getJSONObject("repscan:invStorageScan").get("repscan:scanStatus").equals("completed");
+        }
+
+        public int runScan(int nodenum, int missing_file, int missing_ark, int non_ark) throws IOException, JSONException, SQLException, InterruptedException {
+                int orig = getDatabaseVal(audit_count_sql, primaryNode, -1);
+
+                JSONObject json = startScan(nodenum);
+                System.out.println(json.toString(2));
+                int scanid = json.getJSONObject("repscan:invStorageScan").getInt("repscan:id");
+                json = scanStatus(scanid);
+                for(int i=0; i<10 && !testCompleted(json); i++) {
+                        Thread.sleep(2000);
+                        json = scanStatus(scanid);
+                }
+                assertTrue(testCompleted(json));
+                assertTrue(json.getJSONObject("repscan:invStorageScan").getInt("repscan:keysProcessed") >= orig);
+
+                checkInvDatabase(storage_maints_sql, "No scan results found", scanid, "missing-file", missing_file);
+                checkInvDatabase(storage_maints_sql, "No scan results found", scanid, "missing-ark", missing_ark);
+                checkInvDatabase(storage_maints_sql, "No scan results found", scanid, "non-ark", non_ark);
+                return scanid;
+        }
+
+        @Test
+        public void testScanPrimaryNode() throws IOException, JSONException, SQLException, InterruptedException {
+                //Scan process only hits on files more than 1 day old.
+                //This test will fail if the docker image has been recreated in the past day
+
+                runUpdate(storage_maints_del_sql);
+
+                // ark|1|producer/hello2.txt will not be found for all 3 objects
+                // primary node has 2 additional files that will not be found
+                runScan(primaryNode, 3, 1, 1);
+
+                runUpdate(storage_maints_del_sql);
+        }
+
+        @Test
+        public void testScanReplicationNode() throws IOException, JSONException, SQLException, InterruptedException {
+                runUpdate(storage_maints_del_sql);
+
+                resetReplication();
+                letReplicationRun();
+
+                runScan(replNode, 0, 0, 0);
+
+                runUpdate(storage_maints_del_sql);
+        }
 }
