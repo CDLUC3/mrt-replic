@@ -100,7 +100,7 @@
                     <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                     <images>
                       <image>
-                        <name>${itDockerRegistry}/mrt-minio-it:dev</name>
+                        <name>${itDockerRegistry}/mrt-minio-it-with-content:dev</name>
                         <alias>minio-server</alias>
                         <run>
                           <network>

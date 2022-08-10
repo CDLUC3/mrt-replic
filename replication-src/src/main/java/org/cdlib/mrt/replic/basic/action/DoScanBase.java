@@ -87,8 +87,6 @@ public abstract class DoScanBase
     private static final String NAME = "DoScanAbs";
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
-    private static final long CURRENT_DATE_DELTA = 1000*60*60*24;
-
     
     protected CloudStoreInf service = null;
     protected String bucket = null;
@@ -294,7 +292,7 @@ public abstract class DoScanBase
                 log(2, "Add fail 404:" + key);
                 return;
             }
-            if (isCurrentEntry(entry, CURRENT_DATE_DELTA)) {
+            if (isCurrentEntry(entry, ReplicationConfig.getCurrentDateDelta())) {
                 log(5,"Current skip"
                             + " - node:" + inNode
                             + " - date:" + entry.lastModified

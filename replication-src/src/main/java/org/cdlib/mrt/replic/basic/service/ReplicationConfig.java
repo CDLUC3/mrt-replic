@@ -75,6 +75,7 @@ public class ReplicationConfig
     protected LoggerInf logger = null;
     protected boolean shutdown = true;
     protected static NodeIO nodeIO = null;
+    protected static int currentDateDelta = 24 * 60 * 60 * 1000;
     protected Properties cleanupEmailProp = null;
     private static class Test{ };
     
@@ -114,6 +115,7 @@ public class ReplicationConfig
             JSONObject jInvLogger = replicInfoJSON.getJSONObject("fileLogger");
             logger = setLogger(jInvLogger);
             setNodeIO();
+            currentDateDelta = scanJSON.getInt("currentDateDelta");
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -534,5 +536,8 @@ public class ReplicationConfig
         }
     }
     
+    public static int getCurrentDateDelta() {
+        return currentDateDelta;
+    }
     
 }

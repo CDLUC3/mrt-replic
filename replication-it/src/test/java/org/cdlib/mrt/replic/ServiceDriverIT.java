@@ -63,7 +63,6 @@ public class ServiceDriverIT {
         public void SimpleTest() throws IOException, JSONException {
                 String url = String.format("http://localhost:%d/%s/state?t=json", port, cp);
                 JSONObject json = getJsonContent(url, 200);
-                System.out.println(json.toString(2));
                 assertTrue(json.has("repsvc:replicationServiceState"));
                 assertEquals("running", json.getJSONObject("repsvc:replicationServiceState").get("repsvc:status"));       
         }
@@ -113,7 +112,6 @@ public class ServiceDriverIT {
                                                 String s = new BasicResponseHandler().handleResponse(response).trim();
                                                 assertFalse(s.isEmpty());
                                                 JSONObject json = new JSONObject(s);
-                                                System.out.println(json.toString(2));
                                                 assertTrue(json.has("repdel:replicationDeleteState"));                
                                         }
                                 }
@@ -133,7 +131,6 @@ public class ServiceDriverIT {
                                                 String s = new BasicResponseHandler().handleResponse(response).trim();
                                                 assertFalse(s.isEmpty());
                                                 JSONObject json = new JSONObject(s);
-                                                System.out.println(json.toString(2));
                                                 assertTrue(json.has("repdel:replicationDeleteState"));                
                                         }
                                 }
@@ -188,7 +185,7 @@ public class ServiceDriverIT {
                 //allow time for the replication to complete
                 int count = getDatabaseVal(audit_count_sql, replNode, -1);
                 for(int i=0; i < 10 && count != orig; i++) {
-                        Thread.sleep(5000);
+                        Thread.sleep(10000);
                         count = getDatabaseVal(audit_count_sql, replNode, -1);
                 }
                 assertEquals(orig, count);
@@ -377,11 +374,10 @@ public class ServiceDriverIT {
                 int orig = getDatabaseVal(audit_count_sql, primaryNode, -1);
 
                 JSONObject json = startScan(nodenum);
-                System.out.println(json.toString(2));
                 int scanid = json.getJSONObject("repscan:invStorageScan").getInt("repscan:id");
                 json = scanStatus(scanid);
                 for(int i=0; i<10 && !testCompleted(json); i++) {
-                        Thread.sleep(2000);
+                        Thread.sleep(5000);
                         json = scanStatus(scanid);
                 }
                 assertTrue(testCompleted(json));
@@ -417,5 +413,15 @@ public class ServiceDriverIT {
                 runScan(replNode, 0, 0, 0);
 
                 runUpdate(storage_maints_del_sql);
+        }
+
+        //@Test
+        //TODO
+        public void testScanDelete() {                
+        }
+
+        //@Test
+        //TODO
+        public void testScanAllow() {                
         }
 }

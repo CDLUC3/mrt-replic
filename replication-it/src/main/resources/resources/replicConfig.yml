@@ -39,3 +39,4 @@ replic-info:
   scan:
     maxkeys: 500
     threadSleep: 100
+    currentDateDelta: 0
