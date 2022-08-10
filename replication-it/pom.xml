@@ -138,22 +138,6 @@
                         </run>
                       </image>
                       <image>
-                        <name>${itDockerRegistry}/mock-merritt-it:dev</name>
-                        <alias>mock-merritt-it</alias>
-                        <run>
-                          <network>
-                            <name>network</name>
-                            <alias>mock-merritt-it</alias>
-                          </network>
-                          <ports>
-                            <port>mock-merritt-it.port:4567</port>
-                          </ports>
-                          <wait>
-                            <time>1000</time>
-                          </wait>
-                        </run>
-                      </image>
-                      <image>
                         <name>tomcat:8-jre8</name>
                         <alias>it-server</alias>
                         <run>
@@ -207,7 +191,6 @@
                 </includes>
                 <environmentVariables>
                   <it-server.port>${it-server.port}</it-server.port>
-                  <mock-merritt-it.port>${mock-merritt-it.port}</mock-merritt-it.port>
                   <mrt-it-database.port>${mrt-it-database.port}</mrt-it-database.port>
                 </environmentVariables>
               </configuration>
