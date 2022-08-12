@@ -20,9 +20,9 @@
                 <module>replication-conf</module>
                 <module>replication-src</module>
                 <module>replication-war</module>
+                <module>replication-it</module>
             </modules>
         </profile>
      </profiles>
 
 </project>
-

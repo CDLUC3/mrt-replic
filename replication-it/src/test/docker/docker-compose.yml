@@ -1,0 +1,47 @@
+version: '3.9'
+networks:
+  merrittnet:
+services:
+  mrt-it-database:
+    container_name: mrt-it-database
+    image: ${ECR_REGISTRY}/mrt-it-database-audit-replic:dev
+    environment:
+      MYSQL_DATABASE: 'inv'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'root-password'
+    ports:
+    - published: 9999
+      target: 3306
+    networks:
+      merrittnet:
+  it-server:
+    container_name: it-server
+    image: tomcat:8-jre8
+    volumes:
+    - "${MDIR}/replication-it/target/mrt-replication-it-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/mrtreplic.war"
+    ports:
+    - published: 8080
+      target: 8080
+    - published: 8099
+      target: 8099
+    environment:
+      CATALINA_OPTS: "-Dfile.encoding=UTF8 -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
+      JPDA_ADDRESS: 8099
+      JPDA_TRANSPORT: dt_socket
+    networks:
+      merrittnet:
+    depends_on:
+    - mrt-it-database
+    # Allow debugger to be attached to the server
+    entrypoint: ["catalina.sh", "jpda", "run"]
+  minio-server:
+    container_name: minio-server
+    image: ${ECR_REGISTRY}/mrt-minio-it-with-content:dev
+    ports:
+    - published: 9000
+      target: 9000
+    - published: 8098
+      target: 9001
+    networks:
+      merrittnet:

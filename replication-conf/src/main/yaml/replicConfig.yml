@@ -38,6 +38,7 @@ replic-info:
   scan:
     maxkeys: "{!SSM: replic/scan/maxkeys !DEFAULT: 500}"
     threadSleep: "{!SSM: replic/scan/threadSleep !DEFAULT: 100}"
+    currentDateDelta: 86400000
 
 replic-info-docker: &docker
   service:
@@ -78,7 +79,8 @@ replic-info-docker: &docker
   scan:
     maxkeys: 500
     threadSleep: 100
-
+    currentDateDelta: 86400000
+    
 inv-info-docker-dev: 
   <<: *docker
 
