@@ -7,23 +7,6 @@
   <version>1.0-SNAPSHOT</version>
   <name>UC3-mrtReplicationSrc</name>
   <url>http://uc3.cdlib.org</url>
-
-
-
-  <repositories>
-    <repository>
-      <id>cdl-releases</id>
-      <url>https://mvn.cdlib.org/content/repositories/cdl-releases</url>
-    </repository>
-    <repository>
-      <id>cdl-snapshots</id>
-      <url>https://mvn.cdlib.org/content/repositories/cdl-snapshots</url>
-    </repository>
-    <repository>
-      <id>thirdparty</id>
-      <url>https://mvn.cdlib.org/content/repositories/thirdparty</url>
-    </repository>
-  </repositories>
   
   <!-- force UTF-8 -->
   <properties>
