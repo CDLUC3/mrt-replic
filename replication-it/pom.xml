@@ -228,6 +228,7 @@
           <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-replicationsrc</artifactId>
+            <scope>runtime</scope>
             <version>1.0-SNAPSHOT</version>
           </dependency>
       
@@ -238,29 +239,37 @@
           </dependency>
       
           <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.14</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <scope>runtime</scope>
+            <version>4.5.13</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+          </dependency>
+      
+          <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
           </dependency>
- 
           <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-          </dependency>
-      
-          <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-          </dependency>
-          
-          <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-          </dependency>
-          
-          <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-          </dependency>
-        </dependencies>
-      </project> 
+            <scope>runtime</scope>
+            <version>8.0.18</version>
+        </dependency>
+        <dependency>
+          <groupId>org.cdlib.mrt</groupId>
+          <artifactId>mrt-json</artifactId>
+          <version>2.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project> 
