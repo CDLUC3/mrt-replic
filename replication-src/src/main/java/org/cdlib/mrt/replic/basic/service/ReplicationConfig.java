@@ -76,6 +76,7 @@ public class ReplicationConfig
     protected boolean shutdown = true;
     protected static NodeIO nodeIO = null;
     protected static int currentDateDelta = 24 * 60 * 60 * 1000;
+    protected static final DateState serviceStartTime = new DateState();
     protected Properties cleanupEmailProp = null;
     private static class Test{ };
     
@@ -539,5 +540,8 @@ public class ReplicationConfig
     public static int getCurrentDateDelta() {
         return currentDateDelta;
     }
-    
+
+    public static DateState getServiceStartTime() {
+        return serviceStartTime;
+    }
 }

@@ -327,5 +327,9 @@ public class ReplicationServiceState
     public void setAllowScan(Boolean allowScan) {
         this.allowScan = allowScan;
     }
+
+    public DateState getServiceStartTime() {
+        return ReplicationConfig.getServiceStartTime();
+    }
     
 }

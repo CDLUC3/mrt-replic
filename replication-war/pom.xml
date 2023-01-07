@@ -7,6 +7,18 @@
   <version>1.0-SNAPSHOT</version>
   <name>UC3-mrtReplicationWar</name>
   <url>http://uc3.cdlib.org</url>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.cdlib.mrt</groupId>
+        <artifactId>mrt-reflectoring-bom</artifactId>
+        <version>1.0.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <!-- force UTF-8 -->
   <properties>
@@ -57,43 +69,32 @@
       </plugin>
     </plugins>
   </build>
-
+  
   <dependencies>
-    <!-- Use version brought in by org.cdlib.mrt:mrt-invsrc
-    <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-core</artifactId>
-        <version>2.0-SNAPSHOT</version>
-    </dependency>
-    mrt-inventoryconf-1.0-SNAPSHOT
-    -->
     
-    <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-replicationsrc</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-replicationconf</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <!--dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-confmysql</artifactId>
-        <version>${propertyDir}-1.0-SNAPSHOT</version>
-    </dependency-->
-    <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-inventorysrc</artifactId>
-          <version>1.0-SNAPSHOT</version>
-    </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationsrc</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-s3srcpub</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationconf</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+              <groupId>org.cdlib.mrt</groupId>
+              <artifactId>mrt-inventorysrc</artifactId>
+              <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-s3srcpub</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
         <!--dependency>
             <groupId>org.cdlib.mrt</groupId>
@@ -101,90 +102,57 @@
             <version>1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency-->
-        
+
+
+        <dependency>
+            <groupId>com.jolbox</groupId>
+            <artifactId>bonecp</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.3</version>
         </dependency>
 
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.james</groupId>
-            <artifactId>apache-mime4j</artifactId>
-            <version>0.6</version>
         </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.7.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jdom</groupId>
-            <artifactId>jdom</artifactId>
-            <version>1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.jolbox</groupId>
-            <artifactId>bonecp</artifactId>
-            <!--version>0.7.2-SNAPSHOT</version-->
-            <version>0.7.1-rc3</version>
         </dependency>
 
         <!--dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.49</version>
+            <groupId>ant</groupId>
+            <artifactId>ant</artifactId>
         </dependency-->
-      
-      <!--dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.16</version>
-      </dependency-->
-      
-      <!--dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>2.6.2</version>
-      </dependency-->
-      
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>2.17.1</version>
-      </dependency>
-      
-  <!-- upgrade tika handling 
+
         <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>1.20</version>
-        </dependency-->
-        
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jdom</groupId>
+            <artifactId>jdom</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.james</groupId>
+            <artifactId>apache-mime4j</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
-            <version>1.4.01</version>
-        </dependency> 
-<!-- << upgrade tika handling -->
+        </dependency>
+        
   </dependencies>
 </project>

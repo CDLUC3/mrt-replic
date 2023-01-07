@@ -7,23 +7,18 @@
   <version>1.0-SNAPSHOT</version>
   <name>UC3-mrtReplicationSrc</name>
   <url>http://uc3.cdlib.org</url>
-
-
-
-  <repositories>
-    <repository>
-      <id>cdl-releases</id>
-      <url>https://mvn.cdlib.org/content/repositories/cdl-releases</url>
-    </repository>
-    <repository>
-      <id>cdl-snapshots</id>
-      <url>https://mvn.cdlib.org/content/repositories/cdl-snapshots</url>
-    </repository>
-    <repository>
-      <id>thirdparty</id>
-      <url>https://mvn.cdlib.org/content/repositories/thirdparty</url>
-    </repository>
-  </repositories>
+  
+<dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.cdlib.mrt</groupId>
+        <artifactId>mrt-reflectoring-bom</artifactId>
+        <version>1.0.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   
   <!-- force UTF-8 -->
   <properties>
@@ -48,113 +43,96 @@
   </build>
 
   <dependencies>
-      
-    <dependency>
-        <groupId>org.glassfish.jersey.containers</groupId>
-        <artifactId>jersey-container-servlet</artifactId>
-        <version>2.25.1</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-multipart</artifactId>
-        <version>2.25.1</version>
-    </dependency>
-    
-
-    <dependency>
-        <groupId>org.glassfish.jersey.core</groupId>
-        <artifactId>jersey-client</artifactId>
-        <version>2.25.1</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>mail</artifactId>
-        <version>1.4.1</version>
-    </dependency>
-      
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>2.17.1</version>
-      </dependency>
-      
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-core</artifactId>
-          <version>2.0-SNAPSHOT</version>
-      </dependency>
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-inventorysrc</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
-
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-replicationconf</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
-
-      <dependency>
-          <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-s3srcpub</artifactId>
-          <version>1.0-SNAPSHOT</version>
-      </dependency>
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-cloudconf</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
-        
+      
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <!--version>5.1.38</version-->
-            <!--version>5.1.49</version-->
-            <version>8.0.18</version>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-core</artifactId>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-           <groupId>com.zaxxer</groupId>
-           <artifactId>HikariCP</artifactId>
-           <version>4.0.3</version>
-           <scope>compile</scope>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-inventorysrc</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
-        
-        
+
         <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.12.2</version>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationconf</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-s3srcpub</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>30.1-jre</version>
+        </dependency>
+
+        <dependency>
+           <groupId>com.zaxxer</groupId>
+           <artifactId>HikariCP</artifactId>
+           <scope>compile</scope>
         </dependency>
         
-    <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.5</version>
-        <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.5</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <scope>test</scope>
+        </dependency>
   
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+      
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
+  
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
+  
+  </dependencies>
     <reporting>
         <outputDirectory>/uc3qa/nexus34211/tomcat/webapps/report/mrt/core</outputDirectory>
         <plugins>
