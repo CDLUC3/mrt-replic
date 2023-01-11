@@ -35,7 +35,7 @@
       
         <properties>
           <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-          <itDockerRegistry>itDockerRegistry</itDockerRegistry>
+          <itDockerRegistry>it-docker-registry</itDockerRegistry>
           <java.compiler>1.8</java.compiler>
           <propertyDir>test</propertyDir>
           <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
@@ -101,7 +101,7 @@
             <plugin>
               <groupId>io.fabric8</groupId>
               <artifactId>docker-maven-plugin</artifactId>
-              <version>0.20.1</version>
+              <version>0.40.2</version>
               <executions>
                 <execution>
                   <id>prepare-it-server</id>
@@ -146,7 +146,7 @@
                             <port>mrt-it-database.port:3306</port>
                           </ports>
                           <wait>
-                            <time>2000</time>
+                            <time>10000</time>
                           </wait>
                         </run>
                       </image>
