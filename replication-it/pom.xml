@@ -171,6 +171,7 @@
                           </volumes>
                           <env>
                             <CATALINA_OPTS>-Dfile.encoding=UTF8 -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true</CATALINA_OPTS>
+                            <SSM_SKIP_RESOLUTION>Y</SSM_SKIP_RESOLUTION>
                           </env>
                         </run>
                       </image>
@@ -231,10 +232,17 @@
             <scope>runtime</scope>
             <version>1.0-SNAPSHOT</version>
           </dependency>
-      
+          <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationconf</artifactId>
+            <scope>runtime</scope>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+          
           <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
             <scope>provided</scope>
           </dependency>
       
@@ -264,12 +272,24 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
-            <version>8.0.18</version>
+            <version>8.0.28</version>
         </dependency>
         <dependency>
           <groupId>org.cdlib.mrt</groupId>
           <artifactId>mrt-json</artifactId>
           <version>2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+          <scope>runtime</scope>
+          <version>1.7.25</version>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+          <scope>runtime</scope>
+          <version>1.7.25</version>
         </dependency>
     </dependencies>
 </project> 
