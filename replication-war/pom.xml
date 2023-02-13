@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cdlib.mrt</groupId>
@@ -8,7 +7,7 @@
   <version>1.0-SNAPSHOT</version>
   <name>UC3-mrtReplicationWar</name>
   <url>http://uc3.cdlib.org</url>
-
+  
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -23,35 +22,42 @@
 
   <!-- force UTF-8 -->
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <propertyDir>test</propertyDir>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <propertyDir>test</propertyDir>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>uc3</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <warLocation>war/${propertyDir}</warLocation>
-        <warName>mrtreplic.war</warName>
-      </properties>
-    </profile>
-  </profiles>
+    <profiles>
+      <profile>
+          <id>uc3</id>
+          <activation>
+            <activeByDefault>true</activeByDefault>
+          </activation>
+          <properties>
+              <warLocation>war/${propertyDir}</warLocation>
+              <warName>mrtreplic.war</warName>
+          </properties>
+      </profile>
+    </profiles>
 
   <build>
     <plugins>
-
+        
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.3.2</version>
         <configuration>
-          <packagingExcludes>
-            WEB-INF/lib/slf4j-log4j12-1.5.6.jar,WEB-INF/lib/mrt-jena-2.0-SNAPSHOT.jar</packagingExcludes>
+          <packagingExcludes>WEB-INF/lib/slf4j-log4j12-1.5.*.jar</packagingExcludes>
         </configuration>
       </plugin>
-
+      
+      <!--plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+        <packagingExcludes>WEB-INF/lib/slf4j-log4j12-1.5.6.jar,WEB-INF/lib/mrt-jena-2.0-SNAPSHOT.jar</packagingExcludes>
+        </configuration>
+      </plugin-->
+            
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -65,13 +71,13 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.cdlib.mrt</groupId>
-                  <artifactId>mrt-replicationwar</artifactId>
-                  <version>1.0-SNAPSHOT</version>
-                  <type>war</type>
-                  <overWrite>true</overWrite>
-                  <outputDirectory>./${warLocation}</outputDirectory>
-                  <destFileName>${warName}</destFileName>
+                    <groupId>org.cdlib.mrt</groupId>
+                    <artifactId>mrt-replicationwar</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                    <type>war</type>
+                     <overWrite>true</overWrite>
+                     <outputDirectory>./${warLocation}</outputDirectory>
+                     <destFileName>${warName}</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -80,74 +86,13 @@
       </plugin>
     </plugins>
   </build>
-
+  
   <dependencies>
-
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-replicationsrc</artifactId>
-      <scope>runtime</scope>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-replicationconf</artifactId>
-      <scope>runtime</scope>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-inventorysrc</artifactId>
-      <scope>runtime</scope>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-s3srcpub</artifactId>
-      <scope>runtime</scope>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <scope>runtime</scope>
-      <version>2.5</version>
-    </dependency>
-
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <scope>runtime</scope>
-      <version>8.0.28</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP</artifactId>
-      <version>4.0.3</version>
-      <scope>runtime</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpmime</artifactId>
-      <scope>runtime</scope>
-      <version>4.5.13</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <scope>runtime</scope>
-      <version>1.7.25</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <scope>runtime</scope>
-      <version>1.7.25</version>
-    </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationsrc</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        
   </dependencies>
 </project>

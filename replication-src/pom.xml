@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cdlib.mrt</groupId>
@@ -8,6 +7,7 @@
   <version>1.0-SNAPSHOT</version>
   <name>UC3-mrtReplicationSrc</name>
   <url>http://uc3.cdlib.org</url>
+  
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -19,11 +19,11 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
+  
   <!-- force UTF-8 -->
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.compiler>1.8</java.compiler>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <java.compiler>1.8</java.compiler>
   </properties>
 
   <build>
@@ -33,10 +33,10 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.0</version>
         <configuration>
-          <source>${java.compiler}</source>
-          <target>${java.compiler}</target>
-          <compilerArgument>${compilerArgument}</compilerArgument>
-          <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
+            <source>${java.compiler}</source>
+            <target>${java.compiler}</target>
+            <compilerArgument>${compilerArgument}</compilerArgument>
+            <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
         </configuration>
       </plugin>
     </plugins>
@@ -44,95 +44,154 @@
 
   <dependencies>
 
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4.1</version>
-    </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-cloudconf</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-core</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-core</artifactId>
-      <version>2.0-SNAPSHOT</version>
-    </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-inventorysrc</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-inventorysrc</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-json</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-s3srcpub</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationconf</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-s3srcpub</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-tools</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-cloudconf</artifactId>
-      <scope>runtime</scope>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
+        <dependency>
+           <groupId>com.zaxxer</groupId>
+           <artifactId>HikariCP</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+    
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP</artifactId>
-      <version>4.0.3</version>
-      <scope>runtime</scope>
-    </dependency>
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <scope>test</scope>
+        </dependency>
+  
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+            
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </dependency>
+      
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-      <!--this item is required, but showing up in maven report-->
-      <scope>compile</scope>
-      <version>4.4.16</version>
-    </dependency>
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-json</artifactId>
-      <version>2.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.12.190</version>
-    </dependency>
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-tools</artifactId>
-      <version>2.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>2.25.1</version>
-    </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <scope>compile</scope>
+        </dependency>
+          
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+  
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+  
   </dependencies>
-  <reporting>
-    <outputDirectory>/uc3qa/nexus34211/tomcat/webapps/report/mrt/core</outputDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.0.1</version>
-      </plugin>
-    </plugins>
-  </reporting>
+    <reporting>
+        <outputDirectory>/uc3qa/nexus34211/tomcat/webapps/report/mrt/core</outputDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.0.1</version>
+            </plugin>
+        </plugins>
+   </reporting>
 
 </project>
