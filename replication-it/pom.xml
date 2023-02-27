@@ -234,6 +234,7 @@
         <groupId>org.cdlib.mrt</groupId>
         <artifactId>mrt-replicationsrc</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <scope>runtime</scope>
       </dependency>
 
       <dependency>
