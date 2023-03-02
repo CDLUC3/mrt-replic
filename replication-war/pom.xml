@@ -46,9 +46,17 @@
         <artifactId>maven-war-plugin</artifactId>
         <version>3.3.2</version>
         <configuration>
-        <packagingExcludes>WEB-INF/lib/slf4j-log4j12-1.5.6.jar,WEB-INF/lib/mrt-jena-2.0-SNAPSHOT.jar</packagingExcludes>
+          <packagingExcludes>WEB-INF/lib/slf4j-log4j12-1.5.*.jar</packagingExcludes>
         </configuration>
       </plugin>
+      
+      <!--plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+        <packagingExcludes>WEB-INF/lib/slf4j-log4j12-1.5.6.jar,WEB-INF/lib/mrt-jena-2.0-SNAPSHOT.jar</packagingExcludes>
+        </configuration>
+      </plugin-->
             
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -80,87 +88,10 @@
   </build>
   
   <dependencies>
-    
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-replicationsrc</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.cdlib.mrt</groupId>
-            <artifactId>mrt-replicationconf</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-              <groupId>org.cdlib.mrt</groupId>
-              <artifactId>mrt-inventorysrc</artifactId>
-              <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.cdlib.mrt</groupId>
-            <artifactId>mrt-s3srcpub</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <!--dependency>
-            <groupId>org.cdlib.mrt</groupId>
-          <artifactId>mrt-confs3</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency-->
-
-
-        <dependency>
-            <groupId>com.jolbox</groupId>
-            <artifactId>bonecp</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-        </dependency>
-
-        <!--dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant</artifactId>
-        </dependency-->
-
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jdom</groupId>
-            <artifactId>jdom</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.james</groupId>
-            <artifactId>apache-mime4j</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-core</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
         </dependency>
         
   </dependencies>

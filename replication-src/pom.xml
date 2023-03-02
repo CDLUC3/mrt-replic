@@ -7,7 +7,8 @@
   <version>1.0-SNAPSHOT</version>
   <name>UC3-mrtReplicationSrc</name>
   <url>http://uc3.cdlib.org</url>
-<dependencyManagement>
+  
+  <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.cdlib.mrt</groupId>
@@ -47,6 +48,7 @@
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-cloudconf</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>runtime</scope>
         </dependency>
       
         <dependency>
@@ -63,10 +65,17 @@
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
-            <artifactId>mrt-replicationconf</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>mrt-json</artifactId>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-replicationconf</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-s3srcpub</artifactId>
@@ -74,20 +83,37 @@
         </dependency>
         
         <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-tools</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+        </dependency>
+        
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
            <groupId>com.zaxxer</groupId>
            <artifactId>HikariCP</artifactId>
-           <scope>compile</scope>
+            <scope>runtime</scope>
         </dependency>
         
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
     
         <dependency>
@@ -104,31 +130,60 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+            
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
         </dependency>
       
         <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-core</artifactId>
-        </dependency>
-      
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
+          <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+        </dependency>
+      
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <!-- ignore mvn dependency warn -->
+            <scope>compile</scope>
+        </dependency>
+          
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>runtime</scope>
         </dependency>
   
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
+            <scope>runtime</scope>
         </dependency>
   
   </dependencies>
