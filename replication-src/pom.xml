@@ -1,48 +1,49 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.cdlib.mrt</groupId>
-  <artifactId>mrt-replicationsrc</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>UC3-mrtReplicationSrc</name>
-  <url>http://uc3.cdlib.org</url>
-  
-  <dependencyManagement>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.cdlib.mrt</groupId>
+    <artifactId>mrt-replicationsrc</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>UC3-mrtReplicationSrc</name>
+    <url>http://uc3.cdlib.org</url>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.cdlib.mrt</groupId>
+                <artifactId>mrt-reflectoring-bom</artifactId>
+                <version>1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- force UTF-8 -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.compiler>1.8</java.compiler>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>${java.compiler}</source>
+                    <target>${java.compiler}</target>
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                    <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
-      <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-reflectoring-bom</artifactId>
-        <version>1.0.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  
-  <!-- force UTF-8 -->
-  <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <java.compiler>1.8</java.compiler>
-  </properties>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.0</version>
-        <configuration>
-            <source>${java.compiler}</source>
-            <target>${java.compiler}</target>
-            <compilerArgument>${compilerArgument}</compilerArgument>
-            <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-  <dependencies>
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
@@ -50,7 +51,7 @@
             <version>1.0-SNAPSHOT</version>
             <scope>runtime</scope>
         </dependency>
-      
+
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-core</artifactId>
@@ -75,13 +76,13 @@
             <version>1.0-SNAPSHOT</version>
             <scope>runtime</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-s3srcpub</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-tools</artifactId>
@@ -92,7 +93,7 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -100,61 +101,56 @@
         </dependency>
 
         <dependency>
-           <groupId>com.zaxxer</groupId>
-           <artifactId>HikariCP</artifactId>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
             <scope>runtime</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
-    
+
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
         </dependency>
 
         <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
-  
+
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
-            
+
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
         </dependency>
-      
-        <dependency>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-core</artifactId>
-          <scope>runtime</scope>
-        </dependency>
+
 
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
             <scope>runtime</scope>
         </dependency>
-      
+
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
         </dependency>
-      
+
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
@@ -167,26 +163,20 @@
             <!-- ignore mvn dependency warn -->
             <scope>compile</scope>
         </dependency>
-          
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-  
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <scope>runtime</scope>
         </dependency>
-  
-  </dependencies>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
     <reporting>
         <outputDirectory>/uc3qa/nexus34211/tomcat/webapps/report/mrt/core</outputDirectory>
         <plugins>
@@ -196,6 +186,6 @@
                 <version>2.0.1</version>
             </plugin>
         </plugins>
-   </reporting>
+    </reporting>
 
 </project>
