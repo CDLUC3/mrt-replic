@@ -38,7 +38,8 @@ import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
 import java.sql.Connection;
 
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.ThreadContext;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.inv.content.InvNodeObject;
 import org.cdlib.mrt.inv.utility.InvUtil;
@@ -137,6 +138,10 @@ public class ReplicOwn
                     + " - replicQualify='" + replicQualify +"'"
                     ;
             logger.logMessage(msg, 5, true);
+            ThreadContext.put("updates", Integer.toString(updates));
+            ThreadContext.put("cpacity", Integer.toString(capacity));
+            ThreadContext.put("replicQualify", replicQualify);
+            LogManager.getLogger().info("Replication Complete");
             return replicList;
             
         } catch (Exception ex) {

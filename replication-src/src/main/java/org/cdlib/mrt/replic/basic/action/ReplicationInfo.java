@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Set;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.inv.service.Role;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.ThreadContext;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.content.InvNode;
@@ -328,6 +330,11 @@ public class ReplicationInfo
         if (nodeObjectInfo.primary) {
             primaryNodeObject = nodeObjectInfo;
         }
+        ThreadContext.put("objectID", objectID.toString());
+        ThreadContext.put("primaryInvNode", primaryInvNode.toString());
+        ThreadContext.put("secondaryInvNode", secondaryInvNode.toString());
+        ThreadContext.put("maxSecondaryVersion", Integer.toString(maxSecondaryVersion));        
+        LogManager.getLogger().info("addNodesList");
     }
     
     protected void setMaxReplicationDate(InvNodeObject secondaryNodeObject)
