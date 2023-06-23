@@ -17,7 +17,13 @@
             <scope>import</scope>
           </dependency>
         </dependencies>
-      </dependencyManagement>
+      </dependencyManagement>  
+       
+      <parent>
+        <groupId>org.cdlib.mrt</groupId>
+        <artifactId>mrt-parent-properties</artifactId>
+        <version>1.0.0</version>
+      </parent>
 
     <repositories>
       <repository>
@@ -33,9 +39,7 @@
     </repositories>
 
     <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <itDockerRegistry>it-docker-registry</itDockerRegistry>
-      <java.compiler>1.8</java.compiler>
       <propertyDir>test</propertyDir>
       <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
       <skipTests>${env.SKIP_DOCKER_TEST}</skipTests>
@@ -65,13 +69,13 @@
           </configuration>
         </plugin-->
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.0</version>
-          <configuration>
-            <source>${java.compiler}</source>
-            <target>${java.compiler}</target>
-            <compilerArgument>${compilerArgument}</compilerArgument>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>${maven.compiler.plugin.version}</version>
+            <configuration>
+                <source>${maven.compiler.plugin.java}</source>
+                <target>${maven.compiler.plugin.java}</target>
+                <compilerArgument>${compilerArgument}</compilerArgument>
             <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
             <!--showDeprecation>true</showDeprecation-->
           </configuration>
@@ -100,7 +104,7 @@
         <plugin>
           <groupId>io.fabric8</groupId>
           <artifactId>docker-maven-plugin</artifactId>
-          <version>0.40.2</version>
+          <version>${docker.maven.plugin.version}</version>
           <executions>
             <execution>
               <id>prepare-it-server</id>
@@ -188,7 +192,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>${maven.failsafe.plugin.version}</version>
           <executions>
             <execution>
               <goals>
@@ -210,7 +214,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>${maven.surefire.plugin.version}</version>
           <configuration>
             <!-- Includes Test* and *Test by default -->
             <!-- skips surefire tests without skipping failsafe tests.
