@@ -37,6 +37,7 @@ import java.util.Properties;
 import org.cdlib.mrt.core.FixityStatusType;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.ServiceStatus;
+import org.cdlib.mrt.log.utility.Log4j2Util;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.StringUtil;
@@ -330,6 +331,15 @@ public class ReplicationServiceState
 
     public DateState getServiceStartTime() {
         return ReplicationConfig.getServiceStartTime();
+    }
+    
+    public static String getLogRootLevel()
+    {
+        try {
+            return Log4j2Util.getRootLevel();
+        } catch (Exception  ex) {
+            return "Not found";
+        }
     }
     
 }

@@ -49,6 +49,9 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.QueryParam;
 import java.io.File;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.cdlib.mrt.core.FileContent;
 
 
@@ -56,12 +59,18 @@ import org.cdlib.mrt.formatter.FormatterInf;
 import org.cdlib.mrt.replic.basic.app.jersey.KeyNameHttpInf;
 import org.cdlib.mrt.replic.basic.app.jersey.JerseyBase;
 import org.cdlib.mrt.core.Identifier;
+import org.cdlib.mrt.inv.content.InvStorageScan;
+import org.cdlib.mrt.log.utility.Log4j2Util;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.ReplicationService;
 import static org.cdlib.mrt.replic.basic.service.ReplicationService.getFileResponseFileName;
+import org.cdlib.mrt.s3.service.NodeIO;
+import org.cdlib.mrt.s3.service.NodeIOState;
 import org.cdlib.mrt.utility.StateInf;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
+import org.json.JSONObject;
 
 /**
  * Thin Jersey layer for fixity handling
@@ -80,6 +89,7 @@ public class JerseyReplication
     protected static final boolean DEBUG = false;
     protected static final String NL = System.getProperty("line.separator");
 
+    private static final Logger log4j = LogManager.getLogger();
     /**
      * Get state information about a specific node
      * @param nodeID node identifier
@@ -100,6 +110,28 @@ public class JerseyReplication
         return getServiceState(formatType, cs, sc);
     }
 
+    
+    @GET
+    @Path("/jsonstate")
+    public Response callGetJsonState(
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = null;
+        try {
+            String jsonStateS = getJsonState(cs,sc);
+              return Response 
+                .status(200).entity(jsonStateS)
+                    .build();      
+        } catch (TException tex) {
+            return getExceptionResponse(tex, "xml", logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
     /**
      * Get state information about a specific node
      * @param nodeID node identifier
@@ -176,6 +208,36 @@ public class JerseyReplication
 
         } else  {
             throw new TException.REQUEST_ELEMENT_UNSUPPORTED("Set fixity state value not recognized:" + setType);
+        }
+    }
+    
+    @POST
+    @Path("reset")
+    public Response callResetState(
+            @DefaultValue("-none-") @QueryParam("log4jlevel") String log4jlevel,
+            @DefaultValue("xhtml") @QueryParam(KeyNameHttpInf.RESPONSEFORM) String formatType,
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        try {
+            log4j.info("getResetState entered:"
+                    + " - formatType=" + formatType
+                    + " - log4jlevel=" + log4jlevel
+                    );
+            if (!log4jlevel.equals("-none-")) {
+                Log4j2Util.setRootLevel(log4jlevel);
+            }
+            return getServiceState(formatType, cs, sc);
+
+        } catch (TException tex) {
+            log4j.error(tex.toString(), tex);
+            throw tex;
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            log4j.error(ex.toString(), ex);
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
         }
     }
     
@@ -473,6 +535,38 @@ public class JerseyReplication
             throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
         }
     }
+    
+    /**
+     * Provide a Storage state operation in Replic
+     * @param cs on close actions
+     * @param sc ServletConfig used to get system configuration
+     * @return formatted service information
+     * @throws TException
+     */
+    public String getJsonState(
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        try {
+            log("getServiceState entered:"
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+
+            NodeIO nodeIO = ReplicationConfig.getNodeIO();
+            JSONObject state = NodeIOState.runState(nodeIO);
+            return state.toString();
+
+        } catch (TException tex) {
+            throw tex;
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+        
     /**
      * Get state information about system status without db
      * @param formatType user provided format type
@@ -776,6 +870,9 @@ public class JerseyReplication
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
             long node = getNumber("node", nodeS);
+            
+            ThreadContext.put("scanNode", nodeS);
+            log4j.info("scanStart");
             StateInf responseState = replicationService.scanStart(node, keyList);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
@@ -806,6 +903,8 @@ public class JerseyReplication
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
             int scanID = getNumber("scanid", scanIDS);
+            ThreadContext.put("scanid", scanIDS);
+            log4j.info("scanRestart");
             StateInf responseState = replicationService.scanRestart(scanID);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
@@ -836,6 +935,8 @@ public class JerseyReplication
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
             int scanID = getNumber("scanid", scanIDS);
+            ThreadContext.put("scanid", scanIDS);
+            log4j.info("scanCancel");
             StateInf responseState = replicationService.scanCancel(scanID);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
@@ -865,7 +966,11 @@ public class JerseyReplication
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
             int scanID = getNumber("node", scanIDS);
-            StateInf responseState = replicationService.scanStatus(scanID);
+            InvStorageScan responseState = replicationService.scanStatus(scanID);
+            InvStorageScan.ScanStatus scanStatus = responseState.getScanStatus();
+            ThreadContext.put("scanid", scanIDS);
+            ThreadContext.put("scanStatus", scanStatus.toString());
+            log4j.info("scanStatus");
             return getStateResponse(responseState, formatType, logger, cs, sc);
 
         } catch (TException tex) {
@@ -895,6 +1000,8 @@ public class JerseyReplication
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
             logger = replicationService.getLogger();
             long storageMaintId = getNumber("node", storageMaintIdS);
+            ThreadContext.put("scanid", "" + storageMaintId);
+            log4j.info("scanDelete");
             StateInf responseState = replicationService.scanDelete(storageMaintId);
             return getStateResponse(responseState, formatType, logger, cs, sc);
 

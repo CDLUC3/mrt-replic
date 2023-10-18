@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.action.Versions;
@@ -72,6 +74,8 @@ public class ReplicationService
     protected LoggerInf logger = null;
     protected Exception exception = null;
     protected ReplicationServiceHandler replicationServiceHandler = null;
+
+    private static final Logger log4j = LogManager.getLogger();
 
     public static ReplicationService getReplicationService(ReplicationServiceHandler replicationServiceHandler)
             throws TException
@@ -231,6 +235,7 @@ public class ReplicationService
         throws TException
     {
         replicationServiceHandler.pauseReplication();
+        log4j.info("pauseReplication");
         ReplicationServiceState invServiceState = replicationServiceHandler.getReplicationServiceState();
         return invServiceState;
     }
@@ -240,6 +245,7 @@ public class ReplicationService
         throws TException
     {
         replicationServiceHandler.shutdown();
+        log4j.info("shutdown");
         ReplicationServiceState replicationServiceState = replicationServiceHandler.getReplicationServiceState();
         return replicationServiceState;
     }
@@ -252,6 +258,7 @@ public class ReplicationService
             replicationServiceHandler.startup();
         }
         replicationServiceHandler.startupReplication();
+        log4j.info("startup");
         ReplicationServiceState replicationServiceState = replicationServiceHandler.getReplicationServiceState();
         return replicationServiceState;
     }
