@@ -95,8 +95,8 @@ public class LogReplicAdd
         stateEntry.setDurationMs(stat.getTime + stat.metaTime + stat.putTime);
         stateEntry.setBytes(stat.fileCopySize);
         stateEntry.setSourceNode(nodeObjectInfo.getPrimaryInvNode().getNumber());
-        stateEntry.setProcessNode(stateEntry.getTargetNode());
         stateEntry.setTargetNode(nodeObjectInfo.getSecondaryInvNode().getNumber());
+        stateEntry.setProcessNode(stateEntry.getTargetNode());
         stateEntry.setObjectID(nodeObjectInfo.getObjectID());
         stateEntry.setVersion(nodeObjectInfo.maxAuditVersion);
         stateEntry.setFiles(stat.fileCopyCnt);
