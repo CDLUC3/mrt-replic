@@ -52,6 +52,7 @@ import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.service.Role;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import static org.cdlib.mrt.replic.basic.action.Replicator.MESSAGE;
+import org.cdlib.mrt.replic.basic.logging.LogReplicAdd;
 import org.cdlib.mrt.replic.basic.service.MatchObjectState;
 import org.cdlib.mrt.utility.HTTPUtil;
 import org.cdlib.mrt.utility.LoggerInf;
@@ -144,7 +145,11 @@ public class ObjectReplication
                         + " size:" + stat.objSize
                         + " getTime:" + stat.getTime
                         + " putTime:" + stat.putTime
-                        , 1); 
+                        , 1);
+                
+                nodeObjectMaint.updatePrimaryEnd();
+                LogReplicAdd replicEntry = LogReplicAdd.getLogReplicAdd(stat, nodeObjectInfo);
+                replicEntry.addEntry();
             }
             nodeObjectMaint.updatePrimaryEnd();
                    

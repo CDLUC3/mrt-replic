@@ -40,6 +40,7 @@ import org.cdlib.mrt.inv.content.InvObject;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.replic.basic.content.ReplicNodesObjects;
+import org.cdlib.mrt.replic.basic.logging.LogReplicDel;
 import org.cdlib.mrt.replic.basic.service.NodesObjectsState;
 import org.cdlib.mrt.replic.basic.service.ReplicationDeleteState;
 import org.cdlib.mrt.s3.service.NodeIO;
@@ -97,7 +98,6 @@ public class DeleteSecondary
     public ReplicationDeleteState process()
         throws TException
     {
-        
         try {
             boolean doDeleteStore = true;
             replicationDeleteState = new ReplicationDeleteState(doDeleteStore, objectID, 0);
@@ -125,6 +125,7 @@ public class DeleteSecondary
                 );
                 replicationDeleteState.addSecondaryNodes(secondary);
                 Connection deleteConnect = null;
+                long startMs = System.currentTimeMillis();
                 try {
                     deleteConnect = db.getConnection(false);
                     Deletor deletor = Deletor.getDeletor(secondary, deleteInvWhenStoreMissing, deleteConnect, nodes, logger);
@@ -165,6 +166,7 @@ public class DeleteSecondary
                             log( 10,"Connection closed");
                         } catch (Exception ex) { }
                     }
+                    secondary.setDurationMs(System.currentTimeMillis() - startMs);
                 }
             }
             return replicationDeleteState;
@@ -180,6 +182,8 @@ public class DeleteSecondary
             try{
                 if (connection != null) connection.close();
             } catch (Exception ex) { }
+            LogReplicDel logReplicDel = LogReplicDel.getLogReplicDel(replicationDeleteState);
+            logReplicDel.process();
         }
     }
     

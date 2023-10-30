@@ -40,6 +40,7 @@ import org.cdlib.mrt.inv.content.InvStorageScan;
 import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
+import org.cdlib.mrt.log.utility.AddStateEntryGen;
 import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
@@ -85,6 +86,7 @@ public class ScanWrapper
     protected volatile Boolean threadStop = false;
     protected RunStatus runStatus = RunStatus.initial;
     protected long keysProcessed = 0;
+    protected AddStateEntryGen stateEntry = null;
     
     public static void main(String args[])
     {
@@ -231,6 +233,9 @@ public class ScanWrapper
         
         Connection runConnect = null;
         Connection connection = null;
+        stateEntry = AddStateEntryGen.getAddStateEntryGen("scan", "Replic", "Scan");
+        stateEntry.setProcessNode(nodeNum);
+        long startMs = System.currentTimeMillis();
         try {
             runStatus = RunStatus.running;
             runConnect = db.getConnection(true);
@@ -288,6 +293,7 @@ public class ScanWrapper
                 }
                 invStorageScan.setLastS3Key(afterKey);
                 invStorageScan.setKeysProcessed(doScanInfo.getLastScanCnt());
+                stateEntry.setFiles(doScanInfo.getLastScanCnt());
                 rewriteStorageScan(runConnect);
                 scanLog(8, "end iteration");
 
@@ -319,6 +325,11 @@ public class ScanWrapper
             } catch (Exception xx) { }
             try {
                 runConnect.close();
+            } catch (Exception xx) { }
+            try {
+                stateEntry.setDurationMs(System.currentTimeMillis() - startMs);
+                stateEntry.setStatus(runStatus.toString());
+                stateEntry.addLog("info", "replicJSON");
             } catch (Exception xx) { }
         }
     }

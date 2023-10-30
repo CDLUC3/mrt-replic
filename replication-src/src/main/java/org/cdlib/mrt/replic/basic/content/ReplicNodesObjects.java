@@ -59,6 +59,7 @@ public class ReplicNodesObjects
     public long nodeNumber = 0;
     public Boolean deleteStore = null;
     public Boolean deleteInv = null;
+    protected Long durationMs = null;
     protected Integer invDeleteCount = null;
     protected Integer storeDeleteCount = null;
     protected DateState deleteDate = null;
@@ -104,6 +105,8 @@ public class ReplicNodesObjects
             setReplicatedDB(prop.getProperty("replicated"));
             setVersionNumber(prop.getProperty("version_number"));
             setNodeNumber(prop.getProperty("number"));
+            setDurationMs(prop.getProperty("durationMs"));
+            
         } catch (Exception ex) {
             ex.printStackTrace(); //!!!
             throw new TException(ex);
@@ -160,6 +163,18 @@ public class ReplicNodesObjects
 
     public void setDeleteDate(DateState deleteDate) {
         this.deleteDate = deleteDate;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+   
+    public void setDurationMs(String durationMsS) {
+        this.durationMs = setNumLong(durationMsS);
+    }
+    
+    public void setDurationMs(Long durationMs) {
+        this.durationMs = durationMs;
     }
 
     public Exception getException() {
