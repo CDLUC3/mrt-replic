@@ -66,6 +66,7 @@ import org.cdlib.mrt.replic.basic.service.ReplicationService;
 import static org.cdlib.mrt.replic.basic.service.ReplicationService.getFileResponseFileName;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.s3.service.NodeIOState;
+import org.cdlib.mrt.s3.service.NodeIOStatus;
 import org.cdlib.mrt.utility.StateInf;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
@@ -132,6 +133,29 @@ public class JerseyReplication
             throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
         }
     }
+    
+    @GET
+    @Path("/jsonstatus")
+    public Response callGetJsonStatus(
+            @Context CloseableService cs,
+            @Context ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = null;
+        try {
+            String jsonStateS = getJsonStatus(cs,sc);
+              return Response 
+                .status(200).entity(jsonStateS)
+                    .build();      
+        } catch (TException tex) {
+            return getExceptionResponse(tex, "xml", logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
     /**
      * Get state information about a specific node
      * @param nodeID node identifier
@@ -557,6 +581,37 @@ public class JerseyReplication
             NodeIO nodeIO = ReplicationConfig.getNodeIO();
             JSONObject state = NodeIOState.runState(nodeIO);
             return state.toString();
+
+        } catch (TException tex) {
+            throw tex;
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+    
+    /**
+     * Provide a Storage state operation in Replic
+     * @param cs on close actions
+     * @param sc ServletConfig used to get system configuration
+     * @return formatted service information
+     * @throws TException
+     */
+    public String getJsonStatus(
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        try {
+            log("getServiceState entered:"
+                    );
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+
+            NodeIO nodeIO = ReplicationConfig.getNodeIO();
+            JSONObject status = NodeIOStatus.runStatus(nodeIO);
+            return status.toString();
 
         } catch (TException tex) {
             throw tex;
