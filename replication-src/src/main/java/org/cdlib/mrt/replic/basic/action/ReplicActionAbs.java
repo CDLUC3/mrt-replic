@@ -37,7 +37,6 @@ import java.io.InputStream;
 import org.cdlib.mrt.cloud.ManifestSAX;
 
 import org.cdlib.mrt.utility.FileUtil;
-import org.cdlib.mrt.cloud.ManifestXML;
 import org.cdlib.mrt.cloud.VersionMap;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.inv.content.InvNodeObject;
