@@ -56,7 +56,7 @@ public class ReplicationServiceState
     private static final String NAME = "ReplicationServiceState";
     private static final String MESSAGE = NAME + ": ";
     public enum StateStatus  { unknown, paused, running, shuttingdown, shutdown; }
-    public static final boolean DEBUG=true;
+    public static final boolean DEBUG=false;
 
     protected String name = null;
     protected String identifier = null;

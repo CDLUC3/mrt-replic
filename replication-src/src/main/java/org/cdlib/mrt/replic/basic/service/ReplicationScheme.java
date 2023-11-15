@@ -30,6 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.replic.basic.service;
 import java.io.File;
 import java.io.Serializable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.TException;
@@ -99,6 +101,7 @@ public class ReplicationScheme
     protected Enum scheme;
     protected String parameters = null;
     protected String specVersion = null;
+    private static final Logger log4j = LogManager.getLogger();
 
 
     /**
@@ -128,7 +131,7 @@ public class ReplicationScheme
     public static ReplicationScheme buildSpecScheme(String type, String line)
             throws TException
     {
-        System.out.println("buildSpecScheme"
+        log4j.debug("buildSpecScheme"
                 + " - type=" + type
                 + " - line=" + line
         );

@@ -86,7 +86,7 @@ public class ReplicationServiceHandler
 {
     private static final String NAME = "ReplicationServiceHandler";
     private static final String MESSAGE = NAME + ": ";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     protected int terminationSeconds = 600;
     //protected Properties serviceProperties = null;

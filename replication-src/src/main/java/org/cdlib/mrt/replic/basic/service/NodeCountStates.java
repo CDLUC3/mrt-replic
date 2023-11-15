@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.core.FixityStatusType;
 import org.cdlib.mrt.core.DateState;
@@ -60,6 +62,7 @@ public class NodeCountStates
     
     protected Connection connection = null;
     protected LoggerInf logger = null;
+    private static final Logger log4j = LogManager.getLogger();
 
     public NodeCountStates(Connection connection, LoggerInf logger) 
     { 
@@ -74,21 +77,21 @@ public class NodeCountStates
             String sql = sqlObjectCnt();
             Properties [] props = DBUtil.cmd(connection, sql, logger);
             if ((props == null) || (props.length != 1)) {
-                System.out.println("WARNING: objects empty");
+                log4j.debug("WARNING: objects empty");
                 return null;
             }
             setObject(props);
             sql = sqlComponentCnt();
             props = DBUtil.cmd(connection, sql, logger);
             if (props == null) {
-                System.out.println("WARNING: components empty");
+                log4j.debug("WARNING: components empty");
                 return null;
             }
             setComponent(props);
             return getNodeStates();
 
         } catch (Exception ex) {
-            System.out.println("WARNING: build exception:" + ex);
+            log4j.error("WARNING: build exception:" + ex,ex);
             return null;
         }
     }
