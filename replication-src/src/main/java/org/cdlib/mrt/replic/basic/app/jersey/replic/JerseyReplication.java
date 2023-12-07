@@ -134,17 +134,27 @@ public class JerseyReplication
         }
     }
     
+    
+    
+    
     @GET
     @Path("/jsonstatus")
-    public Response callGetJsonStatus(
+    public Response getJsonStatus(
+            @DefaultValue("5") @QueryParam("timeout") String timeoutSecS,
             @Context CloseableService cs,
             @Context ServletConfig sc)
         throws TException
     {
         LoggerInf logger = null;
+        int timeoutSec = 5;
         try {
-            String jsonStateS = getJsonStatus(cs,sc);
-              return Response 
+            try {
+                timeoutSec = Integer.parseInt(timeoutSecS);;
+            } catch (Exception ex) { 
+                log4j.debug("Invalid value sent jsonstatus - process continues - timeoutSecS:" + timeoutSecS);
+            }
+            String jsonStateS = getJsonStatus(timeoutSec, cs,sc);
+            return Response 
                 .status(200).entity(jsonStateS)
                     .build();      
         } catch (TException tex) {
@@ -155,7 +165,6 @@ public class JerseyReplication
             throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
         }
     }
-    
     /**
      * Get state information about a specific node
      * @param nodeID node identifier
@@ -599,6 +608,7 @@ public class JerseyReplication
      * @throws TException
      */
     public String getJsonStatus(
+            int timeoutSec,
             CloseableService cs,
             ServletConfig sc)
         throws TException
@@ -610,7 +620,7 @@ public class JerseyReplication
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
 
             NodeIO nodeIO = ReplicationConfig.getNodeIO();
-            JSONObject status = NodeIOStatus.runStatus(nodeIO);
+            JSONObject status = NodeIOStatus.runStatus(nodeIO, timeoutSec);
             return status.toString();
 
         } catch (TException tex) {
