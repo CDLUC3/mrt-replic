@@ -23,10 +23,10 @@ replic-info:
     trace: 5
     
   cleanup:
-    subject: "{!SSM: replic/config/cleanup/subject !DEFAULT: NONE}"
-    from: "{!SSM: replic/config/cleanup/from !DEFAULT: NONE}"
-    to: "{!SSM: replic/config/cleanup/to !DEFAULT: NONE}"
-    msg: "{!SSM: replic/config/cleanup/msg !DEFAULT: NONE}"
+    subject: "DummyCleanupSubject"
+    from: "DummyCleanupFrom"
+    to: "DummyCleanupTo"
+    msg: "DummyCleanupMsg"
     
   db:
     user: "{!SSM: inv/readwrite/db-user}"
