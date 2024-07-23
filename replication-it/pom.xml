@@ -62,13 +62,6 @@
     </profiles>
     <build>
       <plugins>
-        <!--plugin>
-          <artifactId>maven-war-plugin</artifactId>
-          <version>3.3.2</version>
-          <configuration>
-            <packagingExcludes>WEB-INF/lib/slf4j-log4j12-1.5.*.jar,WEB-INF/lib/mrt-jena-2.0-SNAPSHOT.jar</packagingExcludes>
-          </configuration>
-        </plugin-->
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -80,7 +73,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.5</version>
+          <version>${jacoco.maven.plugin.version}</version>
           <executions>
             <execution>
               <id>default-prepare-agent</id>
