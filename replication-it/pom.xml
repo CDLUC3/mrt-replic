@@ -3,7 +3,7 @@
     <groupId>org.cdlib.mrt</groupId>
     <artifactId>mrt-replication-it</artifactId>
     <packaging>war</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>3.0-SNAPSHOT</version>
     <name>UC3-mrtReplicationIT</name>
     <url>http://uc3.cdlib.org</url>
 
@@ -12,7 +12,7 @@
           <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-reflectoring-bom</artifactId>
-            <version>1.0.0</version>
+            <version>3.0-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
           </dependency>
@@ -22,7 +22,7 @@
       <parent>
         <groupId>org.cdlib.mrt</groupId>
         <artifactId>mrt-parent-properties</artifactId>
-        <version>1.0.0</version>
+        <version>3.0-SNAPSHOT</version>
         <relativePath/>
       </parent>
 
@@ -159,7 +159,7 @@
                       </wait>
                       <volumes>
                         <bind>
-                          <volume>${project.basedir}/target/mrt-replication-it-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/mrtreplic.war</volume>
+                          <volume>${project.basedir}/target/mrt-replication-it-3.0-SNAPSHOT.war:/usr/local/tomcat/webapps/mrtreplic.war</volume>
                         </bind>
                       </volumes>
                       <env>
@@ -220,7 +220,7 @@
       <dependency>
         <groupId>org.cdlib.mrt</groupId>
         <artifactId>mrt-replicationsrc</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
         <scope>runtime</scope>
       </dependency>
 
