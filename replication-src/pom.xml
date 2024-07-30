@@ -9,12 +9,20 @@
     <name>UC3-mrtReplicationSrc</name>
     <url>http://uc3.cdlib.org</url>
 
+    <properties>
+      <merritt-inv.version>3.0-SNAPSHOT</merritt-inv.version>
+      <merritt-cloud.version>3.0-SNAPSHOT</merritt-cloud.version>
+      <merritt-core.version>3.0-SNAPSHOT</merritt-core.version>
+      <merritt-bom.version>3.0-SNAPSHOT</merritt-bom.version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.cdlib.mrt</groupId>
                 <artifactId>mrt-reflectoring-bom</artifactId>
-                <version>3.0-SNAPSHOT</version>
+                <version>${merritt-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -24,7 +32,8 @@
     <parent>
       <groupId>org.cdlib.mrt</groupId>
       <artifactId>mrt-parent-properties</artifactId>
-      <version>3.0-SNAPSHOT</version>
+      <!--This version cannot be set as a property-->
+      <version>PAR-3.0-SNAPSHOT</version>
       <relativePath/>
     </parent>
 
@@ -46,33 +55,33 @@
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-cloudconf</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>${merritt-cloud.version}</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-core</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>${merritt-core.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-inventorysrc</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>${merritt-inv.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-replicationconf</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-s3srcpub</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>${merritt-cloud.version}</version>
         </dependency>
 
         <!-- Include the following as a runtime dependency when logging in ECS format for open
