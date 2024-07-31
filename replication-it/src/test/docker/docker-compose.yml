@@ -17,7 +17,7 @@ services:
       merrittnet:
   it-server:
     container_name: it-server
-    image: tomcat:8-jre8
+    image: ${ECR_REGISTRY}/mmerritt-tomcat:dev
     volumes:
     - "${MDIR}/replication-it/target/mrt-replication-it-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/mrtreplic.war"
     ports:
@@ -27,7 +27,7 @@ services:
       target: 8099
     environment:
       CATALINA_OPTS: "-Dfile.encoding=UTF8 -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
-      JPDA_ADDRESS: 8099
+      JPDA_ADDRESS: "*:8099"
       JPDA_TRANSPORT: dt_socket
       SSM_SKIP_RESOLUTION: Y
     networks:
