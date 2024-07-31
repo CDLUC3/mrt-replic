@@ -7,23 +7,19 @@
 package org.cdlib.mrt.replic.basic.test;
 
 import java.sql.Connection;
-import java.util.List;
 import java.util.Properties;
 
 
 import org.cdlib.mrt.core.Identifier;
-import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFileLogger;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TFrame;
-import org.cdlib.mrt.inv.service.InvService;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.inv.utility.InvUtil;
 import org.cdlib.mrt.inv.action.SaveObject;
-import org.cdlib.mrt.inv.content.InvObject;
 
 /**
  * Load manifest.
