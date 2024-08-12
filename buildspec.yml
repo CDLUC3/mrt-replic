@@ -17,6 +17,7 @@ phases:
     - BRANCH=`git symbolic-ref -q --short HEAD || git name-rev $(git rev-parse --short HEAD) | cut -d' ' -f2 || echo ''`
     - TAG=`git describe --tags --exact-match 2> /dev/null || echo ''`
     - BRANCHTAG=`git describe --tags --exact-match 2> /dev/null || git symbolic-ref -q --short HEAD || git name-rev $(git rev-parse --short HEAD) | cut -d' ' -f2 || git rev-parse --short HEAD`
+    - DOCKTAG=$BRANCHTAG
     - echo "Branchtag ${BRANCHTAG}"
 
   build:
@@ -31,6 +32,9 @@ phases:
       elif [[ "${BRANCHTAG}" == "codebuild" ]]
       then
         SEMVER=''
+      elif [[ "${TAG}" == "" ]]
+      then
+        SEMVER="-Dversion=${BRANCHTAG}-SNAPSHOT"
       else
         SEMVER="-Dversion=${BRANCHTAG}"
       fi
@@ -40,4 +44,4 @@ phases:
     - |
         docker build --push --quiet \
         --build-arg ECR_REGISTRY=${ECR_REGISTRY} \
-        -t ${ECR_REGISTRY}/mrt-replic:dev .
+        -t ${ECR_REGISTRY}/mrt-replic:${DOCKTAG} .
