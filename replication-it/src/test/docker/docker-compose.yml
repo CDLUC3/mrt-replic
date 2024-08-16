@@ -19,7 +19,7 @@ services:
     container_name: it-server
     image: ${ECR_REGISTRY}/mmerritt-tomcat:dev
     volumes:
-    - "${MDIR}/replication-it/target/mrt-replication-it-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/mrtreplic.war"
+    - "${MDIR}/replication-it/target/mrt-replication-it-3.0-SNAPSHOT.war:/usr/local/tomcat/webapps/mrtreplic.war"
     ports:
     - published: 8080
       target: 8080
