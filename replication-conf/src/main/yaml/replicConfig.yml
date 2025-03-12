@@ -71,7 +71,7 @@ replic-info-docker: &docker
   db:
     adapter: mysql2
     host: db-container
-    name: db-name
+    name: inv
     user: user
     password: password
     encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&serverTimezone=UTC"   # schema won't load if it's utf8mb4
