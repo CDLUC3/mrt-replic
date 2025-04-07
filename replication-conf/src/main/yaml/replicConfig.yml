@@ -74,7 +74,7 @@ replic-info-docker: &docker
     name: inv
     user: user
     password: password
-    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&serverTimezone=UTC"   # schema won't load if it's utf8mb4
+    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
 
   scan:
     maxkeys: 500
