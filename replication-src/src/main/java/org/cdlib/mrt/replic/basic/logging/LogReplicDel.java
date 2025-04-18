@@ -37,6 +37,7 @@ import org.cdlib.mrt.core.FixityStatusType;
 import org.cdlib.mrt.log.utility.AddStateEntryGen;
 import org.cdlib.mrt.replic.basic.action.ReplicationInfo.NodeObjectInfo;
 import org.cdlib.mrt.replic.basic.content.ReplicNodesObjects;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.basic.service.ReplicationDeleteState;
 
@@ -99,6 +100,7 @@ public class LogReplicDel
         throws TException
     {   
         stateEntry.setDurationMs(nodeObject.getDurationMs());
+        stateEntry.setAwsVersion(ReplicationConfig.getAwsVersion());
         stateEntry.setProcessNode(nodeObject.nodeNumber);
         if (nodeObject.getStoreDeleteCount() != null) {
             long storeDeleteCountL = nodeObject.getStoreDeleteCount();

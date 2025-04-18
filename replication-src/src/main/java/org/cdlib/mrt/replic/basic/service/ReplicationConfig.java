@@ -410,6 +410,13 @@ public class ReplicationConfig
         this.nodeIO = nodeIO;
     }
     
+    public static Integer getAwsVersion() {
+        if (nodeIO != null) {
+            return nodeIO.getAwsVersion();
+        }
+        return null;
+    }
+    
     public static void main(String[] argv) {
     	
     	try {

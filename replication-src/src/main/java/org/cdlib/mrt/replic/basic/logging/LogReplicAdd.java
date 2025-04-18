@@ -40,6 +40,7 @@ import org.cdlib.mrt.s3.service.NodeIO;
 
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.StringUtil;
+import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 /**
  * Run fixity
  * @author dloy
@@ -93,6 +94,7 @@ public class LogReplicAdd
         throws TException
     {
         stateEntry.setDurationMs(stat.getTime + stat.metaTime + stat.putTime);
+        stateEntry.setAwsVersion(ReplicationConfig.getAwsVersion());
         stateEntry.setBytes(stat.fileCopySize);
         stateEntry.setSourceNode(nodeObjectInfo.getPrimaryInvNode().getNumber());
         stateEntry.setTargetNode(nodeObjectInfo.getSecondaryInvNode().getNumber());
