@@ -3,7 +3,7 @@ which-replic-info: "{!ENV: MERRITT_REPLIC_INFO !DEFAULT: replic-info}"
 replic-info:
   service:
     threadPool: "{!SSM: replic/config/threadPool !DEFAULT: 5}"
-    nodePath: "{!SSM: replic/config/nodePath  !DEFAULT: yaml:}"
+    nodePath: "{!SSM: replic/config/nodePath  !DEFAULT: yaml:2}"
     queueCapacity: "{!SSM: replic/config/queueCapacity !DEFAULT: 15}"
     replicQualify: "{!SSM: replic/config/replicQualify !DEFAULT: NONE}"
     
