@@ -44,7 +44,7 @@ replic-info-docker: &docker
   service:
     threadPool: "5"
     queueCapacity: 15
-    nodePath: "yaml:"
+    nodePath: "yaml:2"
     replicQualify: "NONE"
     
   state:
