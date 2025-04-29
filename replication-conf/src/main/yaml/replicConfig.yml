@@ -99,4 +99,4 @@ inv-ecs:
     password: "{!SSM: /uc3/mrt/ecs/billing/readwrite/db-password !DEFAULT: password}"
     host: "{!SSM: /uc3/mrt/ecs/billing/db-host !DEFAULT: db-container}"
     name: "inv"
-    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"   # schema won't load if it's utf8mb4
+    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8"   # schema won't load if it's utf8mb4
