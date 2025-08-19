@@ -9,7 +9,7 @@
   <url>http://uc3.cdlib.org</url>
   
     <properties>
-      <merritt-bom.version>3.0-SNAPSHOT</merritt-bom.version>
+      <merritt-bom.version>4.0-SNAPSHOT</merritt-bom.version>
       <propertyDir>test</propertyDir>
     </properties>
 

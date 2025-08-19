@@ -7,7 +7,7 @@
     
     <RollingFile
         name="ECS-File"
-        fileName="${env:CATALINA_BASE:-.}/logs/log4j-ecs-json.log"
+        fileName="${env:LOG_REPLIC:-.}/logs/log4j-ecs-json.log"
         filePattern="logs/log4j-ecs-json-%d{yyyy-MM-dd}-%i.log">
       <!-- https://logging.apache.org/log4j/2.x/manual/lookups.html -->
       <EcsLayout

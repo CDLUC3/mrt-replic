@@ -32,6 +32,24 @@
         </init-param>
     </servlet>
     
+    <servlet>
+        <servlet-name>Startup Daemon</servlet-name>
+        <servlet-class>org.cdlib.mrt.replic.basic.app.jersey.replic.StartReplic</servlet-class>
+        <init-param>
+            <param-name>loggerProperties</param-name>
+            <param-value>resources/TStorageLogger.properties</param-value>
+        </init-param>
+        <init-param>
+            <param-name>serviceProperties</param-name>
+            <param-value>resources/TStorageStore.properties</param-value>
+        </init-param>
+        <init-param>
+            <param-name>localProperties</param-name>
+            <param-value>resources/TStorageStoreLocal.properties</param-value>
+        </init-param>
+        <!-- <load-on-startup>1</load-on-startup> -->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>default</servlet-name>
