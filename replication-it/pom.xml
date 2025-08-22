@@ -3,7 +3,7 @@
     <groupId>org.cdlib.mrt</groupId>
     <artifactId>mrt-replication-it</artifactId>
     <packaging>war</packaging>
-    <version>3.0-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <name>UC3-mrtReplicationIT</name>
     <url>http://uc3.cdlib.org</url>
 
@@ -32,7 +32,7 @@
         <artifactId>mrt-parent-properties</artifactId>
         <!--This version cannot be set as a property-->
         <version>PAR-4.0-SNAPSHOT</version>
-        <relativePath/>
+        <relativePath />
       </parent>
 
     <repositories>
