@@ -77,9 +77,11 @@ replic-info-docker: &docker
     encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
 
   scan:
-    maxkeys: 500
+    # reset this value after fix to scan process
+    # maxkeys: 500
+    maxkeys: 5
     threadSleep: 100
-    currentDateDelta: 86400000
+    currentDateDelta: 0
     
 inv-info-docker-dev: 
   <<: *docker
