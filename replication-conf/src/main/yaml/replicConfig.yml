@@ -38,6 +38,7 @@ replic-info:
   scan:
     maxkeys: "{!SSM: replic/scan/maxkeys !DEFAULT: 500}"
     threadSleep: "{!SSM: replic/scan/threadSleep !DEFAULT: 100}"
+    # ignore items less than 1 day old
     currentDateDelta: 86400000
 
 replic-info-docker: &docker
@@ -79,9 +80,10 @@ replic-info-docker: &docker
   scan:
     # reset this value after fix to scan process
     # maxkeys: 500
-    maxkeys: 5
+    maxkeys: 500
     threadSleep: 100
-    currentDateDelta: 0
+    # ignore items less than 5 min old
+    currentDateDelta: 300000
     
 inv-info-docker-dev: 
   <<: *docker
