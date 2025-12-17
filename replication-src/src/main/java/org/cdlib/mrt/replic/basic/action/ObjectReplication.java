@@ -49,6 +49,7 @@ import org.cdlib.mrt.inv.content.InvVersion;
 import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
 import org.cdlib.mrt.core.Identifier;
+import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.inv.service.Role;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import static org.cdlib.mrt.replic.basic.action.Replicator.MESSAGE;
@@ -62,7 +63,7 @@ import org.cdlib.mrt.utility.URLEncoder;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.tools.CloudManifestCopyVersion;
+import org.cdlib.mrt.s3.tools.CloudManifestCopyFixity;
 
 /**
  * Run fixity
@@ -136,7 +137,7 @@ public class ObjectReplication
                         + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
                         + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber()
                         , 1); 
-                CloudManifestCopyVersion.Stat stat = processNodeObject(nodeObjectInfo);
+                CloudManifestCopyFixity.Stat stat = processNodeObject(nodeObjectInfo);
                 log(
                         "***Replication complete::" + info.getObjectID().getValue()
                         + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
@@ -193,11 +194,11 @@ public class ObjectReplication
         }
     }
     
-    protected CloudManifestCopyVersion.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObjectInfo) 
+    protected CloudManifestCopyFixity.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObjectInfo) 
         throws TException
     {
         try {           
-            CloudManifestCopyVersion.Stat stat = new  CloudManifestCopyVersion.Stat(nodeObjectInfo.getObjectID().getValue());
+            CloudManifestCopyFixity.Stat stat = new  CloudManifestCopyFixity.Stat(nodeObjectInfo.getObjectID().getValue());
             InvNodeObject secondary = nodeObjectInfo.getInvNodeObject();
             secondary = nodeObjectMaint.setSecondaryStart(secondary);
             try {
@@ -284,7 +285,7 @@ public class ObjectReplication
      * @return true=success, false=failure
      * @throws TException 
      */
-    protected boolean copyContent(ReplicationInfo.NodeObjectInfo nodeObject, CloudManifestCopyVersion.Stat stat) 
+    protected boolean copyContent(ReplicationInfo.NodeObjectInfo nodeObject, CloudManifestCopyFixity.Stat stat) 
         throws TException
     {
         if (copyContentCloud(nodeObject, stat)) {
@@ -296,7 +297,7 @@ public class ObjectReplication
     
     protected boolean copyContentCloud(
             ReplicationInfo.NodeObjectInfo nodeObject, 
-            CloudManifestCopyVersion.Stat stat) 
+            CloudManifestCopyFixity.Stat stat) 
         throws TException
     {
         try {
@@ -306,7 +307,8 @@ public class ObjectReplication
             NodeIO.AccessNode inNode = nodes.getAccessNode(nodeFrom);
             NodeIO.AccessNode outNode = nodes.getAccessNode(nodeTo);
             if ((inNode == null) || (outNode == null)) return false;
-            CloudManifestCopyVersion cmct = new CloudManifestCopyVersion(
+            CloudManifestCopyFixity cmct = new CloudManifestCopyFixity(
+                    true,
                     inNode.service,
                     inNode.container,
                     outNode.service,
@@ -453,6 +455,9 @@ public class ObjectReplication
                 targetAudit = new InvAudit(auditProp, logger);
                 targetAudit.setId(0);
                 targetAudit.setNodeid(targetNodeseq);
+                targetAudit.status = targetAudit.status.verified;
+                DateState verified = new DateState();
+                targetAudit.setVerified(verified);
 
                 long fileseq = targetAudit.getFileid();
                 long versionseq = targetAudit.getVersionid();
