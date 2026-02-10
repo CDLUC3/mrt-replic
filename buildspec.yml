@@ -56,7 +56,6 @@ phases:
     - |
       if [[ "${BRANCHTAG}" == "main" ]]
       then
-        BRANCHTAG='dev'
         SEMVER=''
       elif [[ "${TAG}" == "" ]]
       then
@@ -79,9 +78,16 @@ phases:
         -Dfile=$(ls replication-war/target/mrt-replicationwar-*.war) ${SEMVER}
 
     - |
-        docker build --push --quiet \
+      docker build --push --quiet \
         --build-arg ECR_REGISTRY=${ECR_REGISTRY} \
         -t ${ECR_REGISTRY}/${REPONAME}:${BRANCHTAG} .
+
+      if [[ "$BRANCHTAG" == "main" ]]
+      then
+        docker build --quiet --push \
+          --build-arg ECR_REGISTRY=${ECR_REGISTRY} \
+          -t ${ECR_REGISTRY}/${REPONAME}:dev .
+      fi
 
     - |
       if [[ "$BRANCHTAG" == "$TAG_ECS_DEV" ]]
