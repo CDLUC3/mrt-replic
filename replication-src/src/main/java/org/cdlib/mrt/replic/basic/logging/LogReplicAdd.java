@@ -29,17 +29,13 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 package org.cdlib.mrt.replic.basic.logging;
 
-import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cdlib.mrt.s3.tools.CloudManifestCopyFixity.Stat;
-import org.cdlib.mrt.core.FixityStatusType;
+import org.cdlib.mrt.s3.tools.CloudManifestCopyS3ToS3.Stat;
 import org.cdlib.mrt.log.utility.AddStateEntryGen;
 import org.cdlib.mrt.replic.basic.action.ReplicationInfo;
-import org.cdlib.mrt.s3.service.NodeIO;
 
 import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 /**
  * Run fixity

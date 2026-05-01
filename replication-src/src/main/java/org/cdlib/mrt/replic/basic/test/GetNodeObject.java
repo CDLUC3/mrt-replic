@@ -31,45 +31,15 @@ package org.cdlib.mrt.replic.basic.test;
 
 import org.cdlib.mrt.replic.basic.action.*;
 import java.sql.Connection;
-import org.cdlib.mrt.inv.action.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import org.apache.http.HttpResponse;
-import org.cdlib.mrt.core.DateState;
-import org.cdlib.mrt.core.FixityStatusType;
 
 import org.cdlib.mrt.replic.basic.action.ReplicActionAbs;
-import org.cdlib.mrt.inv.content.InvFile;
-import org.cdlib.mrt.inv.content.InvAudit;
-import org.cdlib.mrt.inv.content.InvNode;
-import org.cdlib.mrt.inv.content.InvNode.AccessMode;
 import org.cdlib.mrt.inv.content.InvNodeObject;
-import org.cdlib.mrt.inv.content.InvObject;
-import org.cdlib.mrt.inv.content.InvVersion;
-import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.InvDBUtil;
-import org.cdlib.mrt.core.Identifier;
-import org.cdlib.mrt.inv.content.InvStorageScan;
-import org.cdlib.mrt.inv.service.Role;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
-import org.cdlib.mrt.replic.basic.service.MatchObjectState;
 import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
-import org.cdlib.mrt.replic.basic.service.ScanManager;
-import org.cdlib.mrt.utility.HTTPUtil;
 import org.cdlib.mrt.utility.LoggerInf;
-import org.cdlib.mrt.utility.PropertiesUtil;
-import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.utility.URLEncoder;
-import org.cdlib.mrt.s3.service.NodeIO;
-import org.cdlib.mrt.replic.utility.ReplicDB;
-import org.cdlib.mrt.replic.utility.ReplicDBUtil;
-import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.tools.CloudManifestCopyVersion;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TFileLogger;
-import org.json.JSONObject;
 
 /**
  * Run fixity

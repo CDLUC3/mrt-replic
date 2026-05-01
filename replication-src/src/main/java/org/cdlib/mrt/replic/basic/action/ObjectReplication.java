@@ -63,7 +63,7 @@ import org.cdlib.mrt.utility.URLEncoder;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.tools.CloudManifestCopyFixity;
+import org.cdlib.mrt.s3.tools.CloudManifestCopyS3ToS3;
 
 /**
  * Run fixity
@@ -137,7 +137,7 @@ public class ObjectReplication
                         + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
                         + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber()
                         , 1); 
-                CloudManifestCopyFixity.Stat stat = processNodeObject(nodeObjectInfo);
+                CloudManifestCopyS3ToS3.Stat stat = processNodeObject(nodeObjectInfo);
                 log(
                         "***Replication complete::" + info.getObjectID().getValue()
                         + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
@@ -194,11 +194,11 @@ public class ObjectReplication
         }
     }
     
-    protected CloudManifestCopyFixity.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObjectInfo) 
+    protected CloudManifestCopyS3ToS3.Stat processNodeObject(ReplicationInfo.NodeObjectInfo nodeObjectInfo) 
         throws TException
     {
         try {           
-            CloudManifestCopyFixity.Stat stat = new  CloudManifestCopyFixity.Stat(nodeObjectInfo.getObjectID().getValue());
+            CloudManifestCopyS3ToS3.Stat stat = new  CloudManifestCopyS3ToS3.Stat(nodeObjectInfo.getObjectID().getValue());
             InvNodeObject secondary = nodeObjectInfo.getInvNodeObject();
             secondary = nodeObjectMaint.setSecondaryStart(secondary);
             try {
@@ -285,7 +285,7 @@ public class ObjectReplication
      * @return true=success, false=failure
      * @throws TException 
      */
-    protected boolean copyContent(ReplicationInfo.NodeObjectInfo nodeObject, CloudManifestCopyFixity.Stat stat) 
+    protected boolean copyContent(ReplicationInfo.NodeObjectInfo nodeObject, CloudManifestCopyS3ToS3.Stat stat) 
         throws TException
     {
         if (copyContentCloud(nodeObject, stat)) {
@@ -297,7 +297,7 @@ public class ObjectReplication
     
     protected boolean copyContentCloud(
             ReplicationInfo.NodeObjectInfo nodeObject, 
-            CloudManifestCopyFixity.Stat stat) 
+            CloudManifestCopyS3ToS3.Stat stat) 
         throws TException
     {
         try {
@@ -307,7 +307,7 @@ public class ObjectReplication
             NodeIO.AccessNode inNode = nodes.getAccessNode(nodeFrom);
             NodeIO.AccessNode outNode = nodes.getAccessNode(nodeTo);
             if ((inNode == null) || (outNode == null)) return false;
-            CloudManifestCopyFixity cmct = new CloudManifestCopyFixity(
+            CloudManifestCopyS3ToS3 cmc = new CloudManifestCopyS3ToS3(
                     true,
                     inNode.service,
                     inNode.container,
@@ -321,7 +321,7 @@ public class ObjectReplication
                 + " - out node=" + nodeTo
             );
             
-            cmct.copyObject(objectID.getValue(), stat);
+            cmc.copyObject(objectID.getValue(), stat);
             return true;
             
         } catch (TException.REQUESTED_ITEM_NOT_FOUND rinf) {

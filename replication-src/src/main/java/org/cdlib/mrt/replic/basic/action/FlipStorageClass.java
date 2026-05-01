@@ -30,25 +30,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.replic.basic.action;
 
 import com.amazonaws.services.s3.model.StorageClass;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.util.Date;
 import java.util.Properties;
-import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.db.DBUtil;
 
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.replic.utility.ReplicProp;
 import org.cdlib.mrt.s3.aws.AWSS3Cloud;
 import org.cdlib.mrt.s3.aws.AWSObjectStorageClassConvert;
-import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.service.NodeService;
-import org.cdlib.mrt.s3.tools.CloudManifestCopy;
 import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.LoggerInf;
