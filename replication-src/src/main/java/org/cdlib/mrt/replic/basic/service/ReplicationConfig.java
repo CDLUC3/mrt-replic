@@ -105,7 +105,7 @@ public class ReplicationConfig
         throws TException
     {
         try {
-            System.out.println("***getYamlJson:\n" + replicInfoJSON.toString(3));
+            if (DEBUG) System.out.println("***getYamlJson:\n" + replicInfoJSON.toString(3));
             
             stateJSON = replicInfoJSON.getJSONObject("state");
             serviceJSON = replicInfoJSON.getJSONObject("service");
