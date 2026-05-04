@@ -145,7 +145,7 @@ public class ReplicationConfig
             System.out.append("\n\n***root:\n" + rootPath + "\n");
             SSMConfigResolver ssmResolver = new SSMConfigResolver();
             YamlParser yamlParser = new YamlParser(ssmResolver);
-            System.out.println("\n\n***InventoryYaml:\n" + replicationYaml);
+            if (DEBUG) System.out.println("\n\n***InventoryYaml:\n" + replicationYaml);
             LinkedHashMap<String, Object> map = yamlParser.parseString(replicationYaml);
             LinkedHashMap<String, Object> lmap = (LinkedHashMap<String, Object>)map.get(invInfoConfig);
             if (lmap == null) {
