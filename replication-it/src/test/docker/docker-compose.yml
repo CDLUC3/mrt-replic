@@ -37,7 +37,7 @@ services:
     entrypoint: ["catalina.sh", "jpda", "run"]
   minio-server:
     container_name: minio-server
-    image: ${ECR_REGISTRY}/mrt-minio-it-with-content:dev
+    image: ${ECR_REGISTRY}/mrt-rustfs-it-with-content:dev
     ports:
     - published: 9000
       target: 9000
