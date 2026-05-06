@@ -111,9 +111,10 @@
               </goals>
               <configuration>
                 <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                <verbose>false</verbose>
                 <images>
                   <image>
-                    <name>${itDockerRegistry}/mrt-minio-it-with-content:dev</name>
+                    <name>${itDockerRegistry}/mrt-rustfs-it-with-content:dev</name>
                     <alias>minio-server</alias>
                     <run>
                       <network>
