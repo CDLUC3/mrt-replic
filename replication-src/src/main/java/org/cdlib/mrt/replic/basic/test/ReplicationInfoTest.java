@@ -8,6 +8,8 @@ package org.cdlib.mrt.replic.basic.test;
 
 import java.sql.Connection;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import org.cdlib.mrt.core.Identifier;
@@ -33,6 +35,7 @@ public class ReplicationInfoTest
 
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = true;
+    private static final Logger log4j = LogManager.getLogger();
 
     /**
      * Main method
@@ -65,7 +68,7 @@ public class ReplicationInfoTest
             ri.dump("TEST");
 
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

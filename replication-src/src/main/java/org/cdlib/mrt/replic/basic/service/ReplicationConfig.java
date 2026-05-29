@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
 
 
@@ -64,6 +66,7 @@ public class ReplicationConfig
     private static final String NAME = "ReplicationConfig";
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     protected JSONObject stateJSON = null;
     protected JSONObject serviceJSON = null;
@@ -91,11 +94,11 @@ public class ReplicationConfig
             return replicationConfig;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
         
@@ -119,11 +122,11 @@ public class ReplicationConfig
             currentDateDelta = scanJSON.getInt("currentDateDelta");
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -161,7 +164,7 @@ public class ReplicationConfig
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -209,11 +212,11 @@ public class ReplicationConfig
             return serviceState;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -442,7 +445,7 @@ public class ReplicationConfig
         } catch (Exception ex) {
                 // TODO Auto-generated catch block
                 System.out.println("Exception:" + ex);
-                ex.printStackTrace();
+                log4j.debug(ex.toString(), ex);
         }
     }
     
@@ -476,7 +479,7 @@ public class ReplicationConfig
         } catch (Exception ex) {
                 // TODO Auto-generated catch block
                 System.out.println("Exception:" + ex);
-                ex.printStackTrace();
+                log4j.debug(ex.toString(), ex);
         }
     }
     

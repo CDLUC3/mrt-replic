@@ -91,7 +91,7 @@ public class CollectionNodeHandler
             return cnt;
                    
          } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             try {
                 connection.rollback();
             } catch (Exception rex) {

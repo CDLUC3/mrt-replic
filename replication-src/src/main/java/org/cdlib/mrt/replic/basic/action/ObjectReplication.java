@@ -1,32 +1,4 @@
-/******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
- *
-- Redistributions of source code must retain the above copyright notice,
-  this list of conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright
-  notice, this list of conditions and the following disclaimer in the
-  documentation and/or other materials provided with the distribution.
-- Neither the name of the University of California nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-OF THE POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************/
 package org.cdlib.mrt.replic.basic.action;
 
 import java.sql.Connection;
@@ -35,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import org.apache.http.HttpResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.FixityStatusType;
 
@@ -78,6 +52,7 @@ public class ObjectReplication
     protected static final boolean DEBUG = false;
     protected static final boolean DUMPTALLY = false;
     protected static final boolean EACHTALLY = true;
+    protected static final Logger log4j = LogManager.getLogger();   
     
     protected ReplicationInfo info = null;
     protected List<ReplicationInfo.NodeObjectInfo> nodeObjectList = null;
@@ -155,17 +130,11 @@ public class ObjectReplication
             nodeObjectMaint.updatePrimaryEnd();
                    
         } catch (TException tex) {
-            logger.logError(
-                        "***Replication fails::" + info.getObjectID().getValue() + "- Exception:" + tex
-                        , 1); 
-            tex.printStackTrace();
+            log4j.error("***Replication fails::" + info.getObjectID().getValue() + "- Exception:" + tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            logger.logError(
-                        "***Replication fails::" + info.getObjectID().getValue() + "- Exception:" + ex
-                        , 1); 
-            ex.printStackTrace();
+            log4j.error("***Replication fails::" + info.getObjectID().getValue() + "- Exception:" + ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -184,11 +153,11 @@ public class ObjectReplication
             }
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -220,11 +189,11 @@ public class ObjectReplication
             return stat;
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -259,8 +228,8 @@ public class ObjectReplication
             } catch (Exception xx) { 
             }
             
+            log4j.error(msg, ex);
             System.out.println(MESSAGE + msg + " - Exception:" + ex);
-            ex.printStackTrace();
             logger.logError(msg, 2);
             try {
                 connect.rollback();
@@ -328,11 +297,11 @@ public class ObjectReplication
             throw rinf;
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -370,11 +339,11 @@ public class ObjectReplication
             }
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } finally {
@@ -412,11 +381,11 @@ public class ObjectReplication
             return true;
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -482,11 +451,11 @@ public class ObjectReplication
             return InvDBUtil.getMaxVersion(objectseq, connect, logger);
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
                     
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
  
         }
@@ -523,11 +492,11 @@ public class ObjectReplication
             
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }

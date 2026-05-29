@@ -31,6 +31,8 @@ package org.cdlib.mrt.replic.basic.content;
 
 
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import org.cdlib.mrt.inv.service.Role;
@@ -54,6 +56,7 @@ public class ReplicNodesObjects
 {
     private static final String NAME = "InvNodeObject";
     private static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
     
 
     public long nodeNumber = 0;
@@ -108,7 +111,7 @@ public class ReplicNodesObjects
             setDurationMs(prop.getProperty("durationMs"));
             
         } catch (Exception ex) {
-            ex.printStackTrace(); //!!!
+            log4j.debug(ex.toString(), ex); //!!!
             throw new TException(ex);
         }
     }

@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.replic.utility.ReplicEmail;
 import org.cdlib.mrt.formatter.FormatterAbs;
@@ -56,6 +58,7 @@ public class ReplicEmailWrapper
     protected static final String NAME = "ReplicEmailWrapper";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
 
     protected boolean autoCommit = true;
     //protected String select = null;
@@ -186,7 +189,7 @@ public class ReplicEmailWrapper
             emailServ(emailTo, dispSubject, disp);
 
         } catch(Exception e)  {
-            e.printStackTrace();
+            log4j.debug(e.toString(), e);
 
         } finally {
             try {

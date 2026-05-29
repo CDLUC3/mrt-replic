@@ -88,7 +88,7 @@ public class TestCollectionNode
             
 
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

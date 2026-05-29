@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -1286,6 +1286,48 @@ public class JerseyReplication
 
         } catch (TException tex) {
             return getExceptionResponse(tex, formatType, logger);
+
+        } catch (Exception ex) {
+            System.out.println("TRACE:" + StringUtil.stackTrace(ex));
+            throw new TException.GENERAL_EXCEPTION(MESSAGE + "Exception:" + ex);
+        }
+    }
+
+    /**
+     * reset container kill prcesses
+     * @param cs
+     * @param sc
+     * @return json stream
+     * @throws TException 
+     */
+    public Response processCleanup(
+            CloseableService cs,
+            ServletConfig sc)
+        throws TException
+    {
+        LoggerInf logger = defaultLogger;
+        try {
+            log4j.debug("start processCleanup");
+            ReplicationServiceInit replicServiceInit = ReplicationServiceInit.getReplicationServiceInit(sc);
+            ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
+            logger = replicationService.getLogger();
+            JSONObject jsonResponse = replicationService.doProcessCleanup();
+            int status = 0;
+            try {
+                String statusS = jsonResponse.getString("status");
+                if (statusS.equals("ok")) status = 200;
+                else status = 500;
+            } catch (Exception ex) {
+                log4j.debug("processCleanup exception:" + ex, ex);
+                status = 500;
+            }
+            return Response 
+                    .status(status).entity(jsonResponse)
+                    .build();
+
+
+         } catch (TException tex) {
+            throw tex;
 
         } catch (Exception ex) {
             System.out.println("TRACE:" + StringUtil.stackTrace(ex));

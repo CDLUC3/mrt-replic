@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -151,12 +151,12 @@ public class DeleteSecondary
                            
                 } catch (TException tex) {
                     log(0, MESSAGE + " Exception:" + tex);
-                    tex.printStackTrace();
+                    log4j.debug(tex.toString(), tex);
                     throw tex;
             
                 } catch (Exception ex) {
                     log(0, MESSAGE + " Exception:" + ex);
-                    ex.printStackTrace();
+                    log4j.debug(ex.toString(), ex);
                     throw new TException(ex);
                     
                 } finally {
@@ -175,7 +175,7 @@ public class DeleteSecondary
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } finally {

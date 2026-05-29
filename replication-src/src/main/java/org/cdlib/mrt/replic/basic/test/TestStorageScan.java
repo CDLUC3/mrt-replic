@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@ package org.cdlib.mrt.replic.basic.test;
 import org.cdlib.mrt.replic.basic.action.*;
 import java.io.File;
 import java.sql.Connection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
 
 import org.cdlib.mrt.inv.content.InvStorageMaint;
@@ -56,6 +58,7 @@ import org.cdlib.mrt.utility.TFileLogger;
 public class TestStorageScan
 {
     
+    private static final Logger log4j = LogManager.getLogger();
     public static void main(String args[])
     {
         LoggerInf logger = new TFileLogger("DoScan", 5, 20);
@@ -69,7 +72,7 @@ public class TestStorageScan
             InvStorageScan storageScan = ScanWrapper.buildInitStorageScan(nodeNum, scanType, null, connection, logger);
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

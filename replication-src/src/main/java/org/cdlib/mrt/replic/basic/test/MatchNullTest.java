@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.VersionMap;
 
 
@@ -44,6 +46,7 @@ public class MatchNullTest
 {
     private static final String NAME = "MatchStoreInvTest";
     private static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
 
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = true;
@@ -90,7 +93,7 @@ public class MatchNullTest
             System.out.println("ANVL:\n" + baos.toString());
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

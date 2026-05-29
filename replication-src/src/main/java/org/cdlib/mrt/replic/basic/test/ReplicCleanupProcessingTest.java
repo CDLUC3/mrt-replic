@@ -20,17 +20,20 @@ import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TFrame;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
+import org.cdlib.mrt.replic.basic.action.ReplicCleanupProcessing;
 import org.cdlib.mrt.replic.basic.service.ReplicationConfig;
 import org.cdlib.mrt.replic.basic.service.ReplicationPropertiesState;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.StateInf;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 /**
  * Load manifest.
  * @author  dloy
  */
 
-public class ReplicCleanupTest
+public class ReplicCleanupProcessingTest
 {
     private static final String NAME = "ReplicCleanupTest";
     private static final String MESSAGE = NAME + ": ";
@@ -52,17 +55,9 @@ public class ReplicCleanupTest
             LoggerInf logger = replicConfig.getLogger();
             db = replicConfig.startDB();
             NodeIO nodeIO = replicConfig.getNodeIO();
-            Properties cleanupProp = replicConfig.getCleanupEmailProp();
-            System.out.println(PropertiesUtil.dumpProperties("Cleanup Prop", cleanupProp));
-            if (true) return;
-            ReplicCleanup rc = ReplicCleanup.getReplicCleanup((Properties)null, nodeIO, db, logger);
-            ReplicationPropertiesState rps = rc.call();
-            if (rps != null) {
-                rps.dump("ReplicCleanupTest");
-            }
-            
-            String report = formatIt(logger, rps);
-            System.out.println("report\n" + report);
+            ReplicCleanupProcessing rcp =  ReplicCleanupProcessing.getReplicCleanupProcessing(db, logger);
+            JSONObject json = rcp.process();
+            System.out.println(json.toString(2));
             
         } catch(Exception e) {
                 log4j.debug(e.toString(), e);

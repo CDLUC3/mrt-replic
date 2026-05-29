@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -123,7 +123,7 @@ public class Deletor
                 saveException = ex;
                 log( 0,"Info: Exception deleteStore" + ex 
                         + PropertiesUtil.dumpProperties("deleteStore", nodeObject.retrieveProp()));
-                ex.printStackTrace();
+                log4j.debug(ex.toString(), ex);
                 return;
             }
         } else {
@@ -138,7 +138,7 @@ public class Deletor
             saveException = ex;
             log( 0,"Exception deleteInv" + ex 
                     + PropertiesUtil.dumpProperties("deleteStore", nodeObject.retrieveProp()));
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             return;
         }
         ReplicationDeleteState returnState = new ReplicationDeleteState(storeDelete, invObject.getArk(), deleteCnt);

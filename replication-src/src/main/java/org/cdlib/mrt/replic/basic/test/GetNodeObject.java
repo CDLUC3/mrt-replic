@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ public class GetNodeObject
             InvNodeObject nodeObject = InvDBUtil.getNodeObject(15L, 58178L, connection, logger);
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

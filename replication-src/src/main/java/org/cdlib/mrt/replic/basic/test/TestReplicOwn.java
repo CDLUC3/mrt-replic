@@ -35,6 +35,8 @@ import org.cdlib.mrt.utility.TFrame;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.formatter.FormatterInf;
 import org.cdlib.mrt.inv.content.InvAddLocalID;
 import org.cdlib.mrt.inv.content.InvCollectionNode;
@@ -60,6 +62,7 @@ public class TestReplicOwn
 
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     /**
      * Main method
      */
@@ -87,7 +90,7 @@ public class TestReplicOwn
             
 
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
