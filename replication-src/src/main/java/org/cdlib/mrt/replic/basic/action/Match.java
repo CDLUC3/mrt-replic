@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ public class Match
         try {
             state = new MatchObjectState(objectID, nodeIO, sourceNode, targetNode);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
         
@@ -129,7 +129,7 @@ public class Match
             } catch (Exception ex) {
                 invMap = null;
                 System.out.println(MESSAGE + ex);
-                ex.printStackTrace();
+                log4j.debug(ex.toString(), ex);
             }
             if (targetMap != null) {
                 MatchStore matchStore = MatchStore.getMatchStore( logger);
@@ -179,12 +179,12 @@ public class Match
 
         } catch (TException tex) {
             System.out.println(MESSAGE + tex);
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             exception = tex;
 
         } catch (Exception ex) {
             System.out.println(MESSAGE + ex);
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             exception = ex;
             
         }

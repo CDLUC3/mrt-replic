@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -114,7 +114,7 @@ public class DoScan
             System.out.println(info.dump("Count Dump 2"));
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -147,7 +147,7 @@ public class DoScan
             System.out.println(cnt.dump("Count Dump"));
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -189,7 +189,7 @@ public class DoScan
             System.out.println(cnt.dump("Count Dump"));
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -261,11 +261,11 @@ public class DoScan
             if (DEBUG) System.out.println("nodeid:" + nodeid);
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -315,11 +315,11 @@ public class DoScan
             return scanInfo;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -358,11 +358,11 @@ public class DoScan
             return;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -397,11 +397,11 @@ public class DoScan
             //throw new TException.GENERAL_EXCEPTION("test");
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -434,11 +434,11 @@ public class DoScan
             return hash;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -458,11 +458,11 @@ public class DoScan
             return entryList;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }

@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.replic.basic.action;
 
 import java.sql.Connection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
 
 import org.cdlib.mrt.inv.content.InvNodeObject;
@@ -53,6 +55,8 @@ public class ReplicationWrapper
     protected static final String NAME = "ReplicationWrapper";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
+    
     protected InvNodeObject nodeObject = null;
     protected DPRFileDB db = null;
     protected LoggerInf logger = null;
@@ -109,7 +113,7 @@ public class ReplicationWrapper
             //resetReplicatedCurrent(nodeObject);
 
         } catch(Exception e)  {
-            e.printStackTrace();
+            log4j.debug(e.toString(), e);
             resetReplicatedError(nodeObject);
 
         } 

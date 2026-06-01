@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ import org.cdlib.mrt.utility.LoggerInf;
 import java.sql.Connection;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.inv.content.InvNodeObject;
@@ -72,6 +73,7 @@ public class ReplicOwn
     private static final String MESSAGE = NAME + ": ";
 
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     
        
     public static LinkedList<InvNodeObject> getOwnListReplic(
@@ -153,6 +155,72 @@ public class ReplicOwn
                 System.out.println("WARNING rollback fails:" + ex);
             }
             return new LinkedList<InvNodeObject>();
+
+        }
+    }
+    
+    public static LinkedList<Long> doCleanupReplic(
+            Connection ownConnect, 
+            LoggerInf logger)
+        throws TException
+    {
+        
+        LinkedList<Long> replicList = new LinkedList<>();
+        try {
+            ownConnect.setAutoCommit(false);
+            String runSQL = "SELECT NO.id "
+                + "FROM inv_nodes_inv_objects no "
+                + "WHERE NO.inv_object_id IN ( "
+                + "    SELECT inv_object_id "
+                + "    FROM inv_nodes_inv_objects "
+                + "    WHERE replicated = '1970-12-31 08:00:00' "
+                + "    AND not replic_start IS null "
+                + "    AND  replic_start < NOW() - INTERVAL 2 DAY "
+                + ") "
+                    + ";";
+            log4j.trace("own sql:" + runSQL);
+            Properties [] ids = DBUtil.cmd(ownConnect, runSQL, logger);
+
+            if ((ids == null) || (ids.length==0)) {
+                ownConnect.rollback();
+                return new LinkedList<>();
+            }
+            String concatid = "";
+            for (Properties idP : ids) {
+                String idS = idP.getProperty("id");
+                long id = Long.parseLong(idS);
+                replicList.add(id);
+                if (concatid.length() > 0 ) {
+                    concatid = concatid + ",";
+                }
+                concatid += id;
+            }
+            log4j.trace("doCleanupAudit.auditList:" + replicList.size()
+                    + " - concatid=" + concatid
+            );
+
+            
+            String sqlUpdate = "update inv_nodes_inv_objects "
+            + "set replicated = null, "
+            + "version_number = null "
+            + "where id in (" + concatid + "); ";
+
+            int updates = DBUtil.update(ownConnect, sqlUpdate, logger);
+            //System.out.println("updateCnt:" + updateCnt);
+            ownConnect.commit();
+            log4j.debug("doCleanupReplic.updates commit:" + updates
+                    + " - concatid=" + concatid
+            );
+            return replicList;
+
+        } catch (Exception ex) {
+            try {
+                ownConnect.rollback();
+                
+            } catch (Exception exr) {
+                System.out.println("WARNING rollback fails:" + ex);
+            }
+            throw new TException(ex);
 
         }
     }

@@ -32,6 +32,8 @@ package org.cdlib.mrt.replic.utility;
 
 import java.sql.Connection;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.inv.content.InvNodeObject;
@@ -49,6 +51,7 @@ import org.cdlib.mrt.inv.utility.DPRFileDB;
 public class ReplicDB 
 {
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     public static boolean resetReplicatedRetry(
             DPRFileDB db, 
@@ -115,11 +118,11 @@ public class ReplicDB
             
         } catch (Exception ex) {
             System.out.println("WARNING resetBackup fails:" + ex);
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             String exS = ex.toString().toLowerCase();
             if (exS.contains("lock")) {
                 System.out.println("Lock failure");
-                ex.printStackTrace();
+                log4j.debug(ex.toString(), ex);
                 return false;
             }
             throw new RuntimeException(ex);
@@ -161,11 +164,11 @@ public class ReplicDB
             
         } catch (Exception ex) {
             System.out.println("WARNING resetBackup fails:" + ex);
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             String exS = ex.toString().toLowerCase();
             if (exS.contains("lock")) {
                 System.out.println("Lock failure");
-                ex.printStackTrace();
+                log4j.debug(ex.toString(), ex);
                 return false;
             }
             throw new RuntimeException(ex);

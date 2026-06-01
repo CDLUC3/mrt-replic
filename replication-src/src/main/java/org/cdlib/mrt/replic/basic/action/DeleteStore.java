@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -125,7 +125,7 @@ public class DeleteStore
             String encObjectID = URLEncoder.encode(deleteInvObject.getArk().getValue(), "utf-8");
             storeURL = baseURL + "/content/" + nodeS  + '/' + encObjectID;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -139,11 +139,11 @@ public class DeleteStore
             deleteContent();
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -161,11 +161,11 @@ public class DeleteStore
             }
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -201,11 +201,11 @@ public class DeleteStore
             log( 10,PropertiesUtil.dumpProperties("copyContent",storeResponse));
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -235,11 +235,11 @@ public class DeleteStore
             log( 10,PropertiesUtil.dumpProperties("deleteContentInv",storeResponse));
                     
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -258,11 +258,11 @@ public class DeleteStore
             log( 10,"Key deleted:" + key);
            
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }
@@ -281,11 +281,11 @@ public class DeleteStore
             log( 10,"Manifest delete:" + objectID.getValue());
            
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         }

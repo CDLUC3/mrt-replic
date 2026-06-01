@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ import org.cdlib.mrt.inv.content.InvStorageMaint;
 import org.cdlib.mrt.inv.content.InvStorageScan;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
+import org.json.JSONObject;
 
 /**
  * Replication Service Interface
@@ -119,6 +120,14 @@ public interface ReplicationServiceInf
             
     
     public ReplicationPropertiesState doCleanup()
+        throws TException;
+    
+    /**
+     * Reset old entries in process state to be replicated
+     * @return
+     * @throws TException 
+     */
+    public JSONObject doProcessCleanup()
         throws TException;
     
     /**

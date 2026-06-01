@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@ import java.sql.Connection;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.ManifestSAX;
 
 import org.cdlib.mrt.utility.FileUtil;
@@ -59,6 +61,7 @@ public class ReplicActionAbs
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
     protected static final String  STATUS_PROCESSING = "processing";
+    protected static final Logger log4j = LogManager.getLogger();
 
     protected InvNodeObject nodeObject  = null;
     protected LoggerInf logger = null;

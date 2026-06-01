@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.ThreadHandler;
@@ -70,6 +72,7 @@ import org.cdlib.mrt.replic.basic.action.NodesObjects;
 import org.cdlib.mrt.replic.basic.action.Replicator;
 import org.cdlib.mrt.replic.basic.action.ReplicAddInv;
 import org.cdlib.mrt.replic.basic.action.ReplicCleanup;
+import org.cdlib.mrt.replic.basic.action.ReplicCleanupProcessing;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.utility.DateUtil;
@@ -87,6 +90,7 @@ public class ReplicationServiceHandler
     private static final String NAME = "ReplicationServiceHandler";
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
 
     protected int terminationSeconds = 600;
     //protected Properties serviceProperties = null;
@@ -131,7 +135,7 @@ public class ReplicationServiceHandler
             startup();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -333,7 +337,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } 
@@ -381,7 +385,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } 
@@ -423,7 +427,7 @@ public class ReplicationServiceHandler
                     throw se;
 
                 }  else {
-                    se.printStackTrace();
+                    log4j.debug(se.toString(), se);
                     throw new TException(se);
                 }
             }
@@ -438,7 +442,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } finally {
@@ -494,7 +498,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } finally {
@@ -520,7 +524,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -543,7 +547,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } finally {
@@ -584,7 +588,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
             
         } finally {
@@ -635,7 +639,27 @@ public class ReplicationServiceHandler
             return retState;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
+            throw new TException(ex);
+        }
+    }
+    
+    public JSONObject doProcessCleanup()
+        throws TException
+    {
+        
+        if (!isSQL()) {
+            throw new TException.SQL_EXCEPTION("doProcessCleanup attempted - MySQL not running");
+        }
+        JSONObject jsonResponse = null;
+        try {
+            DPRFileDB db = replicConfig.getDB();
+            ReplicCleanupProcessing rcp =  ReplicCleanupProcessing.getReplicCleanupProcessing(db, logger);
+            jsonResponse = rcp.process();
+            return jsonResponse;
+
+        } catch (Exception ex) {
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -659,7 +683,7 @@ public class ReplicationServiceHandler
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }

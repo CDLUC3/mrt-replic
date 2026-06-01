@@ -8,6 +8,8 @@ package org.cdlib.mrt.replic.basic.test;
 
 import java.sql.Connection;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import org.cdlib.mrt.core.Identifier;
@@ -29,8 +31,9 @@ import org.cdlib.mrt.s3.service.NodeIO;
 
 public class ReplicatorProdTest
 {
-    private static final String NAME = "ReplicatorTest";
+    private static final String NAME = "ReplicatorProdTest";
     private static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
 
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = true;
@@ -65,7 +68,7 @@ public class ReplicatorProdTest
             replicator.dumpInfo("TEST");
 
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

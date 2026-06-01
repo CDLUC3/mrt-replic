@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,8 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.replic.basic.action.ReplicationWrapper;
 import org.cdlib.mrt.inv.content.InvNodeObject;
@@ -92,6 +94,7 @@ public class RunReplication implements Runnable
 {
     private static final String NAME = "RunReplic";
     private static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
 
     private static final boolean DEBUG = false;
     protected LoggerInf logger = null;
@@ -155,7 +158,7 @@ public class RunReplication implements Runnable
             queue.add(nodeObj);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -276,12 +279,12 @@ public class RunReplication implements Runnable
             log("************leaving RunReplica");
 
         } catch (TException fe) {
-            fe.printStackTrace();
+            log4j.debug(fe.toString(), fe);
             setEx(fe);
 
         } catch(Exception e)  {
 
-            e.printStackTrace();
+            log4j.debug(e.toString(), e);
             if (logger != null)
             {
                 logger.logError(
@@ -337,12 +340,12 @@ public class RunReplication implements Runnable
                     , 1, true);
 
         } catch (TException fe) {
-            fe.printStackTrace();
+            log4j.debug(fe.toString(), fe);
             throw fe;
 
         } catch(Exception e)  {
 
-            e.printStackTrace();
+            log4j.debug(e.toString(), e);
             if (logger != null)
             {
                 logger.logError(

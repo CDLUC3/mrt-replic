@@ -11,6 +11,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.ManifestSAX;
 
 
@@ -46,6 +48,7 @@ public class BuildMapInvTest
 
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = true;
+    private static final Logger log4j = LogManager.getLogger();
 
     /**
      * Main method
@@ -76,7 +79,7 @@ public class BuildMapInvTest
             System.out.println(mapxml);
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

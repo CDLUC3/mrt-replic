@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@ import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.replic.basic.app.ReplicationServiceInit;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceInf;
 import org.cdlib.mrt.replic.basic.service.ReplicationServiceState;
+import org.json.JSONObject;
 
 /**
  * Thin Jersey layer for inv handling
@@ -70,9 +71,12 @@ public class StartReplic extends HttpServlet
             ReplicationServiceInf replicationService = replicServiceInit.getReplicationService();
 
             responseState = replicationService.startup();
+            JSONObject jsonResponse = replicationService.doProcessCleanup();
+            System.out.println("**INIT jsonResponse:" + jsonResponse.toString(2));
+            
             
         } catch (ServletException se) {
-            se.printStackTrace();
+            log4j.debug(se.toString(), se);
             throw se;
 
         } catch (Exception ex) {

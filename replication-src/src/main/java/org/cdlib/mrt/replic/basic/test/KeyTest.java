@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.ManifestSAX;
 
 
@@ -48,6 +50,7 @@ public class KeyTest
 {
     private static final String NAME = "KeyTest";
     private static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
 
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = true;
@@ -95,7 +98,7 @@ public class KeyTest
             System.out.println("hashNoNode:" + hash.size());
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(

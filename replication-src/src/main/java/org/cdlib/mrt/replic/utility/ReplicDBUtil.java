@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.ManifestStr;
 import org.cdlib.mrt.cloud.VersionMap;
 import org.cdlib.mrt.core.DateState;
@@ -38,6 +40,7 @@ public class ReplicDBUtil
     protected static final String NAME = "ReplicDBUtil";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     public static ArrayList<String> getNodeKeys(
             Identifier objectID,
@@ -139,7 +142,7 @@ public class ReplicDBUtil
             return map;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -165,7 +168,7 @@ public class ReplicDBUtil
             return map;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -195,7 +198,7 @@ public class ReplicDBUtil
             return map;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -218,7 +221,7 @@ public class ReplicDBUtil
             return  ReplicDBUtil.getHashNode(nodeNum, objectID, keyList, logger);
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }

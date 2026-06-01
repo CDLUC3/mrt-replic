@@ -1,6 +1,6 @@
 
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,8 @@ import java.util.Set;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.DateState;
@@ -87,6 +89,7 @@ public class ScanManager
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
     private static final boolean THREADDEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     protected File keyListFile = null;
     //protected static int failMs = 2*60*60*1000;
     protected static int failMs = 10*60*1000;
@@ -125,7 +128,7 @@ public class ScanManager
             System.out.println("Test format:" + response);
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -156,7 +159,7 @@ public class ScanManager
             
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -185,7 +188,7 @@ public class ScanManager
             
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -215,7 +218,7 @@ public class ScanManager
             
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -244,7 +247,7 @@ public class ScanManager
             
             
         } catch(Exception e) {
-                e.printStackTrace();
+                log4j.debug(e.toString(), e);
                 System.out.println(
                     "Main: Encountered exception:" + e);
                 System.out.println(
@@ -365,7 +368,7 @@ public class ScanManager
             throw tex ;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex) ;
             
         } finally {
@@ -392,7 +395,7 @@ public class ScanManager
             throw tex ;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex) ;
             
         } finally {
@@ -426,7 +429,7 @@ public class ScanManager
             throw tex ;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex) ;
             
         } finally {
@@ -646,7 +649,7 @@ public class ScanManager
             return true;
                 
         }  catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex) ;
         }
         

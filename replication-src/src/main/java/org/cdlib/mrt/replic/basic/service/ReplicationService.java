@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright (c) 2005-2012, Regents of the University of California
+Copyright (c) 2005-2026, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,7 @@ import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
+import org.json.JSONObject;
 
 /**
  * Inv Service
@@ -177,6 +178,18 @@ public class ReplicationService
         if (DEBUG) System.out.print("doCleanup entered");
         return replicationServiceHandler.doCleanup();
     }
+    
+    /**
+     * Reset old entries in process state to be replicated
+     * @return
+     * @throws TException 
+     */
+    public JSONObject doProcessCleanup()
+        throws TException 
+    {
+        return replicationServiceHandler.doProcessCleanup();
+    }
+    
     /**
      * Match duplicated objects on different nodes
      * @param sourceNode input node
