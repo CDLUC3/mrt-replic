@@ -34,12 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.cdlib.mrt.core.DateState;
-import org.cdlib.mrt.core.Identifier;
 
 import org.cdlib.mrt.inv.content.InvNodeObject;
-import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
-import static org.cdlib.mrt.replic.basic.action.ObjectReplication.MESSAGE;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.LoggerInf;
@@ -134,7 +131,7 @@ public class Replicator
             }
             
             System.out.println(MESSAGE + msg + " - Exception:" + ex);
-            log4j.debug(ex.toString(), ex);
+            log4j.error(MESSAGE + msg + " - Exception:" + ex, ex);
             logger.logError(msg, 2);
             repstate = ReplicatorState.fail;
             setException(ex);
@@ -149,6 +146,7 @@ public class Replicator
                     + " - time=" + processTime
                     ;
             logger.logMessage(msg, 2, true);
+            log4j.info(msg);
         }
 
     }

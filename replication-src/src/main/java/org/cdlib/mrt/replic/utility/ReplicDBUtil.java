@@ -6,29 +6,17 @@
 
 package org.cdlib.mrt.replic.utility;
 
-import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cdlib.mrt.cloud.ManifestStr;
-import org.cdlib.mrt.cloud.VersionMap;
-import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.db.DBUtil;
-import org.cdlib.mrt.inv.content.InvCollectionNode;
 import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.inv.content.InvNodeObject;
 import org.cdlib.mrt.inv.content.InvStorageMaint;
-import org.cdlib.mrt.inv.utility.DBAdd;
-import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.utility.LoggerInf;
-import org.cdlib.mrt.utility.PropertiesUtil;
-import org.cdlib.mrt.inv.utility.DBAdd;
-import org.cdlib.mrt.inv.utility.DPRFileDB;
 
 /**
  *
@@ -142,7 +130,7 @@ public class ReplicDBUtil
             return map;
             
         } catch (Exception ex) {
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -168,7 +156,7 @@ public class ReplicDBUtil
             return map;
             
         } catch (Exception ex) {
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -198,7 +186,7 @@ public class ReplicDBUtil
             return map;
             
         } catch (Exception ex) {
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -221,7 +209,7 @@ public class ReplicDBUtil
             return  ReplicDBUtil.getHashNode(nodeNum, objectID, keyList, logger);
             
         } catch (Exception ex) {
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             throw new TException(ex);
         }
     }
