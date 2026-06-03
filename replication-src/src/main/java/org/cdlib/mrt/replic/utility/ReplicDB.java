@@ -35,10 +35,7 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.DateState;
-import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.inv.content.InvNodeObject;
-import org.cdlib.mrt.inv.utility.DBAdd;
-import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.inv.utility.DBAdd;
@@ -71,13 +68,13 @@ public class ReplicDB
                         connection.close();
                     } catch (Exception ex) { }
                 }
-                System.out.println("resetBackupRetry:" + i);
+                log4j.info("resetBackupRetry:" + i);
                 Thread.sleep(15000);
             }
             return false;
             
         } catch (Exception ex) {
-            System.out.println("resetBackupRetry exception:" + ex);
+            log4j.info("resetBackupRetry exception:" + ex);
             return false;
             
         } 
@@ -118,11 +115,11 @@ public class ReplicDB
             
         } catch (Exception ex) {
             System.out.println("WARNING resetBackup fails:" + ex);
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             String exS = ex.toString().toLowerCase();
             if (exS.contains("lock")) {
                 System.out.println("Lock failure");
-                log4j.debug(ex.toString(), ex);
+                log4j.error(ex.toString(), ex);
                 return false;
             }
             throw new RuntimeException(ex);
@@ -164,11 +161,11 @@ public class ReplicDB
             
         } catch (Exception ex) {
             System.out.println("WARNING resetBackup fails:" + ex);
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             String exS = ex.toString().toLowerCase();
             if (exS.contains("lock")) {
                 System.out.println("Lock failure");
-                log4j.debug(ex.toString(), ex);
+                log4j.error(ex.toString(), ex);
                 return false;
             }
             throw new RuntimeException(ex);

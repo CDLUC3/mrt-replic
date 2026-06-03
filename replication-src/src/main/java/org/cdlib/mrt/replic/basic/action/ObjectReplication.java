@@ -26,7 +26,6 @@ import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.inv.service.Role;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
-import static org.cdlib.mrt.replic.basic.action.Replicator.MESSAGE;
 import org.cdlib.mrt.replic.basic.logging.LogReplicAdd;
 import org.cdlib.mrt.replic.basic.service.MatchObjectState;
 import org.cdlib.mrt.utility.HTTPUtil;
@@ -104,19 +103,21 @@ public class ObjectReplication
             log(MESSAGE + "nothing to process",1);
             return;
         }
+        String fromToMsg = info.getObjectID().getValue();
         try {
             nodeObjectMaint.updatePrimaryStart();
             for (ReplicationInfo.NodeObjectInfo nodeObjectInfo : nodeObjectList) {
-                log(
-                        "***Replication starts::" + info.getObjectID().getValue()
+                fromToMsg = info.getObjectID().getValue()
                         + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
-                        + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber()
+                        + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber();
+                log4j.info(
+                        "***Replication starts::" 
+                        + fromToMsg
                         , 1); 
                 CloudManifestCopyS3ToS3.Stat stat = processNodeObject(nodeObjectInfo);
-                log(
-                        "***Replication complete::" + info.getObjectID().getValue()
-                        + " from node:" + nodeObjectInfo.getPrimaryInvNode().getNumber()
-                        + " to node:" + nodeObjectInfo.getSecondaryInvNode().getNumber()
+                log4j.info(
+                        "***Replication complete::" 
+                        + fromToMsg
                         + " cnt:" + stat.objCnt
                         + " size:" + stat.objSize
                         + " getTime:" + stat.getTime
@@ -130,11 +131,11 @@ public class ObjectReplication
             nodeObjectMaint.updatePrimaryEnd();
                    
         } catch (TException tex) {
-            log4j.error("***Replication fails::" + info.getObjectID().getValue() + "- Exception:" + tex.toString(), tex);
+            log4j.error("***Replication fails::" + fromToMsg +"- Exception:" + tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            log4j.error("***Replication fails::" + info.getObjectID().getValue() + "- Exception:" + ex.toString(), ex);
+            log4j.error("***Replication fails::" + fromToMsg + "- Exception:" + ex.toString(), ex);
             throw new TException(ex);
             
         }

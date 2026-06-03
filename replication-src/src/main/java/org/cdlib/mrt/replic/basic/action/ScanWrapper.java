@@ -320,7 +320,7 @@ public class ScanWrapper
             exception = ex;
             runStatus = RunStatus.failed;
             System.out.println("ScanWrapper Exception:" + ex);
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
     
         } finally {
             try {
@@ -426,11 +426,11 @@ public class ScanWrapper
             return scan;
             
         } catch (TException tex) {
-            log4j.debug(tex.toString(), tex);
+            log4j.error(tex.toString(), tex);
             throw tex ;
             
         } catch (Exception ex) {
-            log4j.debug(ex.toString(), ex);
+            log4j.error(ex.toString(), ex);
             throw new TException(ex) ;
             
         }

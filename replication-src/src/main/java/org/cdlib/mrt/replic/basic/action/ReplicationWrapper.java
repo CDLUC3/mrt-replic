@@ -29,19 +29,15 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 package org.cdlib.mrt.replic.basic.action;
 
-import java.sql.Connection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cdlib.mrt.core.DateState;
 
 import org.cdlib.mrt.inv.content.InvNodeObject;
-import org.cdlib.mrt.inv.utility.DBAdd;
 import org.cdlib.mrt.inv.utility.DPRFileDB;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.replic.basic.service.ReplicationRunInfo;
 import org.cdlib.mrt.replic.utility.ReplicDB;
 import org.cdlib.mrt.utility.LoggerInf;
-import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TException;
 
 /**
@@ -113,7 +109,7 @@ public class ReplicationWrapper
             //resetReplicatedCurrent(nodeObject);
 
         } catch(Exception e)  {
-            log4j.debug(e.toString(), e);
+            log4j.error(e.toString(), e);
             resetReplicatedError(nodeObject);
 
         } 
