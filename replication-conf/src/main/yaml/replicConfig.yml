@@ -1,4 +1,4 @@
-which-replic-info: "{!ENV: MERRITT_REPLIC_INFO !DEFAULT: replic-info}"
+which-replic-info: "{!ENV: MERRITT_REPLIC_INFO !DEFAULT: replic-info-docker}"
   
 replic-info-docker: &docker
   service:
