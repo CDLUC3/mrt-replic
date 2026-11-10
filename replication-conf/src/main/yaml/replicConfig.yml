@@ -1,46 +1,5 @@
 which-replic-info: "{!ENV: MERRITT_REPLIC_INFO !DEFAULT: replic-info}"
   
-replic-info:
-  service:
-    threadPool: "{!SSM: replic/config/threadPool !DEFAULT: 5}"
-    nodePath: "{!SSM: replic/config/nodePath  !DEFAULT: yaml:2}"
-    queueCapacity: "{!SSM: replic/config/queueCapacity !DEFAULT: 15}"
-    replicQualify: "{!SSM: replic/config/replicQualify !DEFAULT: NONE}"
-    
-  state:
-    id: replic
-    name: UC3
-    description: "UC3 replication micro-service"
-    version: "replic version"
-    serviceScheme: "Replic/1.0"
-
-  fileLogger:
-    messageMaximumLevel: "{!SSM: replic/config/log/messageMaximumLevel !DEFAULT: 5}"
-    messageMaximumError: "{!SSM: replic/config/log/messageMaximumError !DEFAULT: 10}"
-    path: "{!ENV: LOG_REPLIC !DEFAULT: /dpr2/mrtHomes/replicHome}"
-    name: replic
-    qualifier: yyMMdd
-    trace: 5
-    
-  cleanup:
-    subject: "DummyCleanupSubject"
-    from: "DummyCleanupFrom"
-    to: "DummyCleanupTo"
-    msg: "DummyCleanupMsg"
-    
-  db:
-    user: "{!SSM: inv/readwrite/db-user}"
-    password: "{!SSM: inv/readwrite/db-password}"
-    host: "{!SSM: inv/db-host}"
-    name: "{!SSM: inv/db-name}"
-    encoding: "{!SSM: inv/db-encoding !DEFAULT: useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8}"
-    
-  scan:
-    maxkeys: "{!SSM: replic/scan/maxkeys !DEFAULT: 500}"
-    threadSleep: "{!SSM: replic/scan/threadSleep !DEFAULT: 100}"
-    # ignore items less than 1 day old
-    currentDateDelta: 86400000
-
 replic-info-docker: &docker
   service:
     threadPool: "5"
@@ -85,26 +44,6 @@ replic-info-docker: &docker
     # ignore items less than 5 min old
     currentDateDelta: 300000
     
-inv-info-docker-dev: 
-  <<: *docker
-
-  db:
-    user: "{!SSM: inv/readwrite/db-user}"
-    password: "{!SSM: inv/readwrite/db-password}"
-    host: "{!SSM: inv/db-host}"
-    name: "{!SSM: inv/db-name}"
-    encoding: "{!SSM: inv/db-encoding !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"
-
-inv-ecs-dev: 
-  <<: *docker
-
-  db:
-    user: "{!SSM: /uc3/mrt/ecs/billing/readwrite/db-user !DEFAULT: user}"
-    password: "{!SSM: /uc3/mrt/ecs/billing/readwrite/db-password !DEFAULT: password}"
-    host: "{!SSM: /uc3/mrt/ecs/billing/db-host !DEFAULT: db-container}"
-    name: "inv"
-    encoding: "characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"   # schema won't load if it's utf8mb4
-
 inv-ecs: 
   <<: *docker
 
@@ -113,4 +52,5 @@ inv-ecs:
     password: "{!SSM: inv/readwrite/db-password}"
     host: "{!SSM: inv/db-host}"
     name: "{!SSM: inv/db-name}"
-    encoding: "{!SSM: inv/db-encoding !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"
+    encoding: "{!ENV: RDS_ENCODING !DEFAULT: characterEncoding=UTF-8&characterSetResults=UTF-8}"
+
