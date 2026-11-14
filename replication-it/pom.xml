@@ -125,7 +125,21 @@
                         <port>minio-server.port:9000</port>
                       </ports>
                       <wait>
-                        <time>2000</time>
+                        <time>5000</time>
+                      </wait>
+                    </run>
+                  </image>
+                  <image>
+                    <name>${itDockerRegistry}/mrt-rustfs-it-with-content:dev</name>
+                    <alias>minio-server-init</alias>
+                    <run>
+                      <network>
+                        <name>network</name>
+                        <alias>minio-server-init</alias>
+                      </network>
+                      <entrypoint>/content-init.sh</entrypoint>
+                      <wait>
+                        <time>7000</time>
                       </wait>
                     </run>
                   </image>
